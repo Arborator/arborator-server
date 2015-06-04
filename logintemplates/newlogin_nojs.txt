@@ -1,0 +1,18 @@
+<div id="createlogin"> 
+
+
+    <form action="**script**" method="post">
+        <table summary="Form to create a new login." border="1">
+            <tr><td>Real name:<br> <span style="font-size:12px">Nom réel (Prénom et nom) </span><br> <span style="font-size:12px">真实姓名 </span></td><td><input name="realname" type="text" value="**realname**"></td></tr>
+            <tr><td>User name:<br>  <span style="font-size:12px">Nom d’utilisateur</span><br>  <span style="font-size:12px">用户名</span></td><td><input name="username" type="text" value="**username**"></td></tr>
+            <tr><td>Email address:<br>  <span style="font-size:12px">Adresse mèl </span><br>  <span style="font-size:12px">电子邮件地址 </span></td><td><input name="email" type="text" value="**email**"></td></tr>
+            <tr><td>Password:<br>  <span style="font-size:12px">Mot de passe </span><br>  <span style="font-size:12px">密码 </span></td><td><input name="pass1" type="password">
+            <tr><td>Password confirmation:<br> <span style="font-size:12px">Confirmation du mot de passe </span><br> <span style="font-size:12px">再次确认密码 </span></td><td><input name="pass2" type="password">
+            <input type="hidden" name="login" value="donewloginnojs">
+            <!-- **action** -->
+            </td></tr>
+            
+            <tr><td>&nbsp;</td><td><input type="submit" value="submit  (soumettre - 提交)"></td></tr>
+        </table>
+    </form>
+</div>

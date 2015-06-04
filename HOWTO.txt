@@ -1,0 +1,5 @@
+new project:
+create folder in projects
+run
+python createDB.py projectname
+

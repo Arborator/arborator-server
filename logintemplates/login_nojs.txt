@@ -1,0 +1,13 @@
+<div id="loginform"> 
+    <form action="**script**" method="post">
+        <table summary="Form to get login details." border="0" style="width:100%">
+            <tr><td class="login" >Login Name:</td><td class="login" ><input name="username" type="text"></td></tr>
+            <tr><td class="login" >Password:</td><td class="login" ><input name="pass" type="password">
+            <input type="hidden" name="login" value="loginnojs">
+            <input id="project" type="hidden" name="project" value="xxx">
+            <!-- **action** -->
+            </td></tr>
+            <tr><td class="login"  colspan=2><input type="submit" value="Login" class="fg-button ui-state-default ui-corner-all"></td></tr>
+        </table>
+    </form>
+</div>
