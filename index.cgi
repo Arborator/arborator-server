@@ -311,7 +311,7 @@ print "</div><div class='ui-state-highlight ui-corner-all' style='padding: 1em; 
 #""" <img border='0' src='images/firefox.png' align='middle'> 
 
 print '''</div></div><br/>
-<div class='ui-widget ui-widget-content ui-corner-all' style='padding: 2em; margin-left: 199px; margin-right: 199px;clear: both;text-align:center;'>
+<div class='ui-widget ui-widget-content ui-corner-all' style='padding: 2em; margin-left: 199px; margin-right: 199px;clear: both;text-align:center;position: relative;'>
 	<p style="font-size:.7em;margin:1;">
 		<img border="0" src="images/arboratorNano.png" align='middle'>
 Arborator is free software.
@@ -324,13 +324,9 @@ It is realeased under the
 	
 		<img src="images/Affero_General_Public_License_3.png" align='middle'>
 licence
-	</td><td>
-	</a></p> <p style="font-size:.7em;margin:1;">
-	<a href="https://launchpad.net/arborator">
-downloadable on
-	</p> <p style="font-size:.7em;margin:1;"> 
-		<img src="images/launchpad.png"  align='bottom'></p>
-	</td></tr>
+	</td>
+	
+	</tr>
 	</table></a></p> <p style="font-size:.7em;margin:1;">   
 It can <a href="http://rhapsodie.ilpga.fr/wiki/Arborator#site_administration_and_installation">easily be installed on any Apache server.</a>
 	</p><p style="font-size:.7em;margin:1;">
@@ -352,14 +348,28 @@ font:italic normal .8em/1em Times, serif;text-align:center;margin:0 auto;padding
 	<a href='http://ilpga.fr/'>ILPGA</a>,
 	<a href='http://lpp.univ-paris3.fr/'>LPP</a>
 	(<a href='http://lpp.univ-paris3.fr/'>CNRS</a>) <br>and  <br>
-	<a href='http://english.cas.cn/'>Chinese Academy of Sciences</a>,
-	<a href='http://english.ia.cas.cn/'>Institute of Automation</a>,
-	<a href='http://nlpr-web.ia.ac.cn/'>NLPR</a>
+	
 	<br><br>
-</div></div>'''
+	
+	<a href="https://github.com/kimgerdes/arborator"><img style="position: absolute; top: 0; right: 0; border: 0;" src="images/forkme.png" alt="Fork me on GitHub"></a>
 
+</div>
+</div>
+
+
+
+'''
+#	<a href='http://english.cas.cn/'>Chinese Academy of Sciences</a>,
+#	<a href='http://english.ia.cas.cn/'>Institute of Automation</a>,
+#	<a href='http://nlpr-web.ia.ac.cn/'>NLPR</a>
 #
-
+#<td>
+#</a></p> <p style="font-size:.7em;margin:1;">
+#<a href="https://launchpad.net/arborator">
+#downloadable on
+#</p> <p style="font-size:.7em;margin:1;"> 
+	#<img src="images/launchpad.png"  align='bottom'></p>
+#</td>
 
 print " <br><br>"
 
