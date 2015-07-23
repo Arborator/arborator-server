@@ -278,7 +278,7 @@ else:
 	print '<div>Please choose your annotation project:</div>'
 	for project in sorted(config.projects):
 		#project=project.encode("utf-8")
-		if os.path.exists(("projects/"+project+"/"+project+".png").encode("utf-8")):img=u"<img src='projects/"+project+"/"+project+u".png' align='top'>"
+		if os.path.exists(("projects/"+project+"/"+project+".png").encode("utf-8")):img=u"<img class='project_logo' src='projects/"+project+"/"+project+u".png' align='top'>"
 		else: img=""
 		print 	'<div class="ui-widget ui-widget-content ui-corner-all" style="float:left;margin:1.2em;"><p>',
 		if logintest:print (u'<a href="project.cgi?project={project}">{img} {project}'.format(project=project,img=img)).encode("utf-8"),

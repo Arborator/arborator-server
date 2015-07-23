@@ -237,16 +237,8 @@ textarea, pre { -moz-tab-size:20; -o-tab-size:20; -webkit-tab-size:20; tab-size:
 a:link, a:visited{
 	text-decoration: none;
 	color:#654b6d;
-	cursor: pointer;
 }
 
-a:hover{
-	text-decoration: underline;
-	color:#dd137b;
-	cursor: pointer;
-/* background-repeat: no-repeat; */
-/* background-image: url("images/alignator.gif"); */
-}
 
 body span.ui-icon {
     float:left;
@@ -435,7 +427,6 @@ a:hover{
 /* 	display:block; */
 	text-decoration: underline;
 	color:#dd137b;
-	cursor: pointer;
 /* background-repeat: no-repeat; */
 /* background-image: url("images/alignator.gif"); */
 }
@@ -492,7 +483,7 @@ label.standardtext {
 	
 }
 
-
+.project_logo{max-height: 20px}
 /* fin trucs utile ***************************** */
 /*
 .comments{
