@@ -430,13 +430,16 @@ def eraseFunctions(infile, outfile):
 	print
 	trees2conll10(trees,outfile)	
 
-			
+
 def splitForTraining(infilename="Rhapsodie.micro_simple.conll.oldnum"):
 	"""
 	+ splitting for parsing
 	"""
 	count=0
-	with codecs.open("bonne.Rhapsodie1000","w","utf-8") as outfile, codecs.open("bonne.Rhapsodie600","w","utf-8") as testfile, codecs.open("bonne.Rhapsodie600empty","w","utf-8") as emptyfile:
+	try:
+		outfile = codecs.open("bonne.Rhapsodie1000","w","utf-8")
+		testfile = codecs.open("bonne.Rhapsodie600","w","utf-8")
+		emptyfile = codecs.open("bonne.Rhapsodie600empty","w","utf-8")
 		
 		for tree in conll2trees(infilename):
 			count+=1
@@ -461,12 +464,18 @@ def splitForTraining(infilename="Rhapsodie.micro_simple.conll.oldnum"):
 			else:
 				testfile.write("\n")
 				emptyfile.write("\n")
-			
+	finally:
+		outfile.close()
+		emptyfile.close()
+		testfile.close()
+
 		
 	
 
 def rhapsodie2standardConll(infilename="Rhapsodie.micro_simple", outfilename="Rhapsodie.micro_simple.conll.oldnum"):
-	with codecs.open(infilename,"r","utf-8") as infile, codecs.open(outfilename,"w","utf-8")  as outfile:
+	try:
+		infile = codecs.open(infilename,"r","utf-8")
+		outfile = codecs.open(outfilename,"w","utf-8")
 		print infile.readline() # first header line
 		for line in infile:
 			print line
@@ -489,13 +498,19 @@ def rhapsodie2standardConll(infilename="Rhapsodie.micro_simple", outfilename="Rh
 				outfile.write("\t".join([lili[2],lili[5],lili[6],lili[6],lili[7],lili[7], morph,morph,head,head,func,func,"_","_" ] )+"\n")
 			elif len(line.strip())==5:
 				outfile.write("\n")
-				
+	finally:
+		infile.close()
+		outfile.close()
+
+
+
 def standardNodeNumbering(infilename="Rhapsodie.micro_simple.conll.oldnum",outfilename="Rhapsodie.conll"):
 	"""
 	put file to standard numbers
 	"""
 	count=0
-	with codecs.open(outfilename,"w","utf-8") as outfile:
+	try:
+		outfile = codecs.open(outfilename,"w","utf-8")
 		
 		for tree in conll2trees(infilename):
 			count+=1
@@ -514,6 +529,8 @@ def standardNodeNumbering(infilename="Rhapsodie.micro_simple.conll.oldnum",outfi
 				outfile.write("\t".join([str(treecorrdic[tokenid]),node.get("t","_"), node.get("lemma","_"), node.get("lemma","_"), node.get("tag","_"), node.get("tag","_"), node.get("morph","_"), node.get("morph","_"), str(treecorrdic[govid]),str(treecorrdic[govid]),func,func,"_","_"])+"\n")
 				
 			outfile.write("\n")
+	finally:
+		outfile.close()
 			
 
 	#test:

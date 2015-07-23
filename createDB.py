@@ -24,7 +24,7 @@
 ####
 
 import os
-from sqlite3 import connect
+from sqlite3 import connect, OperationalError
 from optparse import OptionParser
 
 	
@@ -39,9 +39,13 @@ def makeDataBase(dbpath):
 	
 	cursor.execute('''create table IF NOT EXISTS sentences
 	(nr INTEGER, sentence TEXT, textid INTEGER)''')
-	cursor.execute('''create VIRTUAL table IF NOT EXISTS sentencesearch USING fts4
-	(nr INTEGER, sentence TEXT, textid INTEGER)''')
-	
+	try:
+		cursor.execute('''create VIRTUAL table IF NOT EXISTS sentencesearch USING fts4
+		(nr INTEGER, sentence TEXT, textid INTEGER)''')
+	except OperationalError: # Compatibility for sqlite without fts4
+		cursor.execute('''create table IF NOT EXISTS sentencesearch
+		(nr INTEGER, sentence TEXT, textid INTEGER)''')
+
 	#annotype: 0=annoatator, 1=validator
 	cursor.execute('''create table IF NOT EXISTS trees
 	(sentenceid INTEGER, userid INTEGER, annotype INTEGER, status TEXT, comment TEXT, timestamp FLOAT, primary key (sentenceid, userid, annotype) )''') 

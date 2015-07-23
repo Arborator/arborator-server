@@ -333,7 +333,7 @@ def main():
 		if adminLevel:
 			connectRight='''<img class="connectRight" src="images/chain.png" border="0" align="bottom" id='connectRight{nr}' nr='{nr}' title="connect with next tree"> '''.format(nr=snr)
 		exo=""
-		if exotype>1: # 0: no exercice, 1: no feedback
+		if exotype>1: # 0: no exercise, 1: no feedback
 			exo='''<img class="check" src="images/check.png" border="0" align="bottom" id='check{nr}' nr='{nr}' title="check annotation" graphical={graphical}> '''.format(nr=snr, graphical=graphical)
 		print '''<div id='sentencediv{nr}' class='sentencediv' style="margin:10px;" sid={sid}  nr={nr}>
 				<a id='toggler{nr}' class="toggler" treeid="{firsttreeid}" nr="{nr}" >
