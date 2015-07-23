@@ -27,7 +27,7 @@
 
 from datetime import datetime
 from time     import mktime, time, asctime, localtime
-from sqlite3   import connect
+from sqlite3   import connect, OperationalError
 import sys, os, re, json
 from configobj import ConfigObj
 import codecs
@@ -1403,15 +1403,22 @@ class SQL:
 				query=" ".join(words)
 				
 				
-				
-				rc=cursor.execute("SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, snippet(sentencesearch) FROM sentencesearch, texts, features, trees, sentences, links  WHERE sentencesearch.sentence MATCH '{query}' AND sentencesearch.textid = texts.rowid and sentences.nr=sentencesearch.nr and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;	".format(query=query,featurequery=featurequery))
-				print "SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, snippet(sentencesearch) FROM sentencesearch, texts, features, trees, sentences  WHERE sentencesearch.sentence MATCH '{query}' AND sentencesearch.textid = texts.rowid and sentences.nr=sentencesearch.nr and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;	".format(query=query,featurequery=featurequery)
+				try:
+					rc=cursor.execute("SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, snippet(sentencesearch) FROM sentencesearch, texts, features, trees, sentences, links  WHERE sentencesearch.sentence MATCH '{query}' AND sentencesearch.textid = texts.rowid and sentences.nr=sentencesearch.nr and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;	".format(query=query,featurequery=featurequery))
+					print "SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, snippet(sentencesearch) FROM sentencesearch, texts, features, trees, sentences  WHERE sentencesearch.sentence MATCH '{query}' AND sentencesearch.textid = texts.rowid and sentences.nr=sentencesearch.nr and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;	".format(query=query,featurequery=featurequery)
+				except OperationalError:
+					# compatiblity for sqlite without fts module compilation
+					rc=cursor.execute("SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, sentencesearch.sentence FROM sentencesearch, texts, features, trees, sentences, links  WHERE sentencesearch.sentence like '%{query}%' AND sentencesearch.textid = texts.rowid and sentences.nr=sentencesearch.nr and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;	".format(query=query,featurequery=featurequery))
+					print "SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, sentencesearch.sentence FROM sentencesearch, texts, features, trees, sentences  WHERE sentencesearch.sentence like '%{query}%' AND sentencesearch.textid = texts.rowid and sentences.nr=sentencesearch.nr and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;	".format(query=query,featurequery=featurequery)
 			else:
 				
 				rc=cursor.execute("SELECT texts.textname, sentences.rowid, sentences.nr, sentences.textid, 'not available' FROM texts, features, trees, sentences, links  WHERE sentences.textid = texts.rowid and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;	".format(featurequery=featurequery))
 		
 		else:
-			rc=cursor.execute("SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, snippet(sentencesearch) FROM sentencesearch, texts WHERE sentencesearch.sentence MATCH '{query}' AND sentencesearch.textid = texts.rowid;".format(query=query))
+			try:
+				rc=cursor.execute("SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, snippet(sentencesearch) FROM sentencesearch, texts WHERE sentencesearch.sentence MATCH '{query}' AND sentencesearch.textid = texts.rowid;".format(query=query))
+			except OperationalError:
+				rc=cursor.execute("SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, sentencesearch.sentence FROM sentencesearch, texts WHERE sentencesearch.sentence like '%{query}%' AND sentencesearch.textid = texts.rowid;".format(query=query))
 		 
 		html=""
 		counter=0
