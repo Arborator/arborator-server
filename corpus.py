@@ -380,7 +380,7 @@ def searchAnnoexo(annoexoid,userid):
 
 def getSentencesAnnoexo(annoexoid,userid):
 	"""
-	get all the sentences for userid for the annoexe annotation exercice
+	get all the sentences for userid for the annoexe annotation exercise
 	
 	"""
 	sids,sentences,nbWords,articles, corpusid, nbAnnos, nbWordsPers, common=searchAnnoexo(annoexoid,userid)
@@ -392,7 +392,7 @@ def getSentencesAnnoexo(annoexoid,userid):
 		addASentence(annoexoid,userid,corpusid,nbAnnos,nbWordsPers,common)
 		sids,sentences,nbWords,articles, corpusid, nbAnnos, nbWordsPers, common=searchAnnoexo(annoexoid,userid)
 	#nbWords OK	
-	print  "You got",nbWords,"words to annotate, the minimum for this exercice being",nbWordsPers,"words. Hopefully you like the sentences. Enjoy annotating!"
+	print  "You got",nbWords,"words to annotate, the minimum for this exercise being",nbWordsPers,"words. Hopefully you like the sentences. Enjoy annotating!"
 	return sids,sentences
 		#print article
 
