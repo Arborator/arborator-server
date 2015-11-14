@@ -1,6 +1,34 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+####
+# Copyright (C) 2009-2015 Kim Gerdes
+# kim AT gerdes. fr
+# http://arborator.ilpga.fr/
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of version 3 of the GNU Affero General Public License (the "License")
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+#
+# This script is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+# See the GNU General Public License (www.gnu.org) for more details.
+#
+# You can retrieve a copy of of version 3 of the GNU Affero General Public License
+# from http://www.gnu.org/licenses/agpl-3.0.html 
+# For a copy via US Mail, write to the
+#     Free Software Foundation, Inc.
+#     59 Temple Place - Suite 330,
+#     Boston, MA  02111-1307
+#     USA
+####
+
+"""
+module called from the editor.cgi to save trees
+"""
+
 import cgi,sys
 from os       import environ
 import database,json

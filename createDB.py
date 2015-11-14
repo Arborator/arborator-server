@@ -58,10 +58,16 @@ def makeDataBase(dbpath):
 	cursor.execute('''create table IF NOT EXISTS links
 	(treeid INTEGER, depid INTEGER, govid INTEGER, function TEXT )''') 
 	cursor.execute('''create table IF NOT EXISTS todos
-	(userid INTEGER, textid INTEGER, type TEXT, status TEXT, comment TEXT, primary key (userid, textid) )''') # , timestamp FLOAT
+	(userid INTEGER, textid INTEGER, type TEXT, status TEXT, comment TEXT, primary key (userid, textid) )''') 
 	cursor.execute('''create table IF NOT EXISTS exos
-	(textid INTEGER NOT NULL PRIMARY KEY, type INTEGER, status TEXT, comment TEXT, FOREIGN KEY (textid) REFERENCES texts(rowid))''') # , timestamp FLOAT
-							#FOREIGN KEY(cloemId) REFERENCES cloems(rowid));
+	(textid INTEGER NOT NULL PRIMARY KEY, type INTEGER, exotoknum INTEGER, status TEXT, comment TEXT, FOREIGN KEY (textid) REFERENCES texts(rowid))''')
+	cursor.execute('''create table IF NOT EXISTS exousersentence
+	(textid INTEGER NOT NULL, userid INTEGER NOT NULL, sentenceid INTEGER NOT NULL, 
+	UNIQUE (textid, userid, sentenceid),
+	FOREIGN KEY (textid) REFERENCES texts(rowid),
+	FOREIGN KEY (userid) REFERENCES users(rowid),
+	FOREIGN KEY (sentenceid) REFERENCES sentences(rowid)
+	)''')
 	db.commit()
 	db.close()
 	

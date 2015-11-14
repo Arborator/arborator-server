@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ####
-# Copyright (C) 2008-2012 Kim Gerdes
+# Copyright (C) 2008-2015 Kim Gerdes
 # kim AT gerdes. fr
 #
 # This program is free software; you can redistribute it and/or
@@ -47,7 +47,9 @@ if logint == "logout":
 	print '''<script type="text/javascript">setTimeout('window.location.href=".";',1000)</script>'''
 	sys.exit()
 project = form.getvalue("project",None)
-if project: project=project.decode("utf-8")
+if project: 
+	try:	project=project.decode("utf-8")
+	except:	pass
 if len(config.projects)==1:project=config.projects[0]
 
 action = form.getvalue("action",None)
@@ -236,7 +238,7 @@ if project :
 	print '<form method="post" action="project.cgi" name="enter" id="enter" class="nav" style="top:4px;right:220px;z-index: 9999;">'
 	if logintest and logint != "logout" : buttonname="Enter"# enter
 	else: buttonname="Login"
-	print (u"""<input type="button" id="ent" name="ent" value="{buttonname}" style="width:80px;" class="fg-button ui-state-default ui-corner-all"  onClick="window.location.href='project.cgi?project={project}'">""".format(project=project,buttonname=buttonname)).encode("utf-8")
+	print (u"""<input type="button" id="ent" name="ent" value="{buttonname}" style="width:80px;" class="fg-button ui-state-default ui-corner-all"  onClick="window.location.href='project.cgi?project={project}'">""".format(project=project.replace("'","\\'").replace('"','\\"'), buttonname=buttonname)).encode("utf-8")
 	#print """<input type="button" id="visit" name="ent" value="Visit" style="width:80px;" class="fg-button ui-state-default ui-corner-all" onClick="window.location.href='visit.cgi'";">"""
 
 	print "</form>"
@@ -271,18 +273,19 @@ if project or len(config.projects)==1:
 		print '<form method="post" action="project.cgi" name="enter" id="enter2">'
 		if logintest and logint != "logout" : buttonname="Enter"# enter
 		else: buttonname="Login"
-		print (u"""C'mon in: Click on <input type="button" id="ent" name="ent" value="{buttonname}"  style="font:normal .8em Arial;padding-top: 2px;width:80px;" class="fg-button ui-state-default ui-corner-all"  onClick="window.location.href='project.cgi?project={project}'">""".format(project=project,buttonname=buttonname)).encode("utf-8")
+		print (u"""C'mon in: Click on <input type="button" id="ent" name="ent" value="{buttonname}"  style="font:normal .8em Arial;padding-top: 2px;width:80px;" class="fg-button ui-state-default ui-corner-all"  onClick="window.location.href='project.cgi?project={project}'">""".format(project=project.replace("'","\\'").replace('"','\\"'),buttonname=buttonname)).encode("utf-8")
 		print "</form>"
 		if len(config.projects)>1: print "<p><small><a href='.?project='>For access to other annotation projects on this site click here</a></small></p>"
 else:
 	print '<div>Please choose your annotation project:</div>'
 	for project in sorted(config.projects):
-		#project=project.encode("utf-8")
 		if os.path.exists(("projects/"+project+"/"+project+".png").encode("utf-8")):img=u"<img class='project_logo' src='projects/"+project+"/"+project+u".png' align='top'>"
 		else: img=""
 		print 	'<div class="ui-widget ui-widget-content ui-corner-all" style="float:left;margin:1.2em;"><p>',
-		if logintest:print (u'<a href="project.cgi?project={project}">{img} {project}'.format(project=project,img=img)).encode("utf-8"),
-		else:print (u'<a href="?project={project}">{img} {project}'.format(project=project,img=img)).encode("utf-8"),
+		if logintest:
+			print (u'<a href="project.cgi?project={project}">{img} {project}'.format(project=project, img=img)).encode("utf-8"),
+		else:
+			print (u'<a href="?project={project}">{img} {project}'.format(project=project, img=img)).encode("utf-8"),
 		print '</a></p></div>'
 		#print '<div style="clear: both;"></div>'
 	
@@ -347,7 +350,7 @@ font:italic normal .8em/1em Times, serif;text-align:center;margin:0 auto;padding
 	<a href='http://www.univ-paris3.fr/'>Sorbonne nouvelle</a>,
 	<a href='http://ilpga.fr/'>ILPGA</a>,
 	<a href='http://lpp.univ-paris3.fr/'>LPP</a>
-	(<a href='http://lpp.univ-paris3.fr/'>CNRS</a>) <br>and  <br>
+	(<a href='http://lpp.univ-paris3.fr/'>CNRS</a>)
 	
 	<br><br>
 	

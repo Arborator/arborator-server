@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ####
-# Copyright (C) 2009-2013 Kim Gerdes
+# Copyright (C) 2009-2015 Kim Gerdes
 # kim AT gerdes. fr
 #
 # This program is free software; you can redistribute it and/or
@@ -59,12 +59,16 @@ def start():
 	if project: action=u"project_"+project
 	if action:
 		#action, userconfig = login(form, userdir, thisfile, action.encode("utf-8"))
-		action, userconfig = login(form, userdir, thisfile, action)
-		#try:
-		#except:
-			#print "Content-Type: text/html\n" # blank line: end of headers
-			#print "Error! Can't read the user config files. Please check that the user files are readible and writable by the apache user"
-			#sys.exit("something's wrong")
+		#action, userconfig = login(form, userdir, thisfile, action)
+		try: 
+			action, userconfig = login(form, userdir, thisfile, action)
+		except Exception,e:
+			print "Content-Type: text/html\n" # blank line: end of headers
+			print "Error in project.cgi! Can't read the user config files. Please check that the user files are readible and writable by the apache user "+action.encode("utf-8")
+			import traceback
+			print "traceback:",traceback.print_exc()
+			print "Exception:",str(e)
+			sys.exit("something's wrong")
 	else:
 		action, userconfig = login(form, userdir, thisfile, action)
 	adminLevel, username, realname = int(userconfig["admin"]),userconfig["username"].decode("utf-8"),userconfig["realname"].decode("utf-8")
@@ -135,13 +139,15 @@ def export(textname, exportNumber, exportType, project):
 		print "<br/><div style='padding:10;'  class='ui-state-highlight ui-corner-all'>",
 		if fc==1:print "The export file for",users[0],"is"
 		else: print "All the",fc,"export files (for",(", ".join(users)).encode("utf-8")+") are"
-		print " in the export folder <strong style='color:#DD137B'><a href='projects/{project}/export' target='_blank'>inside the project folder</a></strong> on the server.</div><br/>".format(project=project.encode("utf-8"))
+		print " in the export folder <strong style='color:#DD137B'><a href='projects/{project}/export' target='_blank'>inside the project folder</a></strong> on the server.</div><br/>".format(project=project.replace("'","\\'").replace('"','\\"').encode("utf-8"))
 		if doublegovs: print "<div style='padding:10;' class='ui-state-error ui-corner-all'>Achtung!<br/> The annotation contains multiple governors for one or more nodes. The lines have been doubled, and thus this is not a common Conll format!</div>"
 	else:
 		print "problem: no textname"
 	
 def reaction(project,projectconfig,sql,userid,form,query):
-	
+	"""
+	contains reaction to actions, eg. uploading, erasing, exporting, ...
+	"""
 	filename = form.getvalue("filename",None)
 	if filename: # upload file	
 		from treebankfiles import uploadConll
@@ -199,8 +205,10 @@ def reaction(project,projectconfig,sql,userid,form,query):
 	if exochoice:
 		
 		textid = form.getvalue("textid",None)
+		exotoknum = form.getvalue("exotoknum",None)
+		
 		print "changing exostatus",textid,exochoice
-		sql.setExo(textid, exochoice)
+		sql.setExo(textid, exochoice, exotoknum)
 		
 	
 	if query: # search results	
@@ -222,8 +230,7 @@ def printhtmlheader(project):
 	
 	print """<html>
 			<head>
-			<title>Arborator - {project} Project</title>""".format(project=project)
-	print """
+			<title>Arborator - {project} Project</title>
 	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
 	<script type="text/javascript" src="script/jquery.js"></script>
 	<script type="text/javascript" src="script/jquery-ui-1.8.18.custom.min.js"></script>
@@ -233,7 +240,7 @@ def printhtmlheader(project):
 	project="{project}";
 	userid="{userid}";
 	username="{username}";
-	""".format(project=project,userid=userid,username=username)
+	""".format(project=project,userid=userid,username=username.encode("utf-8"))
 	
 	print """
 	$('html').click(function() {
@@ -381,7 +388,7 @@ def printheadline(project):
 			<div id="center" class="center" style="width:100%">
 				<div id="navigation" style="width:100%;margin:0px;border:0px;" class="arbortitle  ui-widget-header ui-helper-clearfix">
 				<a href='.' style='position: fixed;left:1px;top:1px'><img src="images/arboratorNano.png" border="0"></a>
-				<a href='project.cgi?project={project}' style='position: fixed;left:120px;top:5px;color:white;' title="project overview">{img} {project} Annotation Project</a>
+				<a href="project.cgi?project={project}" style='position: fixed;left:120px;top:5px;color:white;' title="project overview">{img} {project} Annotation Project</a>
 				<div style='margin:5 auto;' id='sentinfo'>Project Overview</div>
 					<form method="get" action="project.cgi"  id="searchform"  style='position: fixed;right:1px;top:1px'>
 						<input type="text" id="searchtext" name="searchtext" value="{query}"/>
@@ -451,7 +458,7 @@ def printalltexts(project,sql,adminLevel):############################# all text
 	The <b>{project}</b> Project has {nrt} texts and {nrs} sentences. <br/>
 	<br/>
 	<table class='whitable'>
-	<thead><tr><td>text name</td><td>number of sentences</td><td>number of tokens</td><td >annotators</td><td>validator</td><td title='non sollicitated trees by users not assigned to this text are listed here.'>other trees</td><td>exo</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></thead>
+	<thead><tr><th>text name</th><th>number of sentences</th><th>number of tokens</th><th >annotators</th><th>validator</th><th title='non sollicitated trees by users not assigned to this text are listed here.'>other trees</th><th>exo</th><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr></thead>
 	""".format(project=project,nrt=nrt,nrs=sql.getNumberSentences())
 	
 	tuples=[]
@@ -493,15 +500,20 @@ def printalltexts(project,sql,adminLevel):############################# all text
 		#c4,c5=a.encode("utf-8"),v.encode("utf-8")
 		c4,c5=a,v
 		
-		otherreals=[r for r, in sql.treesForText(tid) if r not in reals]
+		otherreals=[r for r, in sql.treesForText(tid) if r and r not in reals]
+		#print "otherreals",otherreals, tid
 		if otherreals:	c6=" ".join(otherreals)
 		else:		c6="&nbsp;"
 		if adminLevel:
-			c7= """<a style='cursor:pointer;' onclick='$("#exoform").val("{et}").css({{ top: $(this).offset().top-5, left: $(this).offset().left-5 }}).toggle();$("#exoform select").val("{et}");var e=arguments[0];e.stopPropagation();$("#etextid").val({tid})'>{et}</a>""".format(tid=tid,et=sql.exotypes[sql.getExo(tid)])
+			et,esn = sql.getExo(tid)
+			et = sql.exotypes[et] # transform exotypenumber into text
+			if not esn: esns=""
+			else: esns=esn
+			c7= """<a style='cursor:pointer;' onclick='$("#exoform").val("{et}").css({{ top: $(this).offset().top-5, left: $(this).offset().left-5 }}).toggle();$("#exoform select").val("{et}");$("#exotoknum").val("{esn}");var e=arguments[0];e.stopPropagation();$("#etextid").val({tid})'>{et} {esns}</a>""".format(tid=tid,et=et,esn=esn,esns=esns)
 			c8 = u"""<div style='float:left;cursor:pointer;' title='asign this text to a user' onclick="var e=arguments[0];e.stopPropagation();adduser({tid},'{t}',$(this).offset()); ">asign<div style='float:right;cursor:pointer;' class='ui-button-icon-primary ui-icon ui-icon-person' ></div></div>&nbsp;&nbsp;&nbsp; """.format(tid=tid,t=t)
 			c9 = u"""		<span style='cursor:pointer;'onclick="var e=arguments[0];e.stopPropagation();exportAnnos({tid},'{t}',$(this).offset());"  title='export annotations of this text' ><img src="images/dbexport.bw.png" border="0"></span>""".format(tid=tid,t=t)
 		else:
-			c7= sql.exotypes[sql.getExo(tid)]
+			c7= sql.exotypes[sql.getExo(tid)[0]] # only exotype is shown
 			c8= "&nbsp;"			
 			c9 = """&nbsp;"""
 			
@@ -516,18 +528,19 @@ def printalltexts(project,sql,adminLevel):############################# all text
 	
 	if adminLevel:allexport="""<span style='cursor:pointer;'onclick="var e=arguments[0];e.stopPropagation();exportAnnos(-1,'all',$(this).offset());"  title='export all annotations - very slow! blocks the database!' ><img src="images/dbexport.bw.png" border="0"></span>"""
 	else:allexport=""
+	evallinkhtml = '<a href="getEvaluation.cgi?project='+project+'">evaluation</a>'+' <a href="getEvaluation.cgi?project='+project+'&csv=csv">csv</a>'
 	if nrt: 
 		if tanno: annota="{tanno} annotation assignments<br> (an average of {ava:.2f} assignments per text)".format(tanno=tanno,ava=float(tanno)/nrt)
 		else: annota="&nbsp;"
 		if tvali:	validata="{tvali} validation assignments <br> (an average of {avv:.2f} validators per text)".format(tvali=tvali,avv=float(tvali)/nrt)
 		else:	validata="&nbsp;"
-		print """<TFOOT>	<tr style='padding-top:20;'><td>{nrt} texts</td><td>{stotal} sentences</td><td>{ttotal} tokens</td><td>{annota}</td><td>{validata}</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>{allexport}&nbsp;</td><td>&nbsp;</td></tr> 	</TFOOT>""".format(stotal=stotal, nrt=nrt, ttotal=ttotal,annota=annota,validata=validata,allexport=allexport)
+		print """<TFOOT>	<tr style='padding-top:20;'><td>{nrt} texts</td><td>{stotal} sentences</td><td>{ttotal} tokens</td><td>{annota}</td><td>{validata}</td><td>&nbsp;</td><td>{evallinkhtml}</td><td>&nbsp;</td><td>{allexport}&nbsp;</td><td>&nbsp;</td></tr> 	</TFOOT>""".format(stotal=stotal, nrt=nrt, ttotal=ttotal,annota=annota,validata=validata,evallinkhtml=evallinkhtml if adminLevel else "&nbsp;", allexport=allexport)
 	print "</table></div>"
 
 
 	
 def printuserassignments(project,projectconfig,sql,adminLevel, lastseens):
-	parser=projectconfig["configuration"]["baseAnnotatorName"]
+	parser=projectconfig["configuration"]["importAnnotatorName"]
 	teacher=projectconfig["configuration"].get("teacher",None)
 	if teacher:
 		teacherid=sql.userid(teacher)
@@ -625,7 +638,7 @@ def printuserassignments(project,projectconfig,sql,adminLevel, lastseens):
 	
 def printmenues(project,sql):
 	
-	parser=projectconfig["configuration"]["baseAnnotatorName"]
+	parser=projectconfig["configuration"]["importAnnotatorName"]
 	print """<form method="get" action="editor.cgi" style="display: none;" id="editorform" >
 			<input type="hidden" id="project" name="project" value="{project}">
 			<input type="hidden" id="textid" name="textid" value="">
@@ -648,6 +661,7 @@ def printmenues(project,sql):
 				<select id="exochoice" name="exochoice" style="width:180px;"  >
 					{options}
 				</select>
+				<input id="exotoknum" type="text" value="0" name="exotoknum" title="number of sentences per student (0=all)" style="width:20px;">
 			</form>
 		</div>		""".format(project=project, options="\n".join(["<option>"+ty+"</option>" for ty in sql.exotypes]))
 	

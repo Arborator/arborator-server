@@ -53,7 +53,7 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 		if line.strip():
 			cells = line.split('\t')
 			nrCells = len(cells)
-			if nrCells in [4,10,11,14]:
+			if not rhaps and nrCells in [4,10,13,14]:
 				if nrCells == 4: # malt!
 					t, tag, head, rel = cells
 
@@ -76,8 +76,8 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 						if k in newf: newf[correctiondic[k]] = newf.pop(k)
 
 					nodedic[nr]=update(nodedic.get(nr,{}),newf )
-				elif nrCells == 11: # stupid orfeo format with extra column
-					nr, t, lemma , tag, tag2, _, head, rel, _, _, _ = cells
+				elif nrCells == 13: # stupid orfeo format with extra column
+					nr, t, lemma , tag, tag2, _, head, rel, _, _, _, _, _ = cells
 					nr = int(nr)
 					if head.strip()=="_":head=-1
 					else:head = int(head)
@@ -138,8 +138,48 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 						if k in newf: newf[correctiondic[k]] = newf.pop(k)
 					nodedic[nr]=update(nodedic.get(nr,{}),newf )
 					
+			elif rhaps=="orfeo": # conll 10 with extra columns
+				
+				nr, t, lemma , tag, tag2, _, head, rel, _, _ = cells[:10]
+				nr = int(nr)
+				if head.strip()=="_":head=-1
+				else:head = int(head)
+				newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'tag2': tag2, 'gov':{head: rel}}
+				for k in correctiondic:
+					if k in newf: newf[correctiondic[k]] = newf.pop(k)
+				
+				# orfeo correction. TODO: remove!
+				if newf["cat"][0]=='V':
+					if newf["cat"]=='VRB': newf["mode"]="finite"
+					elif newf["cat"]=='VPP': newf["mode"]="participle"
+					elif newf["cat"]=='VPR': newf["mode"]="participle"
+					elif newf["cat"]=='VNF': newf["mode"]="infinitive"
+					else: 
+						print newf["cat"]
+						qsdf
+					newf["cat"]='V'
+				elif newf["cat"]=='PRE':	newf["cat"]='Pre'
+				elif newf["cat"]=='PRQ':	newf["cat"]='Qu'
+				elif newf["cat"]=='PRO':	newf["cat"]='Pro'
+				elif newf["cat"]=='ADV':	newf["cat"]='Adv'
+				elif newf["cat"]=='CLS':	newf["cat"]='Cl'
+				elif newf["cat"]=='CLI':	newf["cat"]='Cl'
+				elif newf["cat"]=='CLN':	newf["cat"]='Cl'
+				
+				elif newf["cat"]=='INT':	newf["cat"]='I'
+				elif newf["cat"]=='COO':	newf["cat"]='J'
+				elif newf["cat"]=='ADN':	newf["cat"]='Adv'
+				elif newf["cat"]=='NOM':	newf["cat"]='N'
+				elif newf["cat"]=='ADJ':	newf["cat"]='Adj'
+				elif newf["cat"]=='DET':	newf["cat"]='D'
+				elif newf["cat"]=='CSU':	newf["cat"]='CS'
+				
+				else:
+					print newf["cat"]
+					qsfd
+				######	
 					
-					
+				nodedic[nr]=update(nodedic.get(nr,{}),newf )
 					
 			elif debug:
 				print "strange conll:",nrCells,"columns!",rhaps
@@ -157,7 +197,7 @@ def conll2trees(path, correctiondic={}, rhaps=False):
 	trees=[]
 	with codecs.open(path,"r","utf-8") as f:
 		tree=""
-		if rhaps :next(f) # skip first line
+		if rhaps==True :next(f) # skip first line
 		for li in f:
 			
 			li=li.strip()
@@ -547,6 +587,6 @@ if __name__ == "__main__":
 	
 	#rhapsodie2standardConll()
 	#standardNodeNumbering()
-	print sorted([len(tree) for tree in conll2trees("Rhapsodie.conll")])
-	
+	#print sorted([len(tree) for tree in conll2trees("Rhapsodie.conll")])
+	print conll2trees("corpus/conll/ouest1a.conll10")[1]
 		#print len(tree)

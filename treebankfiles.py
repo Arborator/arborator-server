@@ -13,7 +13,7 @@ debug=False
 #debug=2
 #debug=3
 
-maxlength=500 # maxlength of words per sentence, longer ones are ignored
+maxlength=5000 # maxlength of words per sentence, longer ones are ignored
 
 logfile=None
 #logfile="log.treebankfiles.txt"
@@ -92,6 +92,7 @@ def enterSentences(sql, cursor, sentences, filename, textid, annotatorName, eras
 	shortname = filename.split("/")[-1]
 	
 	userid = sql.enter(cursor, "users",["user"],(annotatorName,))
+	sql.realname(annotatorName, cursor)
 	if not userid:
 		print "the user is not in the database"
 		return
@@ -392,7 +393,7 @@ def uploadConll(sql, filename, annotatorName=None, eraseAllAnnos=True):
 		db,cursor=sql.open()
 		sentences=conll.conll2trees(filename)
 		#print sentences
-		if not annotatorName: annotatorName=sql.baseAnnotatorName
+		if not annotatorName: annotatorName=sql.importAnnotatorName
 		
 		dbtextname = filename.split("/")[-1].decode("utf-8")
 		if dbtextname.endswith(".conll10") or dbtextname.endswith(".conll14") or  dbtextname.endswith(".malt") or  dbtextname.endswith(".tab"):
@@ -1188,7 +1189,7 @@ def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseA
 			annotatorName=sql.baseAnnotatorName
 			
 			dbtextname = filename.split("/")[-1].decode("utf-8")
-			if dbtextname.endswith(".conll07") or dbtextname.endswith(".conll10") or dbtextname.endswith(".conll14") or  dbtextname.endswith(".malt") or  dbtextname.endswith(".tab"):
+			if dbtextname.endswith(".conll07") or dbtextname.endswith(".conll10") or dbtextname.endswith(".conll14") or  dbtextname.endswith(".malt") or dbtextname.endswith(".tab") or dbtextname.endswith(".orfeo"):
 				dbtextname=".".join(dbtextname.split(".")[:-1])
 			if dbtextname.endswith(".trees"):
 				dbtextname=".".join(dbtextname.split(".")[:-1])
@@ -1198,6 +1199,7 @@ def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseA
 			textid = sql.enter(cursor, "texts",["textname"],(dbtextname,))
 			
 			enterSentences(sql,cursor,sentences,filename, textid,annotatorName,eraseAllAnnos, tokname="t" )
+			
 	db.commit()
 	db.close()
 	
@@ -1445,9 +1447,10 @@ if __name__ == "__main__":
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Triv*")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Pett*")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Fum*")
-	readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/parses/",filepattern="*")
+	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/parses/",filepattern="*")
 	#readinallmates("decoda","/home/gerdes/arborator/corpus/decoda/",filepattern="decoda.test*")
 	
+	readinallmates("orfeo","/home/gerdes/arborator/corpus/orfeo/",filepattern="*")
 	
 	#readInTestResults(None,"/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")
 	#readInTestResults("canons","/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")

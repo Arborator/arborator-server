@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ####
-# Copyright (C) 2009-2014 Kim Gerdes
+# Copyright (C) 2009-2015 Kim Gerdes
 # kim AT gerdes. fr
 #
 # This program is free software; you can redistribute it and/or
@@ -25,7 +25,7 @@
 
 from xml.dom import minidom
 import argparse
-import difflib, codecs, glob, os, re
+import difflib, codecs, glob, os, re, glob
 import conll
 from nltk import Tree
 
@@ -354,7 +354,7 @@ def pasteBracketing(trees,ctrees,conllinfilename, out):
 
 
 
-startlatex="""\documentclass[pdftex,10pt]{article}
+startlatex="""\documentclass[pdftex,8pt,a3paper,landscape]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{fullpage}
@@ -370,7 +370,9 @@ def conll2phrasestructure(conllinfilename, phrasestructureoutname, args):
 	rhaps=False
 	with codecs.open(conllinfilename,"r","utf-8") as f: beginning = f.read(50)
 	if beginning.startswith("Text ID	Tree ID	Token ID"): rhaps=True
+	elif args.orfeo: rhaps="orfeo"
 	trees=conll.conll2trees(conllinfilename, {"tag":"cat"}, rhaps=rhaps)
+	#print len(trees),trees[0]
 	ctrees,xmldoc=makePhraseStructure(trees)
 	out=codecs.open(phrasestructureoutname,"w","utf-8")
 	if args.bracketing:
@@ -379,8 +381,17 @@ def conll2phrasestructure(conllinfilename, phrasestructureoutname, args):
 		pasteBracketing(trees,ctrees,conllinfilename, out)
 	elif args.latex:
 		out.write(startlatex)
-		for ctree in ctrees: out.write(ctree.pprint_latex_qtree()+"\n\n")
+		for ctree in ctrees: out.write(unicode(ctree.pprint_latex_qtree()).replace("#","\\#")+"\n\n")
 		out.write(endlatex)
+		try:
+			import subprocess, webbrowser
+			proc=subprocess.Popen(['pdflatex',phrasestructureoutname])
+			proc.communicate()
+			webbrowser.open_new_tab(os.path.abspath( ".".join(phrasestructureoutname.split(".")[:-1])+".pdf"))
+		except:
+			print "is pdflatex and qtree installed? try 'sudo apt-get install texlive-humanities'"
+		
+		
 	else:
 		out.write(xmldoc.toprettyxml())
 	out.close()
@@ -394,20 +405,23 @@ def conll2phrasestructure(conllinfilename, phrasestructureoutname, args):
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser(description='make phrase structure file.')
-	parser.add_argument('infile', type=str,  help='the CoNLL file with 10 columns')
-	parser.add_argument('outfile', type=str,  help='The XML file that will be written, containing the combination and correction of the two other files')
+	parser.add_argument('infile', type=str, nargs='*',  help='the CoNLL file with 10 columns')
+	parser.add_argument('outfile', type=str,  help='The suffix of the phrase structure')
 	parser.add_argument('--verbose', '-v', action='count')
 	
-	parser.add_argument('--xml', '-x', action='store_true', help='Save as Rhapsodie XML, containing the features (default)')
+	#parser.add_argument('--xml', '-x', action='store_true', help='Save as Rhapsodie XML, containing the features (default)')
 	parser.add_argument('--bracketing', '-b', action='store_true', help='Save as simple bracketing')
 	parser.add_argument('--pasteBracketing', '-p', action='store_true', help='Paste the bracketing at the next column of a Rhapsodie CoNLL file')
-	parser.add_argument('--latex', '-l', action='store_true', help='A latex qtree representation of these trees')
+	parser.add_argument('--latex', '-l', action='store_true', help='A latex qtree representation of these trees. example usage: python phrasestruc.py -ol Pedi.orfeo .tex')
+	parser.add_argument('--orfeo', '-o', action='store_true', help='Use the Orfeo Conll 10+3 format. example usage: python phrasestruc.py -bo *.orfeo .phs')
 	
 	
 	parser.add_argument('--graphs', '-g', action='store_true', help='Show all created phrase structure trees graphically')
 	
 	args=parser.parse_args()
 	verbose=args.verbose
-	conll2phrasestructure(args.infile, args.outfile, args)		
+	
+	for infile in args.infile:
+		conll2phrasestructure(infile, infile+args.outfile, args)		
 				
 				

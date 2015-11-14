@@ -6,13 +6,23 @@
 #from os       import environ
 #print "Content-Type: text/html\n\n" # blank line: end of headers
 #import traceback,
-import sys,cgi,cgitb
+import sys,cgi,cgitb, os
 
 #from conll import conll2json
 
 cgitb.enable()
-
 form = cgi.FieldStorage()
+userdir = 'users/'
+thisfile = os.environ.get('SCRIPT_NAME',".")
+action = form.getvalue("action",None)
+sys.path.append('modules')
+from logintools import login
+from logintools import isloggedin
+action, userconfig = login(form, userdir, thisfile, action)
+adminLevel = int(userconfig["admin"])
+
+
+
 
 project = form.getvalue('project',"").decode("utf-8")
 
@@ -41,4 +51,4 @@ else:
 				treeids[int(k.split("[")[-1][:-1])]=form.getvalue(k)
 		sql.compare(treeids)
 	else:
-		sql.tree2json(treeid=treeid)
+		sql.tree2json(treeid=treeid, adminLevel=adminLevel)

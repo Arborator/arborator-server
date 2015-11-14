@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2010-2014, Kim Gerdes
+ * Copyright 2010-2015, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -28,6 +28,7 @@ commentid=0;
 erasetreeid=0;
 compacolors={};
 tokensChanged=[];
+teacher=0 // this variable is set to 1 in some types of exercices. then saving a (teacher) tree is impossible.
 
 if (typeof tokenModifyable == 'undefined') tokenModifyable=0;
 
@@ -333,7 +334,7 @@ startTree = function (nr, data) {
 	delete redata;
 	redata = new Object();
 // 	settings();
-	// 	console.log("startTree - dataaaaaaaaaaa",data,treeid,$("loader"));
+// 		console.log("startTree - dataaaaaaaaaaa",data,treeid,$("loader"));
 	
 	$("html, body").animate({scrollTop: $("#loader").offset().top-50}, 1000,'easeInOutCubic');
 	
@@ -362,12 +363,16 @@ startTree = function (nr, data) {
 			
 		});
 	}
-// 				console.log(redata);
-// 				if ("treeid" in redata)
-// 				{
-// 					console.log('iiiiiiiiii');
-// 					treeid=redata["treeid"];
-// 				}
+	
+	if ("teacher" in redata)
+	{
+		teacher = redata["teacher"];
+	}
+	else
+	{
+		teacher = 0;
+	}
+	
 	for (a in shownsentencefeatures)
 	{
 		if (shownsentencefeatures[a] in redata)
@@ -384,7 +389,10 @@ startTree = function (nr, data) {
 		var svg = $('#svg'+nr)[0].paper.toSVG();
 // 			writeSvg(treeid,svg);
 	}
-
+	
+	$("#save"+nr).css({ visibility: 'hidden' });
+	$("#undo"+nr).css({ visibility: 'hidden' });
+	$("#redo"+nr).css({ visibility: 'hidden' });
 	
 }
 
@@ -511,7 +519,13 @@ exportTree = function () {
 
 	
 function dirt() { 
+	
 	var nr=currentsvg.id.substr(3);
+	
+	if (teacher) 
+	{
+		return;
+	}
 // 	console.log("dirt starts",nr,dirty,currentsvg.id,dirty.indexOf(currentsvg.id))
 	if (currentsvg.undo.undo_available)
 	{

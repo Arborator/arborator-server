@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2010-2012, Kim Gerdes
+ * Copyright 2010-2015, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -55,7 +55,7 @@ function Pnode(index,token)
 		for (var i in shownfeatures) 
 			{	
 			var f = shownfeatures[i]; // f= eg. "cat"
-			
+			if (token[f]===undefined) {token[f] = "😐";}
 			this.features[f]=token[f];
 			
 			if ( (token[f] instanceof Object) ) // mode compare!!!

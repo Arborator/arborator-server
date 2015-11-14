@@ -396,15 +396,18 @@ readConll = function() {
 		treenr++;
 	});
 	$('#conll').css("backgroundImage","url('images/conll"+el+".png')");
+	console.log(categories);
+// 	categories.sort();
 	
+	categories=$.map(categories, function(element,index) {return index}).sort() // to array
 	$.each(categories, function(key, val) 
 			{
-				$("#catchoice").append("<option>"+key+"</option>")
+				$("#catchoice").append("<option>"+val+"</option>")
 			});
-	categories=$.map(categories, function(element,index) {return index}) // to array
+	
 	$("#catchoice").attr("size",categories.length);
 	$("#catchoice").css("height",categories.length*13.5);
-	
+	console.log(categories);
 	functions=$.map(functions, function(element,index) {return index}).sort() // to array
 	functions.push("");
 	functions.push(erase);
@@ -422,6 +425,7 @@ function conllNodesToTree(treeline)
 			var nodeline=$.trim(nodeline);
 			var elements = nodeline.split('\t');
 			el=elements.length;
+			if (!(el in conlls) && el>10) el=10;
 			if (el > 4) id=elements[conlls[el]["id"]];
 			else if (elements[conlls[el]["t"]] != "_") id++;			
 			if (lastid!=id)

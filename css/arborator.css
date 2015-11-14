@@ -1,5 +1,5 @@
  label { display: block; }
-  select { width: 50px; height:18px;font-size:1em;margin:5px;}
+  select { width: 50px; height:18px;font-size:.6em;margin:5px;}
 .lbubble
 {
 	color:#fff;
@@ -457,6 +457,10 @@ tfoot td
 }
 
 
+.whitable th{
+	border-bottom:3px solid black;
+	font-weight:bold;
+}
 .whitable td{
 	border-bottom:thin solid black;
 }
