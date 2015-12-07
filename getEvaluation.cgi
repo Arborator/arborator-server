@@ -63,7 +63,7 @@ class Evaluation:
 		return "Evaluation: " + str(self.__dict__)
 	
 	def htmltable(self):
-		out =  "<table class='whitable'>"
+		out =  "<table class='whitableNarrow'>"
 		out += "<tr><th>"+"</th><th>".join([str(x) for x in sorted(self.__dict__ )  ])+"</th></tr>"
 		out += "<tr><td>"+"</td><td>".join([str(int(round(self.__dict__[x],0))) for x in sorted(self.__dict__ ) ])+"</td></tr>"
 		out += "</table>"
@@ -140,7 +140,7 @@ def makeTable(texts,students,theader="",thstart="",thth="\t",thend="\n",trstart=
 			#print evalu,"<br>"
 			usertotevalu = usertotevalu + evalu
 		
-		out += trstart+tdtd.join([real,username]+[ str(int(round(x.total,0)))+" {ht}".format(ht=x.htmltable() if (detailTable and x.nbwords>0)  else "") for x in res ] +["<span style='font-weight: bold;'>"+str(round(usertotevalu.total,1))+"</span>" +" {ht}".format(ht=usertotevalu.htmltable() if (detailTable and usertotevalu.nbwords>0) else "" )])+trend
+		out += trstart+tdtd.join([real,username]+[ str(int(round(x.total,0)))+" {ht}".format(ht=x.htmltable() if (detailTable and x.nbwords>0)  else "") for x in res ] +[ ("<span style='font-weight: bold;'>" if detailTable else "") +str(round(usertotevalu.total,1))+("</span>" if detailTable else "") +" {ht}".format(ht=usertotevalu.htmltable() if (detailTable and usertotevalu.nbwords>0) else "" )])+trend
 	out += tfooter
 	return out
 	
@@ -188,7 +188,9 @@ for textname,textid,nrtokens in sorted( [(textname,textid,nrtokens) for textid,t
 			
 				
 if csv:
-	print 'Content-type: text/csv\n\n'
+	print 'Content-type: text/csv'
+	print "Content-Disposition:attachment;filename="+project+".csv\n"; 
+	
 	print makeTable(texts,students).encode("utf-8")
 	
 else:

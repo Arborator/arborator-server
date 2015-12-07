@@ -470,6 +470,16 @@ tfoot td
 	
 }
 
+.whitableNarrow th{
+	padding: 0px 1px;
+	border-bottom:3px solid black;
+	font-weight:bold;
+}
+.whitable td{
+	padding: 0px 1px;
+	border-bottom:thin solid black;
+}
+
 td input {
 	width:100%
 	}
