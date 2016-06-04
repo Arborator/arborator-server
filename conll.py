@@ -1,6 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#important functions:
+	#conll2trees
+	#trees2conll10
+
 ####
 # Copyright (C) 2009-2012 Kim Gerdes
 # kim AT gerdes. fr
@@ -67,11 +71,11 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 					nodedic[nr]=update(nodedic.get(nr,{}),newf )
 					nr+=1
 				elif nrCells == 10:
-					nr, t, lemma , tag, tag2, _, head, rel, _, _ = cells
+					nr, t, lemma , tag, tag2, _, head, rel, _, gloss = cells
 					nr = int(nr)
 					if head.strip()=="_":head=-1
 					else:head = int(head)
-					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'tag2': tag2, 'gov':{head: rel}}
+					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'tag2': tag2, 'gov':{head: rel}, 'gloss':gloss}
 					for k in correctiondic:
 						if k in newf: newf[correctiondic[k]] = newf.pop(k)
 
@@ -368,9 +372,9 @@ def trees2conll10(trees, outfile):
                         if gov:
 				for govid,func in gov:
 					if govid!=-1:
-						f.write("\t".join([str(i),node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("tag2","_"),"_", str(govid),func,"_","_"])+"\n")
+						f.write("\t".join([str(i),node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("tag2","_"),"_", str(govid),func,"_",node.get("gloss","_")])+"\n")
 			else:
-				f.write("\t".join([str(i),node.get("t","_"),node.get("lemma",""),node.get("tag","_"),node.get("tag2","_"),"_",str(govid),func,"_","_"])+"\n")
+				f.write("\t".join([str(i),node.get("t","_"),node.get("lemma",""),node.get("tag","_"),node.get("tag2","_"),"_",str(govid),func,"_",node.get("tag","_")])+"\n")
 ##                        nr, t, lemma , tag, tag2, _, head, rel, _, _ = cells
                 f.write("\n")
         f.close()

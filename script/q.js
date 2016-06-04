@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2014-2015, Kim Gerdes
+ * Copyright 2014-2016, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -21,20 +21,38 @@
 
 
 
-conlls = {	10: 	{"id": 0, "t":1, "lemma": 2, "cat": 3, "gov":6, "func":7}, 
-		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":8, "func":10}, 
+conlls = {	10: 	{"id": 0, "t":1, "lemma": 2, "cat": 3, "xpos":4, "morph":5, "gov":6, "func":7, "xgov":8, "gloss":9}, 
+// 		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":8, "func":10}, 
+		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":8, "func":11}, 
 		4: 	{"t":0, "lemma": 0, "cat": 1, "gov":2, "func":3} 
 	}
 el=10;
+defaultCat="_"
 
 inDrawTrees=false;
 sentencesText="One sentence per line\nClick outside of this area when ready";
 trees=[];
 conlltrees=[];
 
+
+var root = 'annodoc/';
+var webFontURLs = [
+	root + 'Astloch-Bold.ttf',
+	root + 'PT_Sans-Caption-Web-Regular.ttf',
+	root + 'Liberation_Sans-Regular.ttf'
+];
+
+svgheader = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n'
+
 	
 $(function() {
-// 	console.log( "ready!" );	
+// 	console.log( "ready!" );
+	$("#annodoccheck").prop('checked', false);
+	$("#annodoccheck").button();
+	$('#annodoccheck').change(function() {
+		if (this.checked) {drawAnnodoc();$(this).button('option', 'label', 'Hide Annodoc graph');}
+		else {$( ".annodoc" ).remove();$(this).button('option', 'label', 'Show Annodoc graph');}
+	}); 
 	settings();
 	readConll();
 	setupStyleDialog() 
@@ -101,9 +119,7 @@ $(function() {
 	
 	$("#style").click(function()	{
 		styling();
-		
 	});
-	
 	
 	$("#help").click(function()	{
 		help()
@@ -114,7 +130,6 @@ $(function() {
 		$('p').css('color', c);
 	});
 	
-	
 	$("#conll").focus();
 // 	help();
 });
@@ -122,19 +137,19 @@ $(function() {
 
 settings = function() 
 	{
-		shownfeatures=["t", "cat", "lemma"];
+		shownfeatures=["t", "cat", "lemma","gloss"];
 		erase="--ERASE--"
 		categoryindex=1;
 		tab=8; 			// space between tokens
-		line=25 			// line height
-		dependencyspace=160; 	// y-space for dependency representation
+		line=18 			// line height
+		dependencyspace=200; 	// y-space for dependency representation
 		xoff=8; 			// placement of the start of a depdency link in relation to the center of the word
 		linedeps=6; 		// y distance between two arrows arriving at the same token (rare case)
 		pois=4; 			// size of arrow pointer
 		tokdepdist=15; 		// distance between tokens and depdendency relation
 		funccurvedist=8;		// distance between the function name and the curves highest point
 		depminh = 15; 		// minimum height for dependency
-		worddistancefactor = 2; 	// distant words get higher curves. this factor fixes how much higher.
+		worddistancefactor = -1; 	// distant words get higher curves. this factor fixes how much higher.
 		rootTriggerSquare = 50; 	// distance from top of svg above which root connections are created and minimum width of this zone (from 0 to 50 par example the connection jumps to the middle)
 		extraspace=50 		// extends the width of the svg in order to fit larger categories
 		defaultattris={"font": '14px Arial', "text-anchor":'start'};
@@ -164,20 +179,16 @@ settings = function()
 
 
 function drawTrees() {
-// 	console.log("drawTrees",trees);
 	inDrawTrees=true;
 	$.each(trees, function(i, tree){
-// 		console.log(tree);
 		tokens=new Object();
 		$.each(tree, function(key, val) 
 			{
 				tokens[key]=val;
 			});
 		start("holder"+i, i);
-// 		console.log("drawTrees 2");
 		$("#svg"+i).css("float","left").attr("nr",i);
 	})
-// 	console.log("drawTrees 3");
 	$(".connect").css("top",dependencyspace-line)
 	$(".cut").css("top",dependencyspace-line)
 	inDrawTrees=false;
@@ -185,7 +196,7 @@ function drawTrees() {
 }
 
 
-final = function() {
+function final() {
 
 	$(".toggler").click(function()
 		{
@@ -193,7 +204,7 @@ final = function() {
 		})
 	$(".othertree").click(function()
 		{
-			toggleOpen($(this).parent().prev(),  $(this).attr("nr"), $(this).attr("treeid"));	
+			toggleOpen($(this).parent().prev(),	$(this).attr("nr"), $(this).attr("treeid"));	
 		})
 	$(".saveimg").click(function()
 		{
@@ -261,7 +272,7 @@ final = function() {
 			var newwords2={};
 			$.each(allwords, function(i, nodei){
 				var node = allwords[i];
-				console.log(allwords,nodei,allwords[i]);
+// 				console.log(allwords,nodei,allwords[i]);
 				var newgov={};
 				if (i<=ind)
 					{
@@ -363,7 +374,8 @@ final = function() {
 }
 
 	
-readConll = function() {
+function readConll() {
+	// read the conll representation of the whole treebank that is in the conll field
 	categories={};
 	addcats=$.trim($("#addcats").val())
 	if (addcats) { $.each(addcats.split(/[,\s]+/), function(){ categories[this]=true;}) }
@@ -372,42 +384,43 @@ readConll = function() {
 	addfuncs=$.trim($("#addfuncs").val())
 	if (addfuncs) { $.each(addfuncs.split(/[,\s]+/), function(){functions[this]=true;}) }
 	$.each(funcDic, function(key,val){functions[key]=true;});
+	
 	trees=[];
+	uextras=[];
 	conlltrees=[];
 	treenr=0;
 	
 	var treelines = $.trim($("#conll").val()).split(/\n\s*\n\s*\n*/);
-	$.each(treelines, function(i,treeline){
+	$.each(treelines, function(i,treeline){ // splits the conll txt into tree segments:
 		
 		words=[]
 		
-		lastid=0
 		conlltrees.push(treeline);
 		
-		tree=conllNodesToTree(treeline);
+		var data=conllNodesToTree(treeline);
 		
-		trees.push(tree);
-		sentence=words.join(" ");
+		trees.push(data.tree);
+		uextras.push(data.uextra)
+		sentence="";
+		$.each(words, function(jj,word){ // making the sentence with correct spacing:
+			sentence+=word;
+			if (!(("NoSpaceAfter" in data.tree[jj+1]) && data.tree[jj+1]["NoSpaceAfter"]==true)) sentence+=" ";
+		});
 		gt=''
 		if (treenr!=treelines.length-1) gt+='<div class="connect" title="connect with next sentence." id="connect'+i+'">&gt;</div>'
 		gt += '<div class="cut" title="cut after selected word." id="cut'+i+'"><img src="images/cut.png"/></div>'
-		$("#trees").append('<div id="sentencediv'+treenr+'" class="sentencediv" nr="'+treenr+'"> <a id="toggler'+treenr+'" class="toggler expanded" nr="'+treenr+'"> '+treenr+': '+sentence+' </a>		<img id="undo'+treenr+'" class="undoimg"  src="images/undo.png">				<img id="redo'+treenr+'" class="redoimg"  src="images/redo.png"> <img id="export'+treenr+'" class="exportimg" border="0" title="export the dependency graph in various image formats" nr="'+treenr+'" src="images/export.png" style="visibility: visible;"> </div> <div id="holder'+treenr+'" class="svgholder"  nr="'+treenr+'">'+gt+'</div>')
+		$("#trees").append('<div id="sentencediv'+treenr+'" class="sentencediv" nr="'+treenr+'"> <a id="toggler'+treenr+'" class="toggler expanded" nr="'+treenr+'"> '+treenr+': '+sentence+' </a>		<img id="undo'+treenr+'" class="undoimg"	src="images/undo.png">				<img id="redo'+treenr+'" class="redoimg"	src="images/redo.png"> <img id="export'+treenr+'" class="exportimg" border="0" title="export the dependency graph in various image formats" nr="'+treenr+'" src="images/export.png" style="visibility: visible;"> </div> <div id="holder'+treenr+'" class="svgholder"	nr="'+treenr+'">'+gt+'</div>')
 		
 		treenr++;
 	});
-	$('#conll').css("backgroundImage","url('images/conll"+el+".png')");
-	console.log(categories);
-// 	categories.sort();
-	
+	$('#conll').css("backgroundImage","url('images/conll"+el+".png')");	
 	categories=$.map(categories, function(element,index) {return index}).sort() // to array
 	$.each(categories, function(key, val) 
 			{
 				$("#catchoice").append("<option>"+val+"</option>")
 			});
-	
 	$("#catchoice").attr("size",categories.length);
 	$("#catchoice").css("height",categories.length*13.5);
-	console.log(categories);
 	functions=$.map(functions, function(element,index) {return index}).sort() // to array
 	functions.push("");
 	functions.push(erase);
@@ -421,40 +434,83 @@ function conllNodesToTree(treeline)
 	{
 		var nodes = treeline.split('\n');
 		var tree={};
-		$.each(nodes, function(id,nodeline){
+		var uextra={};
+		var lastid=0;
+		var skipuntil=0;
+		$.each(nodes, function(id,nodeline){ // for each conll line:
 			var nodeline=$.trim(nodeline);
+			if (nodeline.charAt(0) == "#") {
+				if (!(lastid in uextra)) uextra[lastid]=[];
+				uextra[lastid].push(nodeline)
+				return true;
+				
+			}
 			var elements = nodeline.split('\t');
 			el=elements.length;
 			if (!(el in conlls) && el>10) el=10;
 			if (el > 4) id=elements[conlls[el]["id"]];
-			else if (elements[conlls[el]["t"]] != "_") id++;			
-			if (lastid!=id)
+			else if (elements[conlls[el]["t"]] != "_") id++;
+			if (lastid!=id) // needed for the arborator encoding of multiple govs
 			{
-				words.push(elements[conlls[el]["t"]]);
-				tree[id]={}
-				tree[id]["gov"]={};
-				tree[id]["t"]=elements[conlls[el]["t"]];
-				tree[id]["lemma"]=elements[conlls[el]["lemma"]];
-				tree[id]["cat"]=elements[conlls[el]["cat"]];
+				var t=elements[conlls[el]["t"]];
+				var tokids=id.split("-")
+				if (tokids.length == 1) {
+					tree[id]={}
+					tree[id]["gov"]={};
+					tree[id]["t"]=t;
+					tree[id]["lemma"]=elements[conlls[el]["lemma"]];
+					tree[id]["cat"]=elements[conlls[el]["cat"]];
+					if (id>skipuntil) words.push(t);
+					if (el==10) {
+						tree[id]["xpos"]=elements[conlls[el]["xpos"]];
+						tree[id]["morph"]=elements[conlls[el]["morph"]];
+						tree[id]["gloss"]=elements[conlls[el]["gloss"]];
+						if (tree[id]["gloss"]=="SpaceAfter=No"){
+							tree[id]["gloss"]="_";
+							tree[id]["NoSpaceAfter"]=true;
+						}
+						var xgov = elements[conlls[el]["xgov"]];
+						if (xgov.indexOf(':') > -1){
+							var xgovs=xgov.split("|");
+							$.each(xgovs, function(ind,xg){ 
+								// for each extra governor line:
+								var xgs=xg.split(":")
+								if (xgs.length >=2) {
+									// if it's not just _
+									var gov=xgs[0];
+									var func= xgs.slice(1).join(":");
+									tree[id]["gov"][gov]=func;
+								}
+								
+							});
+
+						}
+					}
+				}
+				else if (tokids.length == 2){
+					skipuntil = parseInt(tokids[1])
+					words.push(elements[conlls[el]["t"]]);
+					if (!(lastid in uextra)) uextra[lastid]=[];
+					uextra[lastid].push(nodeline)
+				}
+				else {
+					if (!(lastid in uextra)) uextra[lastid]=[];
+					uextra[lastid].push(nodeline)
+				}
 			}
 			gov = elements[conlls[el]["gov"]];
-			plus=0;
 			if (gov!="" && gov!="_") 
 			{
 				if (gov==-1)
 				{
-					plus=1;
 					gov = elements[conlls[el]["gov"]+1];
 				}
-				var func = elements[conlls[el]["func"]+plus];
-				if (func.indexOf(':') !== -1) 
+				var func = elements[conlls[el]["func"]];
+				if (func.indexOf('::') !== -1) 
 					{	
-						var stydic = func.substring(func.indexOf(":") + 1);
-						
-						func = func.split(":")[0];
+						var stydic = func.substring(func.indexOf("::") + 1);
+						func = func.split("::")[0];
 						if (stydic!="") funcDic[func] = $.parseJSON(stydic);
-// 						console.log(444,stydic,funcDic[func]);
-// 						func=func.replace(/\W+/g, "_");
 						$('#styleconllcheck').prop('checked', true);
 					};
 // 				func=func.replace(/\W+/g, "_");
@@ -464,7 +520,7 @@ function conllNodesToTree(treeline)
 			categories[elements[conlls[el]["cat"]]]=true;
 			lastid=id;
 			});	
-		return tree;
+		return {tree:tree, uextra:uextra};
 	}
 
 
@@ -480,7 +536,7 @@ function conllize()
 			for (i in words)
 			{		
 				var word = words[i] ;
-				conll=conll+(parseInt(i)+1)+"\t"+word+"\t"+word+"	N	_	_	0	root	_	_\n";
+				conll=conll+(parseInt(i)+1)+"\t"+word+"\t"+word+"	"+defaultCat+"	_	_	0	root	_	_\n";
 			}
 			conll+="\n"
 		})
@@ -532,8 +588,10 @@ styling = function() {
 
 setupStyleDialog = function() {
 	var lineStyles1='<select name="'
-	var lineStyles2='" class="selector" title="line style">  <option value="" style="font-size:.6em;height:5px;" selected>─────</option>  <option value="- ">---------</option>  <option value=". " >┈┈┈┈┈</option> </select>'
-	$("#stylefunctions").empty()
+	var lineStyles2='" class="selector" title="line style">	<option value="" style="font-size:.6em;height:5px;" selected>─────</option>	<option value="- ">---------</option>	<option value=". " >┈┈┈┈┈</option> </select>'
+	$("#stylefunctions").empty();
+	$("#funchoice").empty();
+	
 	$.each(functions, function(i, val) 
 			{
 				$("#funchoice").append("<option style='color:"+((val in funcDic) ? funcDic[val]["stroke"] : "#000")+";'>"+val+"</option>")
@@ -560,37 +618,50 @@ currentsvgchanged = function () {
 }
 
 wordsToConll = function (words) {
-	
-	thisconll=""	
+	thisconll=""
+	var uextra=uextras[currentnr];
+	if (0 in uextra) thisconll+=uextra[0].join("\n")+"\n";
 	for (var i in words)
 		{
 			var n = words[i];
 			var c=0;
-			if ($.isEmptyObject(n.gov))
-			{	
-				if (el == 4) 	ar = [n.features.t,n.features.cat,"_","_"]
-				else if (el == 10) 	ar = [n.index,n.features.t,n.features.lemma,n.features.cat,"_","_","_","_","_","_"]
+			
+			if ($.isEmptyObject(n.gov)) // no governors
+			{					
+				if (el == 4) 	ar = [n.features.t,n.features.cat,"_","_"];
+				else if (el == 10) 	ar = [n.index,n.features.t,n.features.lemma,n.features.cat,n.features.xpos,n.features.morph,"_","_","_",( (("NoSpaceAfter" in n.features) && n.features["NoSpaceAfter"]==true) ? "SpaceAfter=No" : n.features.gloss)];
 				else if (el == 14) 	ar = [n.index,n.features.t,"_",n.features.lemma,"_",n.features.cat,"_","_","_","_","_","_","_","_"]
 				thisconll+=ar.join("\t")+"\n"
 			}
-			else
+			else // at least one governor
 			{
-				for (var j in n.gov) 
-				{
+				var ngovs = Object.keys(n.gov).sort();
+				if (el == 10) { 
+					// conllu case: pushing additional govs into special column
+					var xgovsl=[]
+					while (ngovs.length > 1) {
+						var xj=ngovs.pop();
+						var func = $('#styleconllcheck').prop('checked') ? n.gov[xj]+"::"+(n.gov[xj] in funcDic ? JSON.stringify(funcDic[n.gov[xj]]) : "") :	n.gov[xj];
+						xgovsl.push(xj+":"+func);
+					}
+					xgovs=xgovsl.join("|");
+					if (xgovs.length==0) xgovs="_";
+				}
+				$.each(ngovs, function(ind, j){ // loop over array of gov keys:
 					var t=n.features.t;
 					var cat=n.features.cat;
-					var func = $('#styleconllcheck').prop('checked') ? n.gov[j]+":"+(n.gov[j] in funcDic ? JSON.stringify(funcDic[n.gov[j]]) : "") :  n.gov[j];
-// 					console.log("!!!",func);
+					var func = $('#styleconllcheck').prop('checked') ? n.gov[j]+"::"+(n.gov[j] in funcDic ? JSON.stringify(funcDic[n.gov[j]]) : "") :	n.gov[j];
 					c+=1;
 					if (el == 4)	{	
 								if (c>1) {t="_";cat="_"}
 								ar = [t,cat,j,func]
 							}
-					else if (el == 10) 	ar = [n.index,t,n.features.lemma,n.features.cat,"_","_",j,func,"_","_"]
+					else if (el == 10) 	ar = [n.index,t,n.features.lemma,n.features.cat,n.features.xpos,n.features.morph,j,func,xgovs,( (("NoSpaceAfter" in n.features) && n.features["NoSpaceAfter"]==true) ? "SpaceAfter=No" : n.features.gloss)]
 					else if (el == 14) 	ar = [n.index,t,"_",n.features.lemma,"_",n.features.cat,"_","_",j,j,func,func,"_","_"]
 					thisconll+=ar.join("\t")+"\n"
-				};
+				});
 			}
+			if (i in uextra) thisconll+=uextra[i].join("\n")+"\n";
 		};
 	return thisconll;
 }
@@ -599,7 +670,7 @@ wordsToConll = function (words) {
 // overriding the arborator.draw function to add conll stuff
 drawalldeps = function() 
 	{
-	var currentnr = $(currentsvg).parent().attr("nr");
+	currentnr = $(currentsvg).parent().attr("nr");
 	var thisconll=wordsToConll(currentsvg.words)	
 	for (var i in currentsvg.words)
 		{
@@ -629,7 +700,7 @@ drawalldeps = function()
 	// making new conlltext
 	var conlltext = "";
 	
-	$.each(conlltrees, function(i, conlltree){
+	$.each(conlltrees, function(i, conlltree){ // just modifies the changed tree, keeps the other conll strings
 			if (i==currentnr) conlltext+=thisconll+"\n\n"
 			else conlltext+=conlltrees[i]+"\n\n"
 		})
@@ -640,7 +711,7 @@ drawalldeps = function()
 	};
 	
 
-deptreeexperiment = function(){
+deptreeexperiment = function(){ // unfinished experiment of creating an unordered tree representation
 		
 	var roots=[];
 	var leaves=[];
@@ -661,7 +732,7 @@ deptreeexperiment = function(){
 				nn.kids.push(n);
 			};
 		};
-	console.log(roots);
+// 	console.log(roots);
 	for (var i in roots) console.log("$$$",walkdown(roots[i],0,0,[]));
 // 	for (var i in currentsvg.words)
 // 		{
@@ -723,15 +794,15 @@ exportTree = function () {
 
 	$("svg").attr("xmlns","http://www.w3.org/2000/svg");
 	$("svg").attr("xmlns:xlink","http://www.w3.org/1999/xlink");
-	var header = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n'
-// 			$('#source').attr("value",header+$('#holder'+nr).html());
-	$('#source').attr( "value", header+$('#holder'+nr+' >svg').clone().wrap('<p>').parent().html() );
 	
-	if(v=="xxxsvg")  // TODO: no need to go via the server to show svg content
+// 			$('#source').attr("value",header+$('#holder'+nr).html());
+	$('#source').attr( "value", svgheader+$('#holder'+nr+' >svg').clone().wrap('<p>').parent().html() );
+	
+	if(v=="xxxsvg")	// TODO: no need to go via the server to show svg content
 	{
 		var x=window.open();
 		x.document.open();
-		x.document.write(header+$('#holder'+nr+' >svg').clone().wrap('<p>'));
+		x.document.write(svgheader+$('#holder'+nr+' >svg').clone().wrap('<p>'));
 		x.document.close();	
 	}
 	else $('#ex').submit();
@@ -775,4 +846,34 @@ function dirt() {
 	else			$("#sav").attr(attrdirty).removeClass( "ui-state-disabled " );
 	
 }
+
+function drawAnnodoc() {
+	// bug in annodoc: tabs are not accepted as separator for conll!!
+	readConll();
+	$.each(conlltrees, function(i, conlltree){
+			$( '<div class="annodoc" id="annodoc'+i+'">\n<pre><code class="language-conllu">\n'+ conlltree.replace( /\t/g, "  ")+ '\n</code></pre></div>').insertAfter( '#holder'+i );
+// 			$( '<xspan class="annodoc"><img id="export'+i+'" class="exportannodoc" border="0" style="visibility: visible;" src="images/export.bw.png" nr="'+i+'" title="export the Annodoc svg graph"></xspan>').insertAfter( '#export'+i );
+
+		})
 	
+	
+	Annodoc.activate(Config.bratCollData, Collections.listing);
+	
+// 	$(".exportannodoc").click(function()
+// 	{
+// 			console.log($(this).attr("nr"))
+// 			console.log( $("#annodoc"+$(this).attr("nr")+" svg" ).attr("xmlns:xlink","http://www.w3.org/1999/xlink").attr("xmlns","http://www.w3.org/1999/xlink").prop("outerHTML") );
+// 			
+// 			
+// 	
+// // 			$('#source').attr("value",header+$('#holder'+nr).html());
+// // 	$('#source').attr( "value", svgheader+$('#holder'+nr+' >svg').clone().wrap('<p>').parent().html() );
+// 	
+// 			
+// 			
+// // 		$("#ex").show();
+// // 		$("#ex").offset($(this).offset()).attr("nr",$(this).attr("nr"));
+// 	});
+	
+	
+}

@@ -164,9 +164,13 @@ print """	<tr>
 	
 """.format(project=project.encode("utf-8"))
 	
-for infile in glob.glob(os.path.join("corpus/conll/", '*.*')): #  os.path.join(foldername, '*.*')
+for infile in sorted(glob.glob(os.path.join("corpus/conll/", '*.*'))): #  os.path.join(foldername, '*.*')
 	filename=os.path.basename(infile).decode("utf-8")
-	f=codecs.open(infile,"r","utf-8")
+	try:
+		f=codecs.open(infile,"r","utf-8")
+	except:
+		print "can't read",filename,"!\n<br>"
+		continue
 	ns=1
 	conll=None
 	try:
@@ -200,7 +204,7 @@ for infile in glob.glob(os.path.join("corpus/conll/", '*.*')): #  os.path.join(f
 		</tr>""".format(filename=infile.decode("utf-8") ,datatype="conll"+str(conll) ,simplefilename=filename, href=href , size=filesize , thumbnail=thumbnail , numbersentences=ns )).encode("utf-8")
 		
 
-	else:	print "<tr>???",filename.encode("utf-8"),"strange datatype<br></tr>"
+	else:	print "<tr>???",filename.encode("utf-8"),"couldn't read or strange datatype<br></tr>"
 	#<td class="file_view"><button onclick="viewer(this)" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only" role="button" aria-disabled="false" title="Graphic view of this file" style="height: 1.4em;width: 1.4em;"><span class="ui-button-icon-primary ui-icon ui-icon-image"></span></button></td>
 
 	# TODO: implement trashing files:

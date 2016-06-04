@@ -1186,7 +1186,8 @@ def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseA
 			sentences=allsentences[steps*i:steps*(i+1)]
 			
 			#print sentences
-			annotatorName=sql.baseAnnotatorName
+			#annotatorName=sql.baseAnnotatorName
+			annotatorName=sql.importAnnotatorName
 			
 			dbtextname = filename.split("/")[-1].decode("utf-8")
 			if dbtextname.endswith(".conll07") or dbtextname.endswith(".conll10") or dbtextname.endswith(".conll14") or  dbtextname.endswith(".malt") or dbtextname.endswith(".tab") or dbtextname.endswith(".orfeo"):
@@ -1446,11 +1447,11 @@ if __name__ == "__main__":
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Triv*")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Pett*")
-	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Fum*")
+	readinallmates("lingCorpus","corpus/conll/",filepattern="*")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/parses/",filepattern="*")
 	#readinallmates("decoda","/home/gerdes/arborator/corpus/decoda/",filepattern="decoda.test*")
 	
-	readinallmates("orfeo","/home/gerdes/arborator/corpus/orfeo/",filepattern="*")
+	#readinallmates("orfeo","/home/gerdes/arborator/corpus/orfeo/",filepattern="*")
 	
 	#readInTestResults(None,"/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")
 	#readInTestResults("canons","/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")

@@ -3,12 +3,7 @@
 
 #import cgi
 
-#from os       import environ
-#print "Content-Type: text/html\n\n" # blank line: end of headers
-#import traceback,
 import sys,cgi,cgitb, os
-
-#from conll import conll2json
 
 cgitb.enable()
 form = cgi.FieldStorage()
@@ -20,9 +15,6 @@ from logintools import login
 from logintools import isloggedin
 action, userconfig = login(form, userdir, thisfile, action)
 adminLevel = int(userconfig["admin"])
-
-
-
 
 project = form.getvalue('project',"").decode("utf-8")
 

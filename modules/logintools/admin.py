@@ -69,7 +69,7 @@ MINMAXAGE = 600                             # the minimum value for cookie max-a
 
 pass_msg = '\nYour login name is "%s", your password is "%s".\nYou can change this once you have logged in.\n'
 SCRIPTLOC = 'http://' + os.environ.get('HTTP_HOST', '')             # XXXX do we trust this in all cases ? (i.e. not always http - https)
-numonpage = 100                              # number of users shown on a page at a time
+numonpage = 1000                            # number of users shown on a page at a time
 
 # table elements used to display the accounts in edit users
 edit_table_s = '<table width="90%" cellspacing="15" bgcolor="#3377bb" class="table">'
@@ -352,7 +352,7 @@ def edituser(theform, userdir, thisscript, userconfig, action, newcookie, msg=No
                    loginname, realname, email, adminlev, maxage, editable,
                    thisscript, action, 'deluser', start, loginname)
         
-        usermenu += elem_h + (account_table % thevals) + elem_f
+        usermenu += elem_h+str(index-1) + (account_table % thevals) + elem_f
         
         
         

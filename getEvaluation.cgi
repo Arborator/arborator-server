@@ -23,22 +23,35 @@
 #     USA
 ####
 
-import sys,cgi,cgitb,os
+import sys,cgi,os,datetime,cgitb, codecs
+from time import time
 from configobj import ConfigObj
 from database import SQL
 sys.path.append('modules')
+
+
 from logintools import isloggedin
 
-cgitb.enable()
 
 form = cgi.FieldStorage()
 
 test = isloggedin("users/")
-if not test:sys.exit()
-admin = int(test[0]["admin"])
+try:	admin = int(test[0]["admin"])
+except:	pass
 
 project = form.getvalue('project',"").decode("utf-8")
 csv = form.getvalue('csv',None)
+
+if test:
+	cgitb.enable(logdir="dir")
+else:
+	#sys.exit()
+	project="depexo"
+	project="lingCorpus"
+	admin=5
+	csv=True
+	
+
 
 class Evaluation:
 	def __init__(self,cats=0,deps=0,funcs=0,lemmas=0,nbwords=0):
@@ -108,9 +121,9 @@ def attributeSentences(textid, username, userid):
 	attributes sentences to students that didn't even open one of the texts.
 	(users that don't have any tree in the whole project, will not be added)
 	"""
-	sql.getAllSentences(textid, username, userid) # attributes sentences of the text to the user
+	sql.getAllSentences(textid, username, userid, dbcrsr=(db,cursor)) # attributes sentences of the text to the user
 	usertotevalu = Evaluation()
-	for snr,sid,s,treeid in sql.getAllSentences(textid, username, userid, useradmindic.get(username,0)):
+	for snr,sid,s,treeid in sql.getAllSentences(textid, username, userid, useradmindic.get(username,0), dbcrsr=(db,cursor)):
 		# for each sentence attributed to the user from this text
 		teachertree = teacherTrees.get(sid,sql.gettree(sid,teacherid)["tree"])
 		tree = sql.gettree(sid,userid)["tree"]
@@ -118,18 +131,20 @@ def attributeSentences(textid, username, userid):
 		usertotevalu = usertotevalu + evaluateTree(tree, teachertree)
 	return usertotevalu
 
-def makeTable(texts,students,theader="",thstart="",thth="\t",thend="\n",trstart="",tdtd="\t",trend="\n",tfooter="", detailTable=False):
+def makeTable(texts,students,project,theader="",thstart="",thth="\t",thend="\n",trstart="",tdtd="\t",trend="\n",tfooter="", detailTable=False):
 	"""
 	draws the html table
 	used for two cases:
 		csv: detailTable = False
 		html: detailTable = True
 	"""
+	
 	out = theader
 	out += thstart + thth.join(["student","login"]+[textname for textname,textid,nrtokens in sorted(texts)]+["total %"]) + thend
 	
+	
 	for real,username,userid in sorted(students, key=lambda s: s[0].lower()):
-		#print real.encode("utf-8"),"<br>"
+		print real.encode("utf-8"),"<br>"
 		usertotevalu = Evaluation()
 		res=[]
 		for textname,textid,nrtokens in sorted(texts):
@@ -140,11 +155,59 @@ def makeTable(texts,students,theader="",thstart="",thth="\t",thend="\n",trstart=
 			#print evalu,"<br>"
 			usertotevalu = usertotevalu + evalu
 		
-		out += trstart+tdtd.join([real,username]+[ str(int(round(x.total,0)))+" {ht}".format(ht=x.htmltable() if (detailTable and x.nbwords>0)  else "") for x in res ] +[ ("<span style='font-weight: bold;'>" if detailTable else "") +str(round(usertotevalu.total,1))+("</span>" if detailTable else "") +" {ht}".format(ht=usertotevalu.htmltable() if (detailTable and usertotevalu.nbwords>0) else "" )])+trend
+		outline = trstart+tdtd.join([real,username]+[ str(int(round(x.total,0)))+" {ht}".format(ht=x.htmltable() if (detailTable and x.nbwords>0)  else "") for x in res ] +[ ("<span style='font-weight: bold;'>" if detailTable else "") +str(round(usertotevalu.total,1))+("</span>" if detailTable else "") +" {ht}".format(ht=usertotevalu.htmltable() if (detailTable and usertotevalu.nbwords>0) else "" )])+trend
+		#evalfile.write(outline)
+		out += outline
 	out += tfooter
 	return out
-	
 
+def sampleStats(textid, dbcrsr):
+	"""
+	function for overview of annotation by students
+	"""
+	db,cursor=dbcrsr
+	r = sql.getall(cursor, "sentences",["textid"], [textid])
+	users=[]
+	sentencelengths=[]
+	modifiedtags=[]
+	modifieddeps=[]
+	allusers={}
+	if r:
+		for sentenceid,nr,sentence,textid in r: # for each sentence of the text:
+			
+			treeDict=dict([ (user, (treeid,uid,realname,timestamp)) for treeid,uid,user,realname,timestamp in sql.treesForSentence(sentenceid, dbcrsr=dbcrsr)])
+			timeDict=dict([ (timestamp,user) for (user, (treeid,uid,realname,timestamp)) in treeDict.iteritems() ])
+			
+			lastuser=timeDict[sorted(timeDict,reverse=True)[0]]
+			treeid,uid,realname,timestamp=treeDict[lastuser]
+			if lastuser not in users: users+=[lastuser]
+			
+			parser=timeDict[sorted(timeDict,reverse=True)[-1]]
+			ptreeid,puid,prealname,ptimestamp=treeDict[parser]
+			
+			for ts,user in timeDict.iteritems(): 
+				if user!=parser:
+					allusers[user]=allusers.get(user,0)+1
+			
+			modifiedtag = sql.nrDifferent(treeid, ptreeid, "tag", dbcrsr)
+			modifiedtags +=[modifiedtag]
+			modifieddep = sql.nrDifferent(treeid, ptreeid, None, dbcrsr)
+			modifieddeps +=[modifieddep]
+			
+			sentencelength = sql.getnumber(cursor, "features", ["treeid","attr"], [treeid,"t"])
+			#print "sentencelength",sentencelength
+			sentencelengths+=[sentencelength]
+			
+		asentencelength=sum(sentencelengths)/float(len(sentencelengths))
+		amodifiedtag=sum(modifiedtags)/float(len(modifiedtags))
+		percentmodtags=round(sum(modifiedtags)/float(sum(sentencelengths))*100,2)
+		amodifieddep=sum(modifieddeps)/float(len(modifieddeps))
+		percentmoddeps=round(sum(modifieddeps)/float(sum(sentencelengths))*100,2)
+
+		userinfo = ", ".join([u+":"+str(c) for u,c in allusers.iteritems()])
+			
+		return len(r), asentencelength, amodifiedtag, percentmodtags, amodifieddep, percentmoddeps, userinfo
+					
 
 userdir="users/"
 RESERVEDNAMES = ['config', 'default', 'temp', 'emails', 'pending',"user_files_go_in_"]
@@ -164,34 +227,86 @@ useradmindic[sql.teacher]=5 # treat teacher as admin
 
 #print 'Content-type: text/html\n\n'
 
-for textname,textid,nrtokens in sorted( [(textname,textid,nrtokens) for textid,textname,nrtokens in sql.getall(None, "texts", None, None)]): 
-	# for each text
-	texts[(textname,textid,nrtokens)]={}
-	uids=[userid for userid, in sql.uidForText(textid)] # some tree exists for uids
+db,cursor=sql.open()
+
+try:	mtime = os.path.getmtime(os.path.join("projects",project,"arborator.db.sqlite"))
+except OSError: mtime = 0
+last_modified_date = datetime.datetime.fromtimestamp(mtime)
+
+with codecs.open(os.path.join("projects",project,"stats."+str(last_modified_date)+".csv"),'w','utf-8') as evalfile:
 	
-	for userid in uids:
-		# for each userid for whom we got a tree
-		numtok=0
-		for _,username,real in sql.getall(None, "users",["rowid"],[userid]): # only executes once
-			#print "<br><br><br>",userid,username,real.encode("utf-8"),"<br>"
-			students[real,username,userid]=None
-			usertotevalu = Evaluation()
-			for snr,sid,s,treeid in sql.getAllSentences(textid, username, userid, useradmindic.get(username,0)):
-				# for each sentence attributed to the user from this text
-				teachertree = teacherTrees.get(sid,sql.gettree(sid,teacherid)["tree"])
-				tree = sql.gettree(sid,userid)["tree"]
-				# adding the correct annotations item-wise:
-				usertotevalu = usertotevalu + evaluateTree(tree, teachertree)
-				#print "__",snr,usertotevalu,"<br>" # s.encode("utf-8"),
-			texts[(textname,textid,nrtokens)][userid]=usertotevalu
+	evalfile.write("\t".join(["textname","nr sents", "asentencelength", "amodifiedtag", "percentmodtags", "amodifieddep", "percentmoddeps", "userinfo"])+"\n")
+	
+	textcounter=0
+	
+	for textname,textid,nrtokens in sorted( [(textname,textid,nrtokens) for textid,textname,nrtokens in list(sql.getall(cursor, "texts", None, None))]): 
+		# for each text
+		texts[(textname,textid,nrtokens)]={}		
+		exotype, exotoknum = sql.getExo(textid,(db,cursor))
+		
+		if exotype:
+			uids=[userid for userid, in sql.uidForText(textid,(db,cursor))] # some tree exists for uids
+			for userid in uids:
+				# for each userid for whom we got a tree
+				#numtok=0
+				#print cursor, "users",["rowid"],[userid]
+				#print "!!!",cursor.description
+				#allu=list()
+				#print userid,allu
+				for _,username,real in sql.getall(cursor, "users",["rowid"],[userid]): # only executes once
+					#print "<br><br><br>",userid,username,real.encode("utf-8"),"<br>"
+					
+					students[real,username,userid]=None
+					usertotevalu = Evaluation()
+					for snr,sid,s,treeid in sql.getAllSentences(textid, username, userid, useradmindic.get(username,0), dbcrsr=(db,cursor)):
+						
+						# for each sentence attributed to the user from this text
+						
+						teachertree = teacherTrees.get(sid,sql.gettree(sid,teacherid, indb=db, incursor=cursor)["tree"])
+						
+						tree = sql.gettree(sid,userid, indb=db, incursor=cursor)["tree"]
+						#print "it took",time()-ti
+						# adding the correct annotations item-wise:
+						#print "before eval"
+						
+						usertotevalu = usertotevalu + evaluateTree(tree, teachertree)
+						#print "after eval"
+						#print "__",snr,usertotevalu,"<br>" # s.encode("utf-8"),
+					
+					texts[(textname,textid,nrtokens)][userid]=usertotevalu
+				print 'Dummy: '+username,len(texts[(textname,textid,nrtokens)])
+				
+		else: # normal annotation: make some stats
+			print "Dummy: __________",textname, textcounter
+			evalfile.write("\t".join([textname] + [unicode(info) for info in sampleStats(textid,(db,cursor))])+"\n")
+			#,str(nrsentences),str(asentencelength),str(amodifiedtag),str(amodifieddep),userinfo]			
+				
 			
+		textcounter+=1	
+		
 			
+if not exotype: 
+	print "wrote stat file in project folder"
+	sys.exit() # the rest is only if exo
 				
 if csv:
 	print 'Content-type: text/csv'
 	print "Content-Disposition:attachment;filename="+project+".csv\n"; 
 	
-	print makeTable(texts,students).encode("utf-8")
+	filecontent = makeTable(texts,students,project) #.encode("utf-8")
+	#if not test:
+		#print filecontent
+	#else:
+	try:
+		mtime = os.path.getmtime(os.path.join("projects",project,"arborator.db.sqlite"))
+	except OSError:
+		mtime = 0
+	last_modified_date = datetime.datetime.fromtimestamp(mtime)
+
+	with codecs.open(os.path.join("projects",project,"evaluation."+str(last_modified_date)+".csv"),'w','utf-8') as evalfile:
+		evalfile.write(filecontent)
+	
+		
 	
 else:
 	print 'Content-type: text/html\n\n'
@@ -215,7 +330,7 @@ else:
 		""".format(project=project,img=img)
 					
 	
-	print makeTable(texts,students,theader="<table class='whitable'>",thstart="<tr><th>",thth="</th><th>",thend="</th></tr>",trstart="<tr><td>",tdtd="</td><td>",trend="</td></tr>",tfooter="</table>", detailTable=True).encode("utf-8")
+	print makeTable(texts,students,project,theader="<table class='whitable'>",thstart="<tr><th>",thth="</th><th>",thend="</th></tr>",trstart="<tr><td>",tdtd="</td><td>",trend="</td></tr>",tfooter="</table>", detailTable=True).encode("utf-8")
 	
 	print "categories:",sql.categoriesEval,"%, "
 	print "governors:",sql.governorsEval,"%, "
@@ -226,4 +341,6 @@ else:
 	
 	print """</div></body></html>"""
 
-#
+
+#if __name__ == "__main__":
+
