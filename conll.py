@@ -374,7 +374,7 @@ def trees2conll10(trees, outfile):
 					if govid!=-1:
 						f.write("\t".join([str(i),node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("tag2","_"),"_", str(govid),func,"_",node.get("gloss","_")])+"\n")
 			else:
-				f.write("\t".join([str(i),node.get("t","_"),node.get("lemma",""),node.get("tag","_"),node.get("tag2","_"),"_",str(govid),func,"_",node.get("tag","_")])+"\n")
+				f.write("\t".join([str(i),node.get("t","_"),node.get("lemma",""),node.get("tag","_"),node.get("tag2","_"),"_",str(govid),func,"_",node.get("gloss","_")])+"\n")
 ##                        nr, t, lemma , tag, tag2, _, head, rel, _, _ = cells
                 f.write("\n")
         f.close()
