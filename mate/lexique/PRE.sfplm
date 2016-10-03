@@ -1,0 +1,489 @@
+﻿# signification du statut (première colonne)
+# A(ajout)              par rapport au lefff
+# S(suppression)        par rapport au lefff
+# N(neutre)             était dans le lefff et on le conserve
+# M(morph)              expression polylexicale potentiellement ambigue, à représenter par lien morph
+# MF(morph figée)       expression polylexicale à représenter par lien morph très largement figée
+# X(exogène)            expression polylexicale potentiellement ambigue exogène (aucun des mots formant l'expression possède la catégorie de l'expression)
+# XF(exogène figée)     expression polylexicale exogène très largement figée
+A	question	PRE	question	#####
+A	niveau	PRE	niveau	#####
+A	fonction	PRE	fonction	#####
+A	côté	PRE	côté	#####
+A	genre	PRE	genre	#####
+MF	à bord de	PRE	à bord de	#####
+MF	à bord d'	PRE	à bord de	#####
+N	à cause de	PRE	à cause de	#####
+N	à cause d'	PRE	à cause de	#####
+N	à condition de	PRE	à condition de	#####
+N	à condition d'	PRE	à condition de	#####
+MF	à côté de	PRE	à côté de	#####
+MF	à côté d'	PRE	à côté de	#####
+M	à défaut de	PRE	à défaut de	#####
+M	à défaut d'	PRE	à défaut de	#####
+N	afin de	 PRE	afin de	#####
+N	afin d'	 PRE	afin de	#####
+S	afin	PRE	afin	#####
+MF	à force de	PRE	à force de	#####
+MF	à force d'	PRE	à force de	#####
+N	à hauteur de	PRE	à hauteur de	#####
+N	à hauteur d'	PRE	à hauteur de	#####
+M	à l'abri de	PRE	à l'abri de	#####
+M	à l'abri d'	PRE	à l'abri de	#####
+M	à l'aide de	PRE	à l'aide de	#####
+M	à l'aide d'	PRE	à l'aide de	#####
+N	à l'aune de	PRE	à l'aune de	#####
+N	à l'aune d'	PRE	à l'aune de	#####
+N	à l'égard de	PRE	à l'égard de	#####
+N	à l'égard d'	PRE	à l'égard de	#####
+N	à l'encontre de	PRE	à l'encontre de	#####
+N	à l'encontre d'	PRE	à l'encontre de	#####
+M	à l'intérieur de	PRE	à l'intérieur de	#####
+M	à l'intérieur d'	PRE	à l'intérieur de	#####
+N	à l'instar de	PRE	à l'instar de	#####
+N	à l'instar d'	PRE	à l'instar de	#####
+N	à l'insu de	PRE	à l'insu de	#####
+N	à l'insu d'	PRE	à l'insu de	#####
+M	à la faveur de	PRE	à la faveur de	#####
+M	à la faveur d'	PRE	à la faveur de	#####
+M	à même	    PRE	à même	#####
+N	à mesure de	PRE	à mesure de	#####
+N	à mesure d'	PRE	à mesure de	#####
+MF	à moins de	PRE	à moins de	#####
+MF	à moins d'	PRE	à moins de	#####
+MF	à part		PRE	à part		#####
+M	à partir de	PRE	à partir de	#####
+M	à partir d'	PRE	à partir de	#####
+N	à	PRE	à	#####
+N	après	PRE	après	#####
+N	à proportion de	PRE	à proportion de	#####
+N	à proportion d'	PRE	à proportion de	#####
+MF	à propos de	PRE	à propos de	#####
+MF	à propos d'	PRE	à propos de	#####
+N	apr.	PRE	après	#####
+N	à raison de	PRE	à raison de	#####
+N	à raison d'	PRE	à raison de	#####
+N	à seule fin de	PRE	à seule fin de	#####
+N	à seule fin d'	PRE	à seule fin de	#####
+S	à supposer	PRE	à supposer	#####
+N	à travers	PRE	à travers	#####
+M	au bas de	PRE	au bas de	#####
+M	au bas d'	PRE	au bas de	#####
+N	au beau milieu de	PRE	au beau milieu de	#####
+N	au beau milieu d'	PRE	au beau milieu de	#####
+MF	au bord de	PRE	au bord de	#####
+MF	au bord d'	PRE	au bord de	#####
+MF	au bout de	PRE	au bout de	#####
+MF	au bout d'	PRE	au bout de	#####
+M	au centre de	PRE	au centre de	#####
+M	au centre d'	PRE	au centre de	#####
+N	au comble de	PRE	au comble de	#####
+N	au comble d'	PRE	au comble de	#####
+MF	au côté de	PRE	au côté de	#####
+MF	au côté d'	PRE	au côté de	#####
+M	au cours de	PRE	au cours de	#####
+M	au cours d'	PRE	au cours de	#####
+MF	au-dedans de	PRE	au-dedans de	#####
+A	au-dedans d'	PRE	au-dedans de	#####
+N	au dehors de	PRE	au dehors de	#####
+N	au dehors d'	PRE	au dehors de	#####
+M	au delà de	PRE	au delà de	#####
+M	au delà de	PRE	au-delà de	#####
+M	au-delà de	PRE	au-delà de	#####
+M	au delà d'	PRE	au-delà de	#####
+M	au delà d'	PRE	au-delà de	#####
+M	au-delà d'	PRE	au-delà de	#####
+M	au dessous de	PRE	au-dessous de	#####
+M	au-dessous de	PRE	au-dessous de	#####
+M	au dessous d'	PRE	au-dessous de	#####
+M	au-dessous d'	PRE	au-dessous de	#####
+M	au-dessus de	PRE	au-dessus de	#####
+M	au-dessus d'	PRE	au-dessus de	#####
+MF	au détour de	PRE	au détour de	#####
+MF	au détour d'	PRE	au détour de	#####
+N	au détriment de	PRE	au détriment de	#####
+N	au détriment d'	PRE	au détriment de	#####
+MF	au devant de	PRE	au-devant de	#####
+MF	au-devant de	PRE	au-devant de	#####
+MF	au devant d'	PRE	au-devant de	#####
+MF	au-devant d'	PRE	au-devant de	#####
+M	au fond de	PRE	au fond de	#####
+M	au fond d'	PRE	au fond de	#####
+N	au fur et à mesure de	PRE	au fur et à mesure de	#####
+N	au fur et à mesure d'	PRE	au fur et à mesure de	#####
+N	au grand dam de	PRE	au grand dam de	#####
+N	au grand dam d'	PRE	au grand dam de	#####
+N	au gré de	PRE	au gré de	#####
+N	au gré d'	PRE	au gré de	#####
+N	au haut de	PRE	au haut de	#####
+N	au haut d'	PRE	au haut de	#####
+MF	au large de	PRE	au large de	#####
+MF	au large d'	PRE	au large de	#####
+MF	au lieu de	PRE	au lieu de	#####
+MF	au lieu d'	PRE	au lieu de	#####
+N	au long de	PRE	au long de	#####
+N	au long d'	PRE	au long de	#####
+S	au même titre qu'	PRE	au même titre que	#####
+S	au même titre que	PRE	au même titre que	#####
+M	au milieu de	PRE	au milieu de	#####
+M	au milieu d'	PRE	au milieu de	#####
+MF	au moment de	PRE	au moment de	#####
+MF	au moment d'	PRE	au moment de	#####
+MF	au moyen de	PRE	au moyen de	#####
+MF	au moyen d'	PRE	au moyen de	#####
+M	au nom de	PRE	au nom de	#####
+M	au nom d'	PRE	au nom de	#####
+M	au point de	PRE	au point de	#####
+M	au point d'	PRE	au point de	#####
+N	auprès de	PRE	auprès de	#####
+N	auprès d'	PRE	auprès de	#####
+MF	au prorata de	PRE	au prorata de	#####
+MF	au prorata d'	PRE	au prorata de	#####
+MF	au ras de	PRE	au ras de	#####
+MF	au ras d'	PRE	au ras de	#####
+M	au sein de	PRE	au sein de	#####
+M	au sein d'	PRE	au sein de	#####
+N	au sortir de	PRE	au sortir de	#####
+N	au sortir d'	PRE	au sortir de	#####
+M	au sujet de	PRE	au sujet de	#####
+M	au sujet d'	PRE	au sujet de	#####
+MF	au terme de	PRE	au terme de	#####
+MF	au terme d'	PRE	au terme de	#####
+M	autour de	PRE	autour de	#####
+M	autour d'	PRE	autour de	#####
+N	au travers de	PRE	au travers de	#####
+N	au travers d'	PRE	au travers de	#####
+N	au tréfonds de	PRE	au tréfonds de	#####
+N	au tréfonds d'	PRE	au tréfonds de	#####
+N	au vu de	PRE	au vu de	#####
+N	au vu d'	PRE	au vu de	#####
+N	au vu et au su de	PRE	au vu et au su de	#####
+N	au vu et au su d'	PRE	au vu et au su de	#####
+M	aux bons soins de	PRE	aux bons soins de	#####
+M	aux bons soins d'	PRE	aux bons soins de	#####
+N	aux confins de	PRE	aux confins de	#####
+N	aux confins d'	PRE	aux confins de	#####
+MF	aux cotés de	PRE	aux cotés de	#####
+MF	aux cotés d'	PRE	aux cotés de	#####
+N	aux dépens de	PRE	aux dépens de	#####
+N	aux dépens d'	PRE	aux dépens de	#####
+M	avant de	PRE	avant de	#####
+M	avant d'	PRE	avant de	#####
+S	avant même de	PRE	avant même de	#####
+S	avant même d'	PRE	avant même de	#####
+S	avant même	PRE	avant même	#####
+N	avant	PRE	avant	#####
+M	avant que de	PRE	avant que de	#####
+M	avant que d'	PRE	avant que de	#####
+N	avec	PRE	avec	#####
+N	av.	PRE	avant	#####
+N	avt	PRE	avant	#####
+M	cause de	PRE	cause de	#####
+M	cause d'	PRE	cause de	#####
+S	cf.	PRE	cf	#####
+S	cf	PRE	cf	#####
+N	chez	PRE	chez	#####
+S	ci-devant	PRE	ci-devant	#####
+N	comme	PRE	comme	#####
+N	compte tenu de	PRE	compte tenu de	#####
+N	compte tenu d'	PRE	compte tenu de	#####
+N	concernant	PRE	concernant	#####
+S	confer	PRE	cf	#####
+S	conformément à	PRE	conformément à	#####
+S	conf.	PRE	cf	#####
+S	considérant	PRE	considérant	#####
+S	considéré	PRE	considéré	#####
+N	contre	PRE	contre	#####
+S	dans le but de	PRE	dans le but de	#####
+S	dans le but d'	PRE	dans le but de	#####
+S	dans l' espoir de	PRE	dans l'espoir de	#####
+S	dans l' espoir d'	PRE	dans l'espoir de	#####
+S	dans l' intention de	PRE	dans l'intention de	#####
+S	dans l' intention d'	PRE	dans l'intention de	#####
+N	dans	PRE	dans	#####
+M	d' après	PRE	d'après	#####
+N	d' avec		PRE	d'avec	#####
+S	d' avis de	PRE	d'avis de	#####
+S	d' avis d'	PRE	d'avis de	#####
+M	de chez	PRE	de chez	#####
+MF	de crainte d'	PRE	de crainte de	#####
+MF	de crainte de	PRE	de crainte de	#####
+S	de derrière	PRE	de derrière	#####
+N	de façon à	PRE	de façon à	#####
+M	de la part de	PRE	de la part de	#####
+M	de la part d'	PRE	de la part de	#####
+M	de l' ordre de	PRE	de l'ordre de	#####
+M	de l' ordre d'	PRE	de l'ordre de	#####
+N	de manière à	PRE	de manière à	#####
+S	de même que	PRE	de même que	#####	
+N	d' entre	PRE	d'entre	#####
+MF	de par	PRE	de par	#####
+N	de part et d' autre de	PRE	de part et d'autre de	#####
+N	de part et d' autre d'	PRE	de part et d'autre de	#####
+M	de peur d'	PRE	de peur de	#####
+M	de peur de	PRE	de peur de	#####
+N	de	PRE	de	#####
+S	de près	PRE	de près	#####
+N	depuis	PRE	depuis	#####
+N	derrière	PRE	derrière	#####
+S	dès avant	PRE	dès avant	#####
+N	dès	PRE	dès	#####
+N	dessous	PRE	dessous	#####
+N	dessus	PRE	dessus	#####
+N	devant	PRE	devant	#####
+S	devers	PRE	devers	#####
+M	d' ici à	PRE	d'ici à	#####
+M	d' ici	PRE	d'ici	#####
+N	dixit	PRE	dixit	#####
+N	d' ou	PRE	d'ou	#####
+N	d'	PRE	de	#####
+AM	dû à	PRE	dû à	#####
+MF	du côté de	PRE	du côté de	#####
+MF	du côté d'	PRE	du côté de	#####
+MF	du fait de	PRE	du fait de	#####
+MF	du fait d'	PRE	du fait de	#####
+M	du haut de	PRE	du haut de	#####
+M	du haut d'	PRE	du haut de	#####
+N	durant	PRE	durant	#####
+S	en absence de	PRE	en absence de	#####
+S	en absence d'	PRE	en absence de	#####
+S	en accord avec	PRE	en accord avec	#####
+S	en admettant	PRE	en admettant	#####
+MF	en âge de	PRE	en âge de	#####
+MF	en âge d'	PRE	en âge de	#####
+M	en amont de	PRE	en amont de	#####
+M	en amont d'	PRE	en amont de	#####
+M	en arrière de	PRE	en arrière de	#####
+M	en arrière d'	PRE	en arrière de	#####
+M	en aval de	PRE	en aval de	#####
+M	en aval d'	PRE	en aval de	#####
+M	en avant de	PRE	en avant de	#####
+M	en avant d'	PRE	en avant de	#####
+M	en bas de	PRE	en bas de	#####
+M	en bas d'	PRE	en bas de	#####
+MF	en cas de	PRE	en cas de	#####
+MF	en cas d'	PRE	en cas de	#####
+M	en comparaison de	PRE	en comparaison de	#####
+M	en comparaison d'	PRE	en comparaison de	####
+M	en contrebas de	PRE	en contrebas de	#####
+M	en contrebas d'	PRE	en contrebas de	#####
+S	endéans	PRE	endéans	#####
+S	en début de	PRE	en début de	#####
+S	en début d'	PRE	en début de	#####
+N	en deçà de	PRE	en-deçà de	#####
+N	en-deçà de	PRE	en-deçà de	#####
+N	en deçà d'	PRE	en-deçà de	#####
+N	en-deçà d'	PRE	en-deçà de	#####
+N	en dedans de	PRE	en dedans de	#####
+N	en dedans d'	PRE	en dedans de	#####
+N	en dehors de	PRE	en dehors de	#####
+N	en dehors d'	PRE	en dehors de	#####
+S	en delà de	PRE	en delà de	#####
+S	en delà d'	PRE	en delà de	#####
+N	en dépit de	PRE	en dépit de	#####
+N	en dépit d'	PRE	en dépit de	#####
+S	en dépit du fait de	PRE	en dépit du fait de	#####
+S	en dépit du fait d'	PRE	en dépit du fait de	#####
+M	en dessous de	PRE	en dessous de	#####
+M	en dessous d'	PRE	en dessous de	#####
+MF	en direction de	PRE	en direction de	#####
+MF	en direction d'	PRE	en direction de	#####
+MF	en face de	PRE	en face de	#####
+MF	en face d'	PRE	en face de	#####
+M	en fait de	PRE	en fait de	#####
+M	en fait d'	PRE	en fait de	#####
+N	en faveur de	PRE	en faveur de	#####
+N	en faveur d'	PRE	en faveur de	#####
+S	en fin de	PRE	en fin de	#####
+S	en fin d'	PRE	en fin de	#####
+N	en guise de	PRE	en guise de	#####
+N	en guise d'	PRE	en guise de	#####
+MF	en haut de	PRE	en haut de	#####
+MF	en haut d'	PRE	en haut de	#####
+S	en hommage à	PRE	en hommage à	#####
+MF	en instance de	PRE	en instance de	#####
+MF	en instance d'	PRE	en instance de	#####
+N	en manière de	PRE	en manière de	#####
+N	en manière d'	PRE	en manière de	#####
+MF	en manque de	PRE	en manque de	#####
+MF	en manque d'	PRE	en manque de	#####
+N	en matière de	PRE	en matière de	#####
+N	en matière d'	PRE	en matière de	#####
+S	en même temps qu'	PRE	en même temps que	#####
+S	en même temps que	PRE	en même temps que	#####
+N	en milieu de	PRE	en milieu de	#####
+N	en milieu d'	PRE	en milieu de	#####
+N	en outre de	PRE	en outre de	#####
+N	en outre d'	PRE	en outre de	#####
+N	en perte de	PRE	en perte de	#####
+N	en perte d'	PRE	en perte de	#####
+N	en plein centre de	PRE	en plein centre de	#####
+N	en plein centre d'	PRE	en plein centre de	#####
+S	en plein dans	PRE	en plein dans	#####
+S	en plein	PRE	en plein	#####
+S	en plein sur	PRE	en plein sur	#####
+M	en plus de	PRE	en plus de	#####
+M	en plus d'	PRE	en plus de	#####
+N	en	PRE	en	#####
+MF	en proie à	PRE	en proie à	#####
+S	en quête de	PRE	en quête de	#####
+S	en quête d'	PRE	en quête de	#####
+N	en raison de	PRE	en raison de	#####
+N	en raison d'	PRE	en raison de	#####
+N	en regard de	PRE	en regard de	#####
+N	en regard d'	PRE	en regard de	#####
+S	en règlement de	PRE	en règlement de	#####
+S	en règlement d'	PRE	en règlement de	#####
+S	en relation avec	PRE	en relation avec	#####
+N	en signe de	PRE	en signe de	#####
+N	en signe d'	PRE	en signe de	#####
+S	en supposant	PRE	en supposant	#####
+N	en sus de	PRE	en sus de	#####
+N	en sus d'	PRE	en sus de	#####
+N	en tant que	PRE	en tant que	#####
+N	en tant qu'	PRE	en tant que	#####
+M	en tête de	PRE	en tête de	#####
+M	en tête d'	PRE	en tête de	#####
+N	en terme de	PRE	en terme de	#####
+N	en terme d'	PRE	en terme de	#####
+N	en termes de	PRE	en termes de	#####
+N	en termes d'	PRE	en termes de	#####
+MF	en train de	PRE	en train de	#####
+MF	en train d'	PRE	en train de	#####
+MF	en travers de	PRE	en travers de	#####
+MF	en travers d'	PRE	en travers de	#####
+N	entre	PRE	entre	#####
+N	envers	PRE	envers	#####
+MF	en vertu de	PRE	en vertu de	#####
+MF	en vertu d'	PRE	en vertu de	#####
+N	en voie de	PRE	en voie de	#####
+N	en voie d'	PRE	en voie de	#####
+MF	en vue de	PRE	en vue de	#####
+MF	en vue d'	PRE	en vue de	#####
+N	étant donné	PRE	étant donné	#####
+N	eu égard à	PRE	eu égard à	#####
+N	excepté	PRE	excepté	#####
+M	face à	PRE	face à	#####
+M	faute de	PRE	faute de	#####
+M	faute d'	PRE	faute de	#####
+MF	grâce à	PRE	grâce à	#####
+M	histoire de	PRE	histoire de	#####
+M	histoire d'	PRE	histoire de	#####
+N	hormis	PRE	hormis	#####
+N	hors de	PRE	hors de	#####
+N	hors d'	PRE	hors de	#####
+N	hors	PRE	hors	#####
+M	il y a	PRE	il y a	#####
+S	jusqu' à	PRE	jusqu'à	#####
+S	jusqu' en	PRE	jusqu'en	#####
+N	jusque	PRE	jusque	#####
+S	jusqu' où	PRE	jusqu'où	#####
+N	jusqu'	PRE	jusque	#####
+N	le long de	PRE	le long de	#####
+N	le long d'	PRE	le long de	#####
+N	lès	PRE	lès	#####
+M	le temps de	PRE	le temps de	#####
+M	le temps d'	PRE	le temps de	#####
+S	lez	PRE	lès	#####
+MF	loin d'	PRE	loin de	#####
+MF	loin de	PRE	loin de	#####
+N	lors de	PRE	lors de	#####
+N	lors d'	PRE	lors de	#####
+N	malgré	PRE	malgré	#####
+M	mis à part	PRE	mis à part	#####
+N	moyennant	PRE	moyennant	#####
+N	n' en déplaise à	PRE	n'en déplaise à	#####
+N	nonobstant	PRE	nonobstant	#####
+M	non sans	PRE	non sans	#####
+N	outre	PRE	outre	#####
+N	par delà	PRE	par delà	#####
+N	par delà	PRE	par-delà	#####
+N	par-delà	PRE	par-delà	#####
+N	par-dessous	PRE	par-dessous	#####
+N	par-dessus	PRE	par-dessus	#####
+A	par-devant	PRE	par-devant	#####
+N	par devers	PRE	par devers	#####
+S	par égard à	PRE	par égard à	#####
+S	par égard pour	PRE	par égard pour	#####
+S	par le fait de	PRE	par le fait de	#####
+S	par le fait d'	PRE	par le fait de	#####
+S	par l' entremise de	PRE	par l'entremise de	#####
+S	par l' entremise d'	PRE	par l'entremise de	#####
+S	par l' intérim d'	PRE	par l'intérim de	#####
+S	par l' intérim de	PRE	par l'intérim de	#####
+N	parmi	PRE	parmi	#####
+N	par	PRE	par	#####
+MF	par rapport à	PRE	par rapport à	#####
+N	passé	PRE	passé	#####
+N	pdt	PRE	pendant	#####
+N	pendant	PRE	pendant	#####
+S	peu de	PRE	peu de	#####
+S	peu d'	PRE	peu de	#####
+S	plein de	PRE	plein de	#####
+S	plein d'	PRE	plein de	#####
+MF	plutôt que de	PRE	plutôt que de	#####
+MF	plutôt que d'	PRE	plutôt que de	#####
+S	plutôt que	PRE	plutôt que	#####
+N	pour cause de	PRE	pour cause de	#####
+N	pour cause d'	PRE	pour cause de	#####
+MF	pour comble de	PRE	pour comble de	#####
+MF	pour comble d'	PRE	pour comble de	#####
+N	pour	PRE	pour	#####
+S	pourvu de	PRE	pourvu de	#####
+S	pourvu d'	PRE	pourvu de	#####
+N	@	PRE	à	#####
+MF	près de	PRE	près de	#####
+MF	près d'	PRE	près de	#####
+S	preuve de	PRE	preuve de	#####
+S	preuve d'	PRE	preuve de	#####
+N	pr	PRE	pour	#####
+N	quant à	PRE	quant à	#####
+MF	quitte à	PRE	quitte à	#####
+N	sachant	PRE	sachant	#####
+S	s'agissant	PRE	s'agissant	#####
+S	sans compter	PRE	sans compter	#####
+S	sans oublier	PRE	sans oublier	#####
+N	sans	PRE	sans	#####
+S	sauf à	PRE	sauf à	#####
+N	sauf	PRE	sauf	#####
+N	selon	PRE	selon	#####
+S	si ce n'est	PRE	si ce n'est	#####
+S	si près de	PRE	si près de	#####
+S	si près d'	PRE	si près de	#####
+N	sitôt	PRE	sitôt	#####
+S	sous la forme de	PRE	sous la forme de	#####
+S	sous la forme d'	PRE	sous la forme de	#####
+MF	sous le coup de	PRE	sous le coup de	#####
+MF	sous le coup d'	PRE	sous le coup de	#####
+S	sous l'effet de	PRE	sous l'effet de	#####
+S	sous l'effet d'	PRE	sous l'effet de	#####
+N	sous	PRE	sous	#####
+M	suite à	PRE	suite à	#####
+N	suivant	PRE	suivant	#####
+N	sur	PRE	sur	#####
+A	touchant	PRE	touchant	##### 
+S	tout au bout de	PRE	tout au bout de	#####
+S	tout au bout d'	PRE	tout au bout de	#####
+S	tout au long de	PRE	tout au long de	#####
+S	tout au long d'	PRE	tout au long de	#####
+S	tout en haut de	PRE	tout en haut de	#####
+S	tout en haut d'	PRE	tout en haut de	#####
+M	tout en	PRE	tout en	#####
+S	tout plein de	PRE	tout plein de	#####
+S	tout plein d'	PRE	tout plein de	#####
+S	tout près de	PRE	tout près de	#####
+S	tout près d'	PRE	tout près de	#####
+S	une fois	PRE	une fois	#####
+N	vers	PRE	vers	#####
+N	versus	PRE	vs	#####
+N	via	PRE	via	#####
+N	vis-à-vis de	PRE	vis-à-vis de	#####
+N	vis-à-vis d'	PRE	vis-à-vis de	#####
+S	vis-à-vis	PRE	vis-à-vis	#####
+N	voici	PRE	voici	#####
+N	voilà	PRE	voilà	#####
+N	vs.	PRE	vs	#####
+N	vs	PRE	vs	#####
+N	vu	PRE	vu	#####
+N	y compris	PRE	y compris	#####
+

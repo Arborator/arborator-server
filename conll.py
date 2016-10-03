@@ -1,10 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-#important functions:
-	#conll2trees
-	#trees2conll10
-
 ####
 # Copyright (C) 2009-2012 Kim Gerdes
 # kim AT gerdes. fr
@@ -49,15 +45,17 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 	takes the conll string (or malt) representation of a single tree and creates a dictionary for it
 	correctiondic of the form {"tag":"cat"} (old to new) corrects feature names
 	"""
-	
+	#print "___",rhaps
 	nodedic={}
 	nr=1
+	conv = {}
 	for line in tree.split('\n'):
 		#print line
 		if line.strip():
 			cells = line.split('\t')
 			nrCells = len(cells)
-			if not rhaps and nrCells in [4,10,13,14]:
+			
+			if not rhaps and nrCells in [4,10,11,12,13,14,19]:
 				if nrCells == 4: # malt!
 					t, tag, head, rel = cells
 
@@ -67,19 +65,44 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 					newf={'id':nr,'t': t, 'tag': tag,'gov':{head: rel}}
 					for k in correctiondic:
 						if k in newf: newf[correctiondic[k]] = newf.pop(k)
-
 					nodedic[nr]=update(nodedic.get(nr,{}),newf )
 					nr+=1
+
 				elif nrCells == 10:
-					nr, t, lemma , tag, tag2, _, head, rel, _, gloss = cells
+					nr, t, lemma , tag, tag2, _, head, rel, _, _ = cells
 					nr = int(nr)
 					if head.strip()=="_":head=-1
 					else:head = int(head)
-					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'tag2': tag2, 'gov':{head: rel}, 'gloss':gloss}
+					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'tag2': tag2, 'gov':{head: rel}}
 					for k in correctiondic:
 						if k in newf: newf[correctiondic[k]] = newf.pop(k)
 
 					nodedic[nr]=update(nodedic.get(nr,{}),newf )
+				
+				elif nrCells == 11:
+					nr, t, lemma , tag, f1, f2, f3, f4, f5 ,head, rel = cells
+					nr = int(nr)
+					if head.strip()=="_":head=-1
+					#else:head = int(head)
+					fs=[f for f in [f1, f2, f3, f4, f5] if f not in ["_"," "]]
+					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'features': ":".join(fs), 'gov':{int(h): r for h,r in zip(head.split("|"),rel.split("|"))}}
+					for k in correctiondic:
+						if k in newf: newf[correctiondic[k]] = newf.pop(k)
+
+					nodedic[nr]=update(nodedic.get(nr,{}),newf )
+					
+
+				elif nrCells == 12: #Used for written corpus Orfeo
+					nr, t, lemma, tag, tag2, morph, head, rel, _, _, rel2, head2 = cells
+					nr = int(nr)
+					if head.strip()=="_":head=-1
+					else:head = int(head)
+					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'tag2': tag2, 'gov':{head: rel}, 'morph':morph, 'gov2':{head2:rel2}}
+					for k in correctiondic:
+						if k in newf: newf[correctiondic[k]] = newf.pop(k)
+
+					nodedic[nr]=update(nodedic.get(nr,{}),newf )
+
 				elif nrCells == 13: # stupid orfeo format with extra column
 					nr, t, lemma , tag, tag2, _, head, rel, _, _, _, _, _ = cells
 					nr = int(nr)
@@ -88,6 +111,7 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'tag2': tag2, 'gov':{head: rel}}
 					for k in correctiondic:
 						if k in newf: newf[correctiondic[k]] = newf.pop(k)
+
 
 					nodedic[nr]=update(nodedic.get(nr,{}),newf )
 				elif nrCells == 14:
@@ -123,15 +147,39 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 						if k in newf: newf[correctiondic[k]] = newf.pop(k)
 
 					nodedic[nr]=update(nodedic.get(nr,{}),newf )
+				
+				elif nrCells == 19: # format macaon / decoda
+					_, _, nr, t, disf, tag, _, _, rel, head, _, lemma, morph, loc, beg, end, coupure,_,_ = cells
+					nr = int(nr)
+					if head.strip()=="_":head=-1
+					else:head = int(head)
+					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'gov':{head: rel}, 'loc':loc, 'beg':beg, 'end':end}
+					if coupure == "//":
+						newf['coupure'] = True
+					if "DISF" in disf:
+						newf['disf'] = True
 					
-					
-			elif rhaps and nrCells in [3,5,15]:
+					for k in correctiondic:
+						if k in newf: newf[correctiondic[k]] = newf.pop(k)
+
+					nodedic[nr]=update(nodedic.get(nr,{}),newf )
+						
+			elif rhaps==True and nrCells in [3,5,12,15]:
 				if nrCells == 3: continue
 				elif nrCells == 5 : continue
 					#and cells[-1]=="I": # inside a multi token word
 					#textID,treeID,tokenID,token,wordspan=cells
 					#nodedic[lasttokennr]
-					
+				
+				elif nrCells==12:
+					nr, t, lemma , tag, tag2, _, head, rel, _, _, _, _= cells
+					nr = int(nr)
+					if head.strip()=="_":head=-1
+					else:head = int(head)
+					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'tag2': tag2, 'gov':{head: rel}}
+					for k in correctiondic:
+						if k in newf: newf[correctiondic[k]] = newf.pop(k)
+
 				else:
 					textID,treeID,tokenID,token,wordspan,wordform,lemma,pos,mood,tense,person,number,gender,iddep,typedep=cells
 					nr = int(tokenID)
@@ -142,6 +190,41 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 						if k in newf: newf[correctiondic[k]] = newf.pop(k)
 					nodedic[nr]=update(nodedic.get(nr,{}),newf )
 					
+			elif rhaps=='six3col': 
+				#print rhaps
+				#Toutes les cases ne sont pas remplies
+				if nrCells > 11:
+#			if cells[3] != " ":
+					#token_id, t
+					token_id, t = cells[2:4]
+#						nr = (int(token_id)+1)/2
+					#word_span, wordform, lemme, cat
+					word_span, wordform, lemme, tag = cells[5:9]
+					#id_dep, type_dep
+					id_dep, type_dep = cells[14:16]
+					if id_dep != '':
+						#iu, nucleus, prenucleus, gov_nucleus, innucleus, gov_innucleus, postnucleus, gov_postnucleus, iu_parenthesis, iu_graft
+						if nrCells > 58:
+							iu, nucleus, prenucleus, gov_nucleus, innucleus, gov_innucleus, postnucleus, gov_postnucleus, iu_parenthesis, iu_graft = cells[27:37]
+							associative_nucleus = cells[38]
+						else:
+							iu = " "
+							nucleus = " "
+							prenucleus = " "
+							gov_nucleus = " "
+							innucleus = " " 
+							gov_innucleus = " "
+							postnucleus = " "
+							gov_postnucleus = " "
+							iu_parenthesis = " "
+							iu_graft = " "
+							associative_nucleus = " "
+						conv[int(token_id)] = nr
+						newf={'id': nr,'t': wordform, 'lemma': lemme, 'tag': tag, 'id_dep':int(id_dep), 'type_dep': type_dep, 'iu': iu, 'nucleus': nucleus, 'prenucleus':prenucleus, 'gov_nucleus': gov_nucleus, 'innucleus': innucleus, 'gov_innucleus': gov_innucleus, 'postnucleus':postnucleus,'gov_postnucleus':gov_postnucleus, 'iu_parenthesis': iu_parenthesis, 'iu_graft': iu_graft, 'associative_nucleus': associative_nucleus}
+						for k in correctiondic:
+							if k in newf: newf[correctiondic[k]] = newf.pop(k)
+						nodedic[nr]=update(nodedic.get(nr,{}),newf )
+						nr+=1
 			elif rhaps=="orfeo": # conll 10 with extra columns
 				
 				nr, t, lemma , tag, tag2, _, head, rel, _, _ = cells[:10]
@@ -185,13 +268,26 @@ def tree2nodedic(tree, correctiondic={}, rhaps=False):
 					
 				nodedic[nr]=update(nodedic.get(nr,{}),newf )
 					
+##			elif nrCells == 18 or nrCells == 6 or nrCells == 20 or nrCells == 24:
+##					pass
 			elif debug:
 				print "strange conll:",nrCells,"columns!",rhaps
-	#print nodedic
+		#print nodedic
+###### alignement micro_macro_pros #######
+	if rhaps == "six3col":
+		for e in nodedic:
+			if nodedic[e]["id_dep"] in conv.keys():
+				nodedic[e]["gov"] = {conv[nodedic[e]["id_dep"]]: nodedic[e]["type_dep"]}
+				del nodedic[e]["id_dep"]
+				del nodedic[e]["type_dep"]
+			else:
+				nodedic[e]["gov"] = {nodedic[e]["id_dep"]:nodedic[e]["type_dep"]}
+				del nodedic[e]["id_dep"]
+				del nodedic[e]["type_dep"]
 	return nodedic
-		
-	
-def conll2trees(path, correctiondic={}, rhaps=False):
+
+
+def conll2trees(path, correctiondic={}, rhaps=False, encoding="utf-8"):
 	"""
 	important function!
 	
@@ -199,9 +295,9 @@ def conll2trees(path, correctiondic={}, rhaps=False):
 	
 	"""
 	trees=[]
-	with codecs.open(path,"r","utf-8") as f:
+	with codecs.open(path,"r",encoding) as f:
 		tree=""
-		if rhaps==True :next(f) # skip first line
+		if rhaps==True or rhaps=="six3col":next(f) # skip first line
 		for li in f:
 			
 			li=li.strip()
@@ -221,7 +317,7 @@ def conll2trees(path, correctiondic={}, rhaps=False):
 					tree=""
 		f.close()
 		if tree.strip(): # last tree may not be followed by empty line
-			nd=tree2nodedic(tree,correctiondic)
+			nd=tree2nodedic(tree,correctiondic,rhaps)
 			trees+=[nd]
 		return trees
 
@@ -282,9 +378,63 @@ def tempsaveconll(conlltext,text,conlltype,temppath="corpus/temp/"):
 	f.write(conlltext)
 	f.close()
 	return filename.decode("utf-8")
+
+def correctRhapsodie11(infolder):
+	for infile in glob.glob(os.path.join(infolder, '*.conll')): #*M0016
+		print "doing",infile
+		trees=conll2trees(infile)
+		trees2conll10(trees,infile[:-6]+".conllu",columns="u")
+		with codecs.open(infile[:-12]+".orfeo.conllu","w","utf-8") as f:
+			pass
+		
+def splitRhapsodie(infolder, tosplitfile):
 	
+	sent2sampTree={}
 	
+	for infile in glob.glob(os.path.join(infolder, '*.conll')):
+		print "doing",infile
+		trees=conll2trees(infile,rhaps=True)
+		for tree in trees:
+			name=os.path.basename(infile)[:-5]
+			sentence=" ".join([ node["t"] for i,node in sorted(tree.items()) ] )
+			
+			sent2sampTree[sentence]=sent2sampTree.get(sentence,[])
+			sent2sampTree[sentence]=(name,tree)
+		
+			#if sentence in text2sampTree:
+	for sentence in sent2sampTree:
+		print sentence,sent2sampTree[sentence]
+	trees=conll2trees(tosplitfile) 
+	for tree in trees:
+		sentence=" ".join([ node["t"] for i,node in sorted(tree.items()) ] )
+		sentence=sentence.replace("du","de le")
+		print sentence
+		if sentence not in sent2sampTree:
+			print sentence
+			qsdf
+				
+			
+			
 	
+		
+			
+			#if sentence in text2sampTree[name] and text2sampTree[name][sentence]!=tree:
+				#print "oh"
+				#print sentence
+				##print text2sampTree[name][sentence]
+				##print tree
+				##print text2sampTree[name][sentence]==tree
+				
+				#for i in sorted(set(text2sampTree[name][sentence].keys()+tree.keys())):
+					#if text2sampTree[name][sentence].get(i)!=tree.get(i):
+						#print text2sampTree[name][sentence].get(i)
+						#print tree.get(i)
+				
+				#print "______"
+			#else:
+				#text2sampTree[name][sentence]=tree
+			
+		
 def conll2tree(path,number):
 
 	f=codecs.open(path.encode("utf-8"),"r","utf-8")
@@ -357,27 +507,51 @@ def conll2functioncolordico(path):
 
 
 
-def trees2conll10(trees, outfile):
+def trees2conll10(trees, outfile, columns=10):
 	"""
 	can export a list of treedics into outfile
 	used after tree transformations...
+	
+	in conll14 format, the lemma position is occupied by the t position if lemma is not available
 	"""
         f=codecs.open(outfile,"w","utf-8")
         for tree in trees:
                 for i in sorted(tree.keys()):
                         node = tree[i]
-                        gov = node.get("gov",{}).items()
-                        govid = -1
-                        func = "_"
-                        if gov:
-				for govid,func in gov:
-					if govid!=-1:
-						f.write("\t".join([str(i),node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("tag2","_"),"_", str(govid),func,"_",node.get("gloss","_")])+"\n")
-			else:
-				f.write("\t".join([str(i),node.get("t","_"),node.get("lemma",""),node.get("tag","_"),node.get("tag2","_"),"_",str(govid),func,"_",node.get("gloss","_")])+"\n")
+                        #print node
+                        
+                        if columns=="u": # conllu format
+				govs=node.get("gov",{})
+				govk = sorted(govs.keys())
+				
+				f.write("\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("tag2","_"), node.get("features","_"), str(govk[0]),govs.get(govk[0],"_"), "|".join( [ str(g)+":"+govs.get(g,"_") for g in govk[1:] ]),"_"])+"\n")
+                        
+                        else:
+				gov = node.get("gov",{}).items()
+				govid = -1
+				func = "_"
+				if gov:
+					for govid,func in gov:
+						if govid!=-1:
+							if columns==10:
+								f.write("\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("tag2","_"), "_", str(govid),func,"_","_"])+"\n")
+							elif columns==14:
+								lemma = node.get("lemma","_")
+								if lemma == "_": lemma = node.get("t","_")
+								f.write("\t".join([str(i), node.get("t","_"), lemma, lemma or node.get("t","_"), node.get("tag","_"), node.get("tag","_"), node.get("morph","_"), node.get("morph","_"), str(govid),str(govid),func,func,"_","_"])+"\n")
+				else:
+					if columns==10:
+						f.write("\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("tag2","_"), "_", str(govid),func,"_","_"])+"\n")
+					elif columns==14:
+						lemma = node.get("lemma","_")
+						if lemma == "_": lemma = node.get("t","_")
+						f.write("\t".join([str(i), node.get("t","_"), lemma, lemma, node.get("tag","_"), node.get("tag","_"), node.get("morph","_"), node.get("morph","_"), str(govid),str(govid),func,func,"_","_"])+"\n")
 ##                        nr, t, lemma , tag, tag2, _, head, rel, _, _ = cells
                 f.write("\n")
         f.close()
+
+
+
 
 
 def text2conll10(infile, outfile):
@@ -474,16 +648,13 @@ def eraseFunctions(infile, outfile):
 	print
 	trees2conll10(trees,outfile)	
 
-
+			
 def splitForTraining(infilename="Rhapsodie.micro_simple.conll.oldnum"):
 	"""
 	+ splitting for parsing
 	"""
 	count=0
-	try:
-		outfile = codecs.open("bonne.Rhapsodie1000","w","utf-8")
-		testfile = codecs.open("bonne.Rhapsodie600","w","utf-8")
-		emptyfile = codecs.open("bonne.Rhapsodie600empty","w","utf-8")
+	with codecs.open("bonne.Rhapsodie1000","w","utf-8") as outfile, codecs.open("bonne.Rhapsodie600","w","utf-8") as testfile, codecs.open("bonne.Rhapsodie600empty","w","utf-8") as emptyfile:
 		
 		for tree in conll2trees(infilename):
 			count+=1
@@ -508,18 +679,50 @@ def splitForTraining(infilename="Rhapsodie.micro_simple.conll.oldnum"):
 			else:
 				testfile.write("\n")
 				emptyfile.write("\n")
-	finally:
-		outfile.close()
-		emptyfile.close()
-		testfile.close()
-
+			
+def makeEmpty(infilename,removeHash=True, outfolder="", lemma=True):
+	"""
+	takes a conll file and gives back an empty (pre-analysis file)
+	removeHash removes the hash that is used for empty spaces in tokens 
+	lemma = True: lemma will be empty, too 
+	lemma = False: lemma not empty but equal to the token (useful when no model for lemmatizing like in chinese)
+	"""
+	if outfolder[-1]!="/": outfolder=outfolder+"/"
+	count=0
+	if infilename.endswith(".trs.lif.w+p.orfeo"):
+		emptyname=outfolder+os.path.basename(infilename)[:-len(".trs.lif.w+p.orfeo")]+"-one-word-per-line.conll14"
+	elif infilename.endswith(".w+p.orfeo"):
+		emptyname=outfolder+os.path.basename(infilename)[:-len(".w+p.orfeo")]+"-one-word-per-line.conll14"
+	elif infilename.endswith(".trs.lif.w+p_anon.orfeo"):
+		emptyname=outfolder+os.path.basename(infilename)[:-len(".trs.lif.w+p_anon.orfeo")]+"-one-word-per-line.conll14"
+	elif infilename.endswith(".most.recent.trees.conll10"):
+		emptyname=outfolder+os.path.basename(infilename)[:-len(".most.recent.trees.conll10")]+"-one-word-per-line.conll14"
+	elif infilename.endswith("-one-word-per-line.conll14_parse_retok"):
+		emptyname=outfolder+os.path.basename(infilename)[:-len("-one-word-per-line.conll14_parse_retok")]
 		
-	
+	else:
+		emptyname=outfolder+os.path.basename(infilename)+"-one-word-per-line.conll14"
+	with codecs.open(emptyname,"w","utf-8") as emptyfile:
+		for tree in conll2trees(infilename):
+			for i in sorted(tree.keys()):
+				node = tree[i]
+				t=node.get("t","_")
+				if removeHash and "#" in t: t=t.replace("#"," ")
+				if lemma:lem="_"
+				else: lem=t
+				emptyfile.write("\t".join([str(node["id"]),t, lem, lem] + ["_"]*10)+"\n")
+			emptyfile.write("\n")
+	return emptyname
+
+def folderMakeEmpty(foldername):
+	for infile in glob.glob(os.path.join(foldername, '*.orfeo')):
+		print "making empty",infile
+		makeEmpty(infile,outfolder=foldername)
+		
 
 def rhapsodie2standardConll(infilename="Rhapsodie.micro_simple", outfilename="Rhapsodie.micro_simple.conll.oldnum"):
-	try:
-		infile = codecs.open(infilename,"r","utf-8")
-		outfile = codecs.open(outfilename,"w","utf-8")
+	# orféo double line format --> conll 14
+	with codecs.open(infilename,"r","utf-8") as infile, codecs.open(outfilename,"w","utf-8")  as outfile:
 		print infile.readline() # first header line
 		for line in infile:
 			print line
@@ -542,19 +745,13 @@ def rhapsodie2standardConll(infilename="Rhapsodie.micro_simple", outfilename="Rh
 				outfile.write("\t".join([lili[2],lili[5],lili[6],lili[6],lili[7],lili[7], morph,morph,head,head,func,func,"_","_" ] )+"\n")
 			elif len(line.strip())==5:
 				outfile.write("\n")
-	finally:
-		infile.close()
-		outfile.close()
-
-
-
+				
 def standardNodeNumbering(infilename="Rhapsodie.micro_simple.conll.oldnum",outfilename="Rhapsodie.conll"):
 	"""
 	put file to standard numbers
 	"""
 	count=0
-	try:
-		outfile = codecs.open(outfilename,"w","utf-8")
+	with codecs.open(outfilename,"w","utf-8") as outfile:
 		
 		for tree in conll2trees(infilename):
 			count+=1
@@ -573,8 +770,6 @@ def standardNodeNumbering(infilename="Rhapsodie.micro_simple.conll.oldnum",outfi
 				outfile.write("\t".join([str(treecorrdic[tokenid]),node.get("t","_"), node.get("lemma","_"), node.get("lemma","_"), node.get("tag","_"), node.get("tag","_"), node.get("morph","_"), node.get("morph","_"), str(treecorrdic[govid]),str(treecorrdic[govid]),func,func,"_","_"])+"\n")
 				
 			outfile.write("\n")
-	finally:
-		outfile.close()
 			
 
 	#test:
@@ -592,5 +787,9 @@ if __name__ == "__main__":
 	#rhapsodie2standardConll()
 	#standardNodeNumbering()
 	#print sorted([len(tree) for tree in conll2trees("Rhapsodie.conll")])
-	print conll2trees("corpus/conll/ouest1a.conll10")[1]
+	#correctRhapsodie11("micro_conll_piped")
+	#folderMakeEmpty("echantillon")
+	folderMakeEmpty("tcof")
+	#splitRhapsodie("micro_conll_piped", "Rhaps.gold.most.recent.trees.conll10")
+	
 		#print len(tree)

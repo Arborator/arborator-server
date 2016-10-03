@@ -1,0 +1,289 @@
+<html>
+<head>
+	<title>Arborator – Depedit</title>
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+	
+
+	
+	<script type="text/javascript" src="script/jquery.js"></script>
+	<script type="text/javascript" src="script/raphael.js"></script>
+	
+	<script type="text/javascript" src="script/jquery-ui-1.8.18.custom.min.js"></script>
+	<script type="text/javascript" src="script/jquery.cookie.js"></script>
+	
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="css/jquery-linedtextarea.css" media="screen" />
+	<script type="text/javascript" src="script/jquery-linedtextarea.js"></script>
+	
+	<script type='text/javascript' > 
+	</script>
+	<script type="text/javascript" src="script/arborator.draw.js"></script>
+<!-- 	<script type="text/javascript" src="script/q.js"></script> -->
+	<script type="text/javascript" src="script/jsundoable.js"></script>
+	<script type="text/javascript" src="script/colpick.js"></script>
+	
+	<link href="css/arborator.css" rel="stylesheet" type="text/css">
+<!-- 	<link href="css/colpick.css" rel="stylesheet" type="text/css"> -->
+
+	<script  type="text/javascript" >
+	
+	inwin=null;
+	outwin=null;
+	
+	applyGrammar = function() {
+		$("#conllout").val("Computing...");
+		$.ajax({
+			type: "POST",
+			dataType: "text",
+			url: "depedit.cgi",
+			data: {"conllin":$("#conllin").val(),"grammar":$("#grammar").val()}, 
+			success: function(answer){
+					console.log("success");
+					$("#conllout").val(answer);
+// 					console.log(nr+"erased!"+answer);
+					
+				},
+			error: function(XMLHttpRequest, textStatus, errorThrown){
+				console.log("error")
+				alert("error "+XMLHttpRequest+ "\n"+textStatus+ "\n"+errorThrown);
+				}
+			});
+		
+		}
+		
+	
+	$(function() {
+		
+		
+		$( "#showin" ).button();
+		$( "#showin" ).click( function( event ) {
+			event.preventDefault();
+			if (inwin==null || inwin.closed) 
+				{
+					inwin=window.open("q.cgi?autostart=no",
+					"#conllin",
+					"toolbar=yes,resizable=yes,width=800,left=1,top=220,height="+(screen.availHeight)+";")
+				}
+			else
+				{
+					inwin.$("#trees").empty();
+					inwin.readConll();
+					inwin.setupStyleDialog()
+					inwin.drawTrees();
+				}
+			
+			} );
+			
+		$( "#applygrammar" ).button();
+		$( "#applygrammar" ).click( function( event ) {
+			event.preventDefault();
+			applyGrammar();
+			} );
+			
+		$( "#showout" ).button();
+		$( "#showout" ).click( function( event ) {
+			event.preventDefault();
+			if (outwin==null || outwin.closed) 
+			{
+					outwin=window.open("q.cgi?autostart=no",
+					"#conllout",
+					"toolbar=yes,resizable=yes,width=800,left="+(screen.availWidth-800)+",top=220,height="+(screen.availHeight)+";")
+					timer = setInterval(checkChild, 500, outwin,"#conllout");
+				}
+			else
+				{
+					outwin.$("#trees").empty();
+					outwin.readConll();
+					outwin.setupStyleDialog()
+					outwin.drawTrees();
+				}
+			
+			} );
+		$("#grammar").linedtextarea();
+	
+		});
+		
+	</script>
+
+	
+</head>
+
+<body id="body">
+<div id="navigation" style="width:100%;margin:0px;border:0px;" class="arbortitle  ui-widget-header ui-helper-clearfix">
+	<a href='.' style='position: fixed;left:1px;top:1px'><img src="images/arboratorNano.png" border="0" title="Arborator Main Page"></a>
+	<img src="images/q.png" border="0" title="Arborator – Depedit">
+	<a style="position: fixed;right:1px;top:1px;right:5px;" id='help' title="restart the help animation"><img src="images/help.png" style="vertical-align: text-top" border="0">Help</a>
+</div>
+<div id="center" class="center" style="width:100%;float:right;top:0px;">
+	<!--<div id="trees">
+	</div>
+	
+	<div id="toggle" class="toggle" title="click here to show and hide the CoNLL input"></div>
+
+	<div id="boxx" class="boxx">-->
+	Paste and edit CoNLL file below:
+	<div id="textual" style="width:100%; display: flex; ">
+		<TEXTAREA NAME="conllin" id="conllin" title="Here you can paste and edit CoNLL files with 4, 10 or 14 columns" style="height:300;  flex: 1; background-image: url('images/conll10.png'); background-repeat: no-repeat; background-position: 98% bottom; font-size: 1em; tab-size: 12; -moz-tab-size:12;">1	Wikinews	_	NP	NP	_	2	nsubj	_	_
+2	interviews	_	VVZ	VVZ	_	0	root	_	_
+3	President	_	NN	NN	_	2	dobj	_	_
+4	of	_	IN	IN	_	3	prep	_	_
+5	the	_	DT	DT	_	7	det	_	_
+6	International	_	NP	NP	_	7	amod	_	_
+7	Brotherhood	_	NP	NP	_	4	pobj	_	_
+8	of	_	IN	IN	_	7	prep	_	_
+9	Magicians	_	NPS	NPS	_	8	pobj	_	_</TEXTAREA>
+		<div style='width:60px;margin:0 15'>
+			<label id="showin"><img src='images/cut.png' border='0' title='show trees' style='bottom:0px;'>  </label>
+		</div>
+	</div>
+Paste and edit your DepEdit transformation grammar here:
+	<div id="textual" style="width:100%; display: flex;">
+		<TEXTAREA NAME="grammar" id="grammar" title="Here you can paste and edit CoNLL files with 4, 10 or 14 columns" style="height:300; flex: 1;font-size: 1.2em; tab-size: 12; -moz-tab-size:12;">;;;Configuration file to convert Stanford Typed Dependencies to Universal Dependencies
+;;;Note not all aspects of universal dependencies are covered, especially handling of the 'name' label
+
+;simple rename
+func=/^acomp/	none	#1:func=xcomp
+func=/^npadvmod/	none	#1:func=nmod:npmod
+func=/^num/	none	#1:func=nummod
+func=/^rcmod/	none	#1:func=acl:relcl
+func=/^vmod/	none	#1:func=nfincl
+func=/^quantmod/	none	#1:func=advmod
+func=/^tmod/	none	#1:func=npmod:tmod
+func=/^predet/	none	#1:func=det:predet
+func=/^possessive/	none	#1:func=case
+func=/^poss$/	none	#1:func=nmod:poss
+func=/^prt/	none	#1:func=compound:prt
+
+;disambiguate nn
+func=/nn/&pos=/JJ/	none	#1:func=amod
+func=/nn/&pos=/DT/	none	#1:func=det
+func=/nn/	none	#1:func=compound
+;handle names HERE
+;The following undergenerates, probably best to leave off: 
+;text=/^(Mr|Mrs|Ms|Dr|Prof(essor)?|Doctor|King|Queen|Prince(ss)?|Attorney|Governer)\.?/&func=/^nn/;pos=/^NN?P/	#1.#2;#2>#1	#1>#2;#2:func=name
+
+;to-infinitive
+text=/^[Tt]o$/&func=/aux/	none	#1:func=mark
+
+;adverbial clause modifying a nominal
+pos=/^(N.*|P.*)$/;pos=/[NV].*/&func=/advcl/	#1>#2	#2:func=acl
+
+;prepositional phrases
+;simple
+func=/.*/;func=/^prep$/;func=/pobj/	#1>#2>#3	#3>#2;#2:func=case;#3:func=nmod;#1>#3
+;pcomp without mark
+func=/.*/;func=/^prep$/;func=/pcomp/	#1>#2>#3>#4	#3>#2;#2:func=_temp;#3:func=ncmod;#1>#3
+;pcomp with mark
+func=/.*/;func=/^prep$/;func=/pcomp/;func=/mark/	#1>#2>#3>#4	#3>#2;#2:func=case;#3:func=ncmod;#1>#3
+func=/_temp/	none	#1:func=mark
+
+;2word mwes
+;"apart_from", "as_from", "aside_from", "away_from", "close_by", "close_to", "contrary_to", "far_from", "next_to", "near_to", "out_of", "outside_of", "pursuant_to", "regardless_of", "together_with"
+text=/^([Aa]part|[Aa]s|[Aa]side|[Aa]way|[Ff]ar)$/;text=/^from$/	#1.#2	#1>#2;#2:func=mwe
+text=/^[Cc]lose$/;text=/^(by|to)$/	#1.#2	#1>#2;#2:func=mwe
+text=/^[Cc]ontrary$/;text=/^(to)$/	#1.#2	#1>#2;#2:func=mwe
+text=/^([Nn]ext|[Nn]ear|[Pp]ersuant)$/;text=/^(to)$/	#1.#2	#1>#2;#2:func=mwe
+text=/^([Oo]ut|[Oo]utside|[Rr]egardless)$/;text=/^(of)$/	#1.#2	#1>#2;#2:func=mwe
+text=/^[Tt]ogether$/;text=/^with$/	#1.#2	#1>#2;#2:func=mwe
+
+;3word mwes
+;"by_means_of", "in_accordance_with", "in_addition_to", "in_case_of", "in_front_of", "in_lieu_of", "in_place_of", "in_spite_of", "on_account_of", "on_behalf_of", "on_top_of", "with_regard_to", "with_respect_to"
+text=/^[Bb]y$/;text=/^means$/;text=/^of$/	#1.#2.#3	#1>#2>#3;#2:func=mwe;#3:func=mwe
+text=/^[Ii]n$/;text=/^accordance$/;text=/^with$/	#1.#2.#3	#1>#2>#3;#2:func=mwe;#3:func=mwe
+text=/^[Ii]n$/;text=/^addition$/;text=/^to$/	#1.#2.#3	#1>#2>#3;#2:func=mwe;#3:func=mwe
+text=/^[Ii]n$/;text=/^(case|front|lieu|place|spite)$/;text=/^of$/	#1.#2.#3	#1>#2>#3;#2:func=mwe;#3:func=mwe
+text=/^[Oo]n$/;text=/^(account|behalf|top)$/;text=/^of$/	#1.#2.#3	#1>#2>#3;#2:func=mwe;#3:func=mwe
+text=/^[Ww]ith$/;text=/^(regard|respect)$/;text=/^to$/	#1.#2.#3	#1>#2>#3;#2:func=mwe;#3:func=mwe</TEXTAREA>
+		<div style='width:60px;margin:0 15'>
+			<label for="applygrammar" id="applygrammar"><img src='images/cut.png' border='0' title='apply grammar' style='bottom:0px;'>  </label>
+	<!-- 		 style='position:absolute;top:0;' -->
+		</div>
+	</div>
+
+Result after transformation:
+	<div id="textual" style="width:100%; display: flex; font-size: .7em; tab-size: 12; -moz-tab-size:12;">
+	<TEXTAREA NAME="conllout" id="conllout" title="Result after transformation" style="width:100%; height:300; background-image: url('images/conll10.png'); background-repeat: no-repeat; background-position: 98% bottom; font-size: 1em; tab-size: 12; -moz-tab-size:12; ">
+
+	</TEXTAREA>
+	<div style='width:60px;margin:0 15 '>
+		<label id="showout"><img src='images/cut.png' border='0' title='show trees' style='bottom:0px;'>  </label>
+	</div>
+</div>
+
+			<!--<div style='float:xxx;'>
+
+				<div ><span style='float:left;'>additional functions</span> <input type='text' id='addfuncs'  style='width:100%' title='Here you can add additional functions that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='nsubj csubj nsubjpass csubjpass dobj ccomp xcomp iobj vocative aux mark discourse auxpass expl cop neg root advmod dislocated nmod advcl nummod acl amod appos det nmod case compound mwe goeswith name foreign list parataxis remnant reparandum conj cc punct dep'></input></div>
+				
+				<div ><span style='float:left;'>additional POS tags</span> <input type='text' id='addcats'  style='width:100%;' title='Here you can add additional categories that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='ADJ ADP PUNCT ADV AUX SYM INTJ CONJ X NOUN DET PROPN NUM VERB PART PRON SCONJ _'>  </input> </div>
+				
+				<div >or paste your sentences here:
+				<TEXTAREA NAME="sentences" id="sentences"  title='Here you can provide unanalyzed textual data, one sentence per line. You can then interactively add the syntactic analysis of your sentences. This will erase all the existing trees'  style="width:100%; height:100;"></TEXTAREA>
+				</div>
+				
+			</div>
+			<input type="checkbox" id="annodoccheck"><label for="annodoccheck"><img src='images/annodoc.png' border='0' title='show annodoc graph' style='top:0px;'>  </label>-->
+
+
+
+	
+		<!--<div style='float:right;'>
+			<img  id="style" src='images/style.png' border='0' title='style' style='top:0px;'> 
+			
+		</div>-->
+<!--<div id="styledialog" title="Design your dependency tree" style="background-color: white;">
+	<div id="stylefunctions" title="functions">
+
+	</div>
+	<div style='float:right;'>
+		<input type="checkbox" id="styleconllcheck">include style information in CoNLL
+	</div>
+</div>-->
+	
+	
+
+<br>
+
+</div></div>
+
+	<form method="post" action="convert_svg.cgi?project=quickie" name="ex" id="ex" style=" position:fixed;top:6px;right:30px;display:none;"  target="_blank">
+		<input type="hidden" id="source" name="source" value="">
+		<select id="exptype" name="type" class="ui-button ui-state-default ui-corner-all" style="height:16px;font: italic 10px Times,Serif;border:thin solid silver;" >
+			<option>pdf</option>
+			<option>ps</option>
+			<option>odg</option>
+			<option>jpg</option>
+			<option>png</option>
+			<option value="tif">tiff</option>
+			<option>svg</option>
+		</select>
+		<input type="button" title="export" value="export" class="ui-button ui-state-default ui-corner-all" onClick="exportTree();"  style="padding: 0.0em 0.0em;" >
+	</form>
+	
+	
+	<div id="funcform" style="display:none;position:absolute;">
+		<form  method="post" id="func" name="func" >
+			<select id="funchoice" class='funcmenu' onClick="changeFunc(event);" size=0 style="height:0; width:80px;"  >
+			</select>
+		</form>
+	</div>
+	<div id="catform" style="display:none;position:absolute;">
+		<form  method="post" id="cat" name="cat" >
+			<select id="catchoice" class='funcmenu' onClick="changeCat();"  size=0 style="height:0; width:80px;"  >
+			</select>
+		</form>
+	</div>
+	
+
+	<div id="dialog" title="Confirmation" style="display: none;" >
+		<div class="ui-state-error ui-corner-all" style="margin: 40px;padding: 10pt 0.7em;">
+			<h2 id="question">Are you sure?</h2>
+		</div>
+	</div>
+	<!--<div id="b" class="rbubble" style="right: 650px;top: 44px; position: absolute;display:none;">Paste a CoNLL file content here</div>
+	<div id="bb" class="rbubble" style="right: 650px;top: 533px;position: absolute;">Or paste the sentences you want to analyze here.<br/>One sentence per line.</div>
+	<div id="bbb" class="lbubble" style="left: 400px;top: 400px;position: absolute;">As soon as you click anywhere else, the graph is updated and you can modify the dependencies by dragging one word over the other.</div>
+	<div id="bbbb" class="lbubble" style="left: 400px;top: 35px;position: absolute;">You can export the graph in various formats by clicking on the green arrow.</div>-->
+	
+	
+</div>
+</body></html>

@@ -1,0 +1,58 @@
+N	ainsi qu'	COO	ainsi que	#####
+N	ainsi que	COO	ainsi que	#####
+A	alias	COO	alias	#####
+N	&amp;	COO	et	#####
+S	à savoir	COO	à savoir	#####
+S	au même titre qu'	COO	au même titre que	#####
+S	au même titre que	COO	au même titre que	#####
+S	autant	COO	autant	#####
+N	c-à-d	COO	c'est-à-dire	#####
+N	c.-à.-d.	COO	c'est-à-dire	#####
+N	càd	COO	c'est-à-dire	#####
+A	car	COO	car	#####
+N	c'est à dire	COO	c'est à dire	#####
+N	c'est-à-dire	COO	c'est-à-dire	#####
+S	c'est à dire qu'	COO	c'est à dire	#####
+S	c'est-à-dire qu'	COO	c'est-à-dire	#####
+S	c'est à dire que	COO	c'est à dire	#####
+S	c'est-à-dire que	COO	c'est-à-dire	#####
+S	c'est pourquoi	COO	c'est pourquoi	#####
+S	comme	COO	comme	#####
+N	&	COO	et	#####
+N	/	COO	ou	#####
+N	+	COO	plus	#####
+S	donc	COO	donc	#####
+S	d'où	COO	d'où	#####
+S	et alors	COO	et alors	#####
+S	et aussi	COO	et aussi	#####
+N	et	COO	et	#####
+S	et donc	COO	et donc	#####
+S	et encore	COO	et encore	#####
+S	et même	COO	et même	#####
+N	et|ou	COO	et-ou	#####
+N	et-ou	COO	et-ou	#####
+N	et/ou	COO	et-ou	#####
+N	et puis	COO	et puis	#####
+N	id est	COO	id est	#####
+N	i.e.	COO	id est	#####
+N	ie	COO	id est	#####
+S	mais alors	COO	mais alors	#####
+S	mais aussi	COO	mais aussi	#####
+N	mais	COO	mais	#####
+S	mais encore	COO	mais encore	#####
+N	ni	COO	ni	#####
+N	or	COO	or	#####
+S	ou alors	COO	ou alors	#####
+S	ou bien	COO	ou bien	#####
+S	ou bien encore	COO	ou bien encore	#####
+N	ou	COO	ou	#####
+S	ou encore	COO	ou encore	#####
+N	ou/et	COO	et-ou	#####
+S	plus	COO	plus	#####
+N	puis	COO	puis	#####
+N	sinon	COO	sinon	#####
+N	soit	COO	soit	#####
+S	tout comme	COO	tout comme	#####
+N	voire	COO	voire	#####
+S	voire même	COO	voire même	#####
+S	y compris	COO	y compris	#####

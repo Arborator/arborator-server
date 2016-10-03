@@ -1,0 +1,154 @@
+# signification du statut (première colonne)
+# A(ajout)              par rapport au lefff
+# S(suppression)        par rapport au lefff
+# N(neutre)             était dans le lefff et on le conserve
+# M(morph)              expression polylexicale potentiellement ambigue, à représenter par lien morph
+# MF(morph figée)       expression polylexicale à représenter par lien morph très largement figée
+# X(exogène)            expression polylexicale potentiellement ambigue exogène (aucun des mots formant l'expression possède la catégorie de l'expression)
+# XF(exogène figée)     expression polylexicale exogène très largement figée
+
+A	assez	PRO	assez	#####
+N	aucune	PRO	aucun	##f#s##i
+N	aucun	PRO	aucun	##m#s##i
+A	autant	PRO	autant	#####
+MF	autre chose	PRO	autre chose	#3#m###
+S	autre	PRO	autre	###s##i
+N	autres	PRO	autre	###p##i
+N	autrui	PRO	autrui	###s##i
+A	bcp	PRO	beaucoup	####
+A	beaucoup	PRO	beaucoup	##### 
+N	ça	PRO	cela	##m#s##
+N	ceci	PRO	ceci	###s##
+N	cela	PRO	cela	###s##
+N	celle-ci	PRO	celui-ci	##f#s##
+N	celle-là	PRO	celui-là	##f#s##
+N	celle	PRO	celui	##f#s##
+N	celles-ci	PRO	celui-ci	##f#p##
+N	celles-là	PRO	celui-là	##f#p##
+N	celles	PRO	celui	##f#p##
+N	celui-ci	PRO	celui-ci	##m#s##
+N	celui-là	PRO	celui-là	##m#s##
+N	celui	PRO	celui	##m#s##
+N	certaines	PRO	certains	##f#p##i
+N	certains	PRO	certains	##m#p##i
+N	ceux-ci	PRO	celui-ci	##m#p##
+N	ceux-là	PRO	celui-là	##m#p##
+N	ceux	PRO	celui	##m#p##
+N	chacune	PRO	chacun	##f###i
+N	chacun	PRO	chacun	##m###i
+N	elle-même	PRO	moi-même	#####
+N	elle	PRO	moi	#3#f#s##
+N	elles-même	PRO	moi-même	#####
+N	elles-mêmes	PRO	moi-même	#####
+N	elles	PRO	moi	#3#f#p##
+N	eux-même	PRO	moi-même	#####
+N	eux-mêmes	PRO	moi-même	#####
+N	eux	PRO	moi	#3#m#p##
+N	icelle	PRO	icelui	##f#s##
+N	icelles	PRO	icelui	##f#p##
+N	icelui	PRO	icelui	##m#s##
+N	iceux	PRO	icelui	##m#p##
+N	la leur	PRO	le mien	##f#s##
+N	la mienne	PRO	le mien	##f#s##
+N	la nôtre	PRO	le mien	##f#s##
+N	la plupart	PRO	la plupart	#3####
+N	la sienne	PRO	le mien	##f#s##
+N	la tienne	PRO	le mien	##f#s##
+M	l' autre	PRO	l'autre	###s##i
+N	la vôtre	PRO	le mien	##f#s##
+N	le leur	PRO	le mien	##m#s##
+M	le même	PRO	le même	##m#s##
+M	la même	PRO	le même	##f#s##
+N	le mien	PRO	le mien	##m#s##
+N	le nôtre	PRO	le mien	##m#s##
+S	les autres	PRO	l'autre	###p##i
+N	le sien	PRO	le mien	##m#s##
+N	les leurs	PRO	le mien	##f#p##
+N	les leurs	PRO	le mien	##m#p##
+N	les miennes	PRO	le mien	##f#p##
+N	les miens	PRO	le mien	##m#p##
+N	les nôtres	PRO	le mien	##f#p##
+N	les nôtres	PRO	le mien	##m#p##
+N	les siennes	PRO	le mien	##f#p##
+N	les siens	PRO	le mien	##m#p##
+N	les tiennes	PRO	le mien	##f#p##
+N	les tiens	PRO	le mien	##m#p##
+N	les unes	PRO	l'un	##f#p##i
+N	les uns	PRO	l'un	##m#p##i
+N	les vôtres	PRO	le mien	##f#p##
+N	les vôtres	PRO	le mien	##m#p##
+N	le tien	PRO	le mien	##m#s##
+N	le vôtre	PRO	le mien	##m#s##
+N	lui-même	PRO	moi-même	#####
+N	lui	PRO	moi	#3#m#s##
+N	l' une et l' autre	PRO	l'un et l'autre	#3#f#p##
+N	l' une ou l' autre	PRO	l'un ou l'autre	#3#f#p##
+N	l' une	PRO	l'un	##f#s##i
+N	l' un et l' autre	PRO	l'un et l'autre	#3#m#p##
+N	l' un ou l' autre	PRO	l'un ou l'autre	#3#m#p##
+N	l' un	PRO	l'un	##m#s##i
+S	même	PRO	même	###s##i
+S	mêmes	PRO	même	###p##i
+N	moi-même	PRO	moi-même	#####
+N	moi	PRO	moi	#1##s##
+N	ni l' une ni l' autre	PRO	ni l'un ni l'autre	#3#f#p##
+N	ni l' un ni l' autre	PRO	ni l'un ni l'autre	#3#m#p##
+N	n' importe lequel	PRO	n'importe lequel	#3#m#s##
+N	n' importe laquelle	PRO	n'importe lequel	#3#f#s##
+N	n' importe qui	PRO	n'importe qui	#####
+N	n' importe quoi	PRO	n'importe quoi	#####
+N	nous-même	PRO	moi-même	#####
+N	nous-mêmes	PRO	moi-même	#####
+N	nous	PRO	moi	#1##p##
+N	nulle	PRO	nul	##f#s##i
+N	nul	PRO	nul	##m#s##i
+N	pas grand-chose	PRO	pas grand-chose	###s##i
+N	personne	PRO	personne	###s##i
+N	peu de chose	PRO	peu de chose	#3####
+M	plus d'une	PRO	plus d'un	##f###i
+M	plus d'un	PRO	plus d'un	##m###i
+N	plusieurs	PRO	plusieurs	#####i
+N	plusieurs	PRO	plusieurs	###p##i
+N	qqchose	PRO	quelque chose	##m#s##i
+N	qqch	PRO	quelque chose	##m#s##i
+N	qqc	PRO	quelque chose	##m#s##i
+N	qqn	PRO	quelqu'un	###s##i
+N	quelque chose	PRO	quelque chose	##m#s##i
+N	quelques-unes	PRO	quelques-uns	##f#p##i
+N	quelques-uns	PRO	quelques-uns	##f#p##i
+N	quelqu' une	PRO	quelqu'un	##f#s##i
+N	quelqu' un	PRO	quelqu'un	###s##i
+N	quiconque	PRO	quiconque	###s##i
+N	qui de droit	PRO	qui de droit	#3##s##
+N	qui que ce soit	PRO	qui que ce soit	#3##s##
+N	quoi que ce soit	PRO	quoi que ce soit	#3##s##
+N	rien	PRO	rien	###s##i
+N	soi-même	PRO	moi-même	#####
+N	soi	PRO	moi	#3####
+N	tel et tel	PRO	tel et tel	#3#m#s##
+N	telle et telle	PRO	tel et tel	#3#f#s##
+N	telle ou telle	PRO	tel ou tel	#3#f#s##
+N	telle	PRO	tel	##f#s##i
+N	telles et telles	PRO	tel et tel	#3#f#p##
+N	telles ou telles	PRO	tel ou tel	#3#f#p##
+N	telles	PRO	tel	##f#p##i
+N	tel ou tel	PRO	tel ou tel	#3#m#s##
+N	tel	PRO	tel	##m#s##i
+N	tels et tels	PRO	tel et tel	#3#m#p##
+N	tels ou tels	PRO	tel ou tel	#3#m#p##
+N	tels	PRO	tel	##m#p##i
+N	toi-même	PRO	moi-même	#####
+N	toi	PRO	moi	#2##s##
+N	tous	PRO	tout	##m#p##i
+N	toute	PRO	tout	##f#s##i
+N	toutes	PRO	tout	##f#p##i
+N	tout le monde	PRO	tout le monde	#3#m#s##
+N	tout	PRO	tout	##m#s##i
+N	une	PRO	un	##f#s##i
+N	unes	PRO	un	##f#p##i
+N	un	PRO	un	##m#s##i
+N	uns	PRO	un	##m#p##i
+N	vous-même	PRO	moi-même	#####
+N	vous-mêmes	PRO	moi-même	#####
+N	vous	PRO	moi	#2##p##
+A	ce	PRO	ce	#####

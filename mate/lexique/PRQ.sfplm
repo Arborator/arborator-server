@@ -1,0 +1,46 @@
+S	auquel	PRQ	auquel	#####
+S	auxquelles	PRQ	auquel	#####
+S	auxquels	PRQ	auquel	#####
+N	combien	PRQ	combien	#####
+A	combien est -ce que	PRQ	combien est -ce que	#####
+A	combien est -ce qu'	PRQ	combien est -ce que	#####
+A	comme	PRQ	combien	#####
+N	comment	PRQ	comment	#####
+A	comment est -ce que	PRQ	comment est -ce que	#####
+A	comment est -ce qu'	PRQ	comment est -ce que	#####
+S	desquelles	PRQ	duquel	#####
+S	desquels	PRQ	duquel	#####
+N	dont	PRQ	dont	###p#gen#
+S	duquel	PRQ	duquel	#####
+S	est -ce que	PRQ	est-ce que	#####
+S	est -ce qu'	PRQ	est-ce que	#####
+N	laquelle	PRQ	lequel	##f#s##
+N	lequel	PRQ	lequel	##m#s##
+N	lesquelles	PRQ	lequel	##f#p##
+N	lesquels	PRQ	lequel	##m#p##
+N	où	PRQ	où	###p##
+N	où	PRQ	où	###p#loc#
+A	où est -ce que	PRQ	où est -ce que	#####
+A	où est -ce qu'	PRQ	où est -ce qu'	#####
+N	pkoi	PRQ	pourquoi	#####
+N	pourquoi	PRQ	pourquoi	#####
+A	pourquoi est -ce que	PRQ	pourquoi est -ce que	#####
+A	pourquoi est -ce qu'	PRQ	pourquoi est -ce qu'	#####
+N	quand	PRQ	quand	#####
+A	quand est -ce que	PRQ	quand est -ce que	#####
+A	quand est -ce qu'	PRQ	quand est -ce qu'	#####
+N	que	PRQ	que	###p##
+N	que	PRQ	que	###p#acc#
+A	quel	PRQ	quel	##m#s##
+A	quelle	PRQ	quel	##f#s##
+A	quelles	PRQ	quel	##f#p##
+A	quels	PRQ	quel	##m#p##
+N	qu' est -ce que	PRQ	qu'est-ce que	###p##
+A	qu' est -ce qui	PRQ	qu'est-ce qui	###p##
+A	qu' est -ce qu'	PRQ	qu'est-ce qu'	###p##
+A	qui est -ce que	PRQ	qui est-ce que	###p##
+N	qui est -ce qui	PRQ	qui est-ce qui	###p##
+A	qui est -ce qu'	PRQ	qui est-ce qu'	###p##
+N	qui	PRQ	qui	###p###
+N	quoi	PRQ	quoi	######
+N	qu'	PRQ	que	###p##

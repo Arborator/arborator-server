@@ -47,12 +47,7 @@ def printhtmlheader():
 		<title>Arborator – Quickedit</title>
 		<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
 		
-		
-		
-		
-		
-		
-		
+	
 		
 		<script type="text/javascript" src="script/jquery.js"></script>
 		<script type="text/javascript" src="script/raphael.js"></script>
@@ -62,6 +57,9 @@ def printhtmlheader():
 		
 		<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" media="screen" />
 		
+		<script type='text/javascript' > 
+		var currentsvg = "mmmm"; 
+		</script>
 		<script type="text/javascript" src="script/arborator.draw.js"></script>
 		<script type="text/javascript" src="script/q.js"></script>
 		<script type="text/javascript" src="script/jsundoable.js"></script>
@@ -69,9 +67,7 @@ def printhtmlheader():
 		
 		<link href="css/arborator.css" rel="stylesheet" type="text/css">
 		<link href="css/colpick.css" rel="stylesheet" type="text/css">
-		
-		
-		
+
 		
 		<script type="text/javascript" src="annodoc/jquery.svg.min.js"></script>
 		<script type="text/javascript" src="annodoc/jquery.svgdom.min.js"></script>
@@ -80,12 +76,13 @@ def printhtmlheader():
 		<script type="text/javascript" src="annodoc/waypoints.min.js"></script>
 		<script type="text/javascript" src="annodoc/jquery.address.min.js"></script>
 
-		// brat helper modules
+		<!--brat helper modules-->
 		<script type="text/javascript" src="annodoc/configuration.js"></script>
 		<script type="text/javascript" src="annodoc/util.js"></script>
 		<script type="text/javascript" src="annodoc/annotation_log.js"></script>
-		<script type="text/javascript" src="annodoc/webfont.js"></script>
-		// brat modules
+		
+		<!--<script type="text/javascript" src="annodoc/webfont.js"></script>-->
+		<!--brat modules-->
 		<script type="text/javascript" src="annodoc/dispatcher.js"></script>
 		<script type="text/javascript" src="annodoc/url_monitor.js"></script>
 		<script type="text/javascript" src="annodoc/visualizer.js"></script>
@@ -183,7 +180,9 @@ def printexport():
 	"""
 	
 def printforms():
-	print """<div id="toggle" class="toggle" title="click here to show and hide the CoNLL input"></div>
+	print """
+	<div id="toggleAndBoxx" class="toggleAndBoxx">
+	<div id="toggle" class="toggle" title="click here to show and hide the CoNLL input"></div>
 	<div id="boxx" class="boxx">
 		<div class="arrow" title="you can click here (or anywhere else outside the box) when you have finished editing the CoNLL format or sentence text area">⬌</div>
 		<div id="textual" class="textual">Paste and edit CoNLL file below:
@@ -265,7 +264,7 @@ def printforms():
 	print ""
 	print "<br>"
 	print """"""
-	print "</div></div>"
+	print "</div></div></div>"
 
 def printmenues():
 	print """	
@@ -294,7 +293,9 @@ def printdialogs():
 	<div id="bb" class="rbubble" style="right: 650px;top: 533px;position: absolute;">Or paste the sentences you want to analyze here.<br/>One sentence per line.</div>
 	<div id="bbb" class="lbubble" style="left: 400px;top: 400px;position: absolute;">As soon as you click anywhere else, the graph is updated and you can modify the dependencies by dragging one word over the other.</div>
 	<div id="bbbb" class="lbubble" style="left: 400px;top: 35px;position: absolute;">You can export the graph in various formats by clicking on the green arrow.</div>
-	
+			
+	<input type="button" id="drawbutton" value="draw" class="ui-button ui-state-default ui-corner-all" onClick='$("#funchoice").empty(); $("#catchoice").empty();$("#stylefunctions").empty();$("#trees").empty();readConll();setupStyleDialog();drawTrees();nokeys=false;'  style="display: none;" >
+
 	"""
 
 ##############################################################################################"

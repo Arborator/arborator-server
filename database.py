@@ -76,7 +76,8 @@ class SQL:
 		self.validatorsCanModifyTokens=int(self.projectconfig["configuration"].get("validatorsCanModifyTokens","0"))
 		self.usersCanModifyTokens=int(self.projectconfig["configuration"].get("usersCanModifyTokens","0"))
 		self.sentencefeaturesAlways=int(self.projectconfig["configuration"].get("sentencefeaturesAlways","0"))
-		
+		self.mate = self.projectconfig["configuration"].get("mate",None) # self.baseAnnotatorName
+
 		
 		self.editable=self.projectconfig["configuration"]["editable"]
 		
@@ -407,6 +408,8 @@ class SQL:
 		return answerdic
 	
 
+
+
 	######################### getting data out to the interface
 
 
@@ -478,9 +481,7 @@ class SQL:
 		except:
 			exotype = 0
 		
-		if username==self.teacher: # this can happen in two cases: user is actually teacher, or the teacher's tree is needed for comparison
-			
-		
+		if username==self.teacher: # this can happen in two cases: user is actually teacher, or the teacher's tree is needed for comparison		
 			if exotype>0 and adminLevel==0: # this is a student asking for the teacher's tree --> the tree cannot be saved
 				dic["teacher"]=1 # the teacher feature is checked in javascript: arborator.edit.js
 		else:# to avoid recursion
@@ -629,23 +630,18 @@ class SQL:
 		"""
 		for a given sentence id, gives the html with links to all the trees of the sentence
 		validvalid: list of userids that should be shown because they have validated the text. if none is given, the validvalid is computed
-		addEmptyUser: in case of teacher visible exercises, the user itself needs to be automatically provided with an empty tree
+		addEmptyUser: in case of "teacher visible" exercises, the user itself needs to be automatically provided with an empty tree
 		"""
-		#importannoname=self.baseAnnotatorName
-		#
 		
 		if self.showTreesOfValidatedTexts and not validvalid:
-			validvalid=self.validvalid(None, sid)
-		
-		
-				
+			validvalid=self.validvalid(None, sid)			
 				
 		if adminLevel or validator or (self.allVisibleForNonAnnotators and todo==-1):
 			treeDict=dict([ (user, (treeid,uid,realname,timestamp)) for treeid,uid,user,realname,timestamp in self.treesForSentence(sid)])
 		else: # common mortal:
 			treeDict=dict([ (user, (treeid,uid,realname,timestamp)) for treeid,uid,user,realname,timestamp in self.treesForSentence(sid) if user in self.visibleToEveryone or user==username or uid in validvalid])
 		
-		if not treeDict or (addEmptyUser and addEmptyUser not in treeDict and username not in treeDict): # 
+		if not treeDict or (addEmptyUser and addEmptyUser not in treeDict and username not in treeDict):
 			# could happen in case of exo:
 			# in case user hasn't created own tree, she should see tree of self.exoBaseAnnotatorName
 			# in case tree of self.exoBaseAnnotatorName doesn't exist = tree of self.importAnnotatorName without deps and cats
@@ -699,15 +695,12 @@ class SQL:
 		
 		#print "<br>____",adminLevel,sid,treeDict,"===============",goodlist, not goodlist, addEmptyUser, "self.visibleToEveryone",self.visibleToEveryone,"uid in validvalid",uid in validvalid,uid, validvalid,"self.catName",self.catName
 		
-		
 		html=""
 		if len(goodlist)>0:
 			if adminLevel  :
 				html += " ".join([u'''<a class='othertree' title='{title}' treeid='{treeid}' treecreator='{u}' nr='{snr}'>{u}</a><sup> <a onclick="eraseTree({snr},{treeid},'{u}');">x</a></sup>'''.format(treeid=treeid,u=u,snr=snr,title=unicode(realname)+" "+asctime(localtime(timestamp))) for (u,(treeid,uid,realname,timestamp)) in goodlist])
 			else:
 				html = " ".join([u'''<a class='othertree' treeid='{treeid}' title='{title}' treecreator='{u}' nr='{snr}'>{u}</a>'''.format(treeid=treeid,u=u,snr=snr,title=unicode(realname)+" "+asctime(localtime(timestamp))) for (u,(treeid,uid,realname,timestamp)) in goodlist])
-		#else:
-			#html=" "
 		
 		if len(goodlist)>1:
 			objs="{"+",".join(['''"{u}":"{treeid}"'''.format(treeid=treeid,u=u) for (u,(treeid,uid,realname,timestamp)) in goodlist])+"}"
@@ -730,7 +723,6 @@ class SQL:
 				
 		return html,firsttreeid, sentenceinfo
 	
-				
 	
 
 	def getNumberTexts(self):
@@ -753,7 +745,19 @@ class SQL:
 		number=cursor.fetchone()[0]
 		db.close()
 		return number
-
+        
+        def getNumberValidatedSentences(self):
+                """
+		returns number of validated sentences in the table
+		"""
+		db,cursor=self.open()
+		cursor.execute("""select count(*) from (select distinct sentences.nr, sentences.sentence from sentences, trees, texts, todos where trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid and todos.textid=texts.rowid and( trees.status=1 or todos.status=1)  );""")
+		number=cursor.fetchone()[0]
+		db.close()
+		return number
+            
+            
+        
 
 	def getNumberTreesPerUserAndText(self, uid, tid):
 		"""
@@ -789,7 +793,17 @@ class SQL:
 			db.commit()
 			db.close()
 			return number
-
+                    
+        def getNumberValidatedTokens(self):
+                """
+		returns number of tokens of all validated sentences in the table
+		"""
+		db,cursor=self.open()
+				
+		cursor.execute("""select count(*) from (select distinct features.nr, trees.sentenceid from features, sentences, trees, texts, todos where features.attr=? and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid and todos.textid=texts.rowid and ( trees.status=1 or todos.status=1)   );""",self.tokenName )
+		number=cursor.fetchone()[0]
+		db.close()
+		return number
 	
 	def gettreestatus(self,sid,userid):
 		"""
@@ -1346,6 +1360,8 @@ class SQL:
 		conll and xml export
 		called from project.cgi
 		for export of complete sets of annotations
+		
+		exportType: todosconll, todosxml, lastconll, lastxml, allconll, allxml
 		"""
 		db,cursor=self.open()
 
@@ -1405,6 +1421,8 @@ class SQL:
 						xml= doc.toprettyxml(indent="     ")
 						outf.write(xml)
 					outf.close()
+					try:	os.chmod(filename,0666)
+					except:	pass
 					fcounter+=1
 
 		elif exportType in ["lastconll", "lastxml"]: 	# for every sentence, the most recent tree is exported
@@ -1444,6 +1462,8 @@ class SQL:
 					xml= doc.toprettyxml(indent="     ")
 					outf.write(xml)
 				outf.close()
+				try:	os.chmod(filename,0666)
+				except:	pass
 				fcounter+=1
 
 			users=["most recent modification (including trees from "+", ".join(users)+")"]
@@ -1456,15 +1476,14 @@ class SQL:
 					rr=self.getall(cursor, "trees",["sentenceid"], [sentenceid])
 					if rr:
 						for treeid,sid,uid,ty,sta,comm,ti in rr: # for each tree on the sentence:
-							uid2stid[(uid,ty)]=uid2stid.get(uid,[])+ [  (sid,treeid)] # keep it in memory
+							uid2stid[(uid,ty)]=uid2stid.get((uid,ty),[])+ [  (nr,sid,treeid)] # keep it in memory
 				for uid,ty in uid2stid:
 					a= self.getall(cursor, "users",["rowid"], [uid])
 					if a :
 						uid,user,realname = a[0]
-
+						
 						if ty: user = user+"-valid"
 						users+=[user]
-						#print uid,user,realname
 						filename = self.exportpath+basefilename + "."+user
 						if exportType=="allconll":
 							filename+=".trees.conll10"
@@ -1473,7 +1492,7 @@ class SQL:
 							doc,tokens,lexemes, dependencies, text = rhapsoxml.baseXml()
 							filename+=".trees.rhaps.xml"
 						outf=codecs.open(filename.encode("utf-8"),"w","utf-8")
-						for sid,treeid in uid2stid[(uid,ty)]:
+						for nr,sid,treeid in sorted(uid2stid[(uid,ty)]):
 							if exportType=="allconll":
 								doublegovs=self.conllSentenceExport(sid, cursor, treeid, outf)
 							else:
@@ -1484,6 +1503,8 @@ class SQL:
 						xml= doc.toprettyxml(indent="     ")
 						outf.write(xml)
 					outf.close()
+					try:	os.chmod(filename,0666)
+					except:	pass
 					fcounter+=1
 
 		return fcounter,users,scounter,doublegovs
@@ -1541,7 +1562,10 @@ class SQL:
 		rhapsoxml.addFeat2doc(d, doc, self.tokenName,"lemma", tokens, lexemes, dependencies)
 		return sentence+"\n"
 
-
+	
+	def exportAll(self, exportType): 
+		for t,tid in sorted( [(t,tid) for tid,t,nrtokens in self.getall(None, "texts", None, None)]):
+			fc,users,sc,doublegovs=self.exportAnnotations(tid, t, exportType )
 
 
 
@@ -1571,12 +1595,20 @@ class SQL:
 				words+=[word]
 		
 		if featuresearch:
-			featurequery = "  "
+			featurequery = " "
+			features, features2 = " ", " "
+			links, links2 = " ", " "
 			for attr, value in featuresearch:
 				if attr=="func" or attr=="function":
 					featurequery+= " and links.function='{value}' and links.treeid=trees.rowid ".format(value=value)
+					links=", links "
+					links2=" and links.treeid=trees.rowid "
+					
 				else:
 					featurequery+= " and features.attr='{attr}' and features.value='{value}'".format(attr=attr,value=value)
+					features=", features "
+					features2=" and features.treeid=trees.rowid " 
+					
 			#print featurequery	
 			if words:
 				query=" ".join(words)
@@ -1591,7 +1623,12 @@ class SQL:
 					#print "SELECT texts.textname, sentencesearch.rowid, sentencesearch.nr, sentencesearch.textid, sentencesearch.sentence FROM sentencesearch, texts, features, trees, sentences  WHERE sentencesearch.sentence like '%{query}%' AND sentencesearch.textid = texts.rowid and sentences.nr=sentencesearch.nr and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;	".format(query=query,featurequery=featurequery)
 			else:
 				
-				rc=cursor.execute("SELECT texts.textname, sentences.rowid, sentences.nr, sentences.textid, 'not available' FROM texts, features, trees, sentences, links  WHERE sentences.textid = texts.rowid and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;	".format(featurequery=featurequery))
+				#rc=cursor.execute("SELECT texts.textname, sentences.rowid, sentences.nr, sentences.textid, '-' FROM texts {otherfeatures}, trees, sentences {links}  WHERE sentences.textid = texts.rowid and features.treeid=trees.rowid and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;".format(features=features, links=links, featurequery=featurequery))
+				q="SELECT texts.textname, sentences.rowid, sentences.nr, sentences.textid, '-' FROM texts, sentences {features} {links}, (SELECT sentences.rowid as sentenceid,trees.rowid as rowid,trees.userid,MAX(trees.timestamp) as max_date FROM sentences,trees WHERE trees.sentenceid=sentences.rowid GROUP BY sentences.rowid)trees WHERE sentences.textid = texts.rowid {features2} {links2} and trees.sentenceid=sentences.rowid and sentences.textid=texts.rowid  {featurequery} ;".format(features=features, features2=features2, links=links, links2=links2, featurequery=featurequery)
+				#print q
+				print "results only on last modified trees <br>"
+				rc=cursor.execute(q)
+				
 		
 		else:
 			try:
@@ -1602,7 +1639,10 @@ class SQL:
 		html=""
 		counter=0
 		lastsid=None
-		for tname, sid, snr, textid, r, in rc:
+		for tname, sid, snr, textid,r, in rc:
+			
+			
+			
 			if sid!=lastsid: # ugly hack to avoid the sqlite fts4 bug that doesn't allow "select distinct" searches
 				counter+=1
 				html+= "<tr><td>"+str(counter)+"</td><td><b><a style='cursor:pointer;' onclick=edit('"+str(textid)+"','"+str(snr)+"')>"+ tname +"</a></b></td>"
@@ -1737,10 +1777,13 @@ if __name__ == "__main__":
 	print "bonjour"
 	
 	#sql=SQL("Rhapsodie")
-	sql=SQL("lingCorpus")
-	sql=SQL("HongKongTVMandarin")
-	
-	print sql.gettree(treeid=3947)
+	#sql=SQL("lingCorpus")
+	#sql=SQL("HongKongTVMandarin")
+	sql=SQL("OrfeoGold2016")
+	#sql.exportAnnotations(14, "UD-mandarinParsed.0", "allconll")
+	#sql.exportAnnotations(6, "Rhaps.gold", "lastconll")
+	sql.exportAll("lastconll")
+	#print sql.gettree(treeid=3947)
 	
 	#sql.correctSentenceLength()
 	#sql.cleanDatabase()

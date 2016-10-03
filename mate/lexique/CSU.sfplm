@@ -1,0 +1,374 @@
+# signification du statut (première colonne)
+# A(ajout)       par rapport au lefff
+# S(suppression) par rapport au lefff
+# N(neutre)      était dans le lefff et on le conserve
+# M(morph)       expression polylexicale potentiellement ambigue, à représenter par lien morph
+# MF(morph)      expression polylexicale à représenter par lien morph très largement figée
+# X(exogène)     expression polylexicale potentiellement ambigue exogène (aucun des mots formant l'expression possède la catégorie de l'expression)
+# XF(exogène)     expression polylexicale exogène très largement figée
+N	à ça près qu'	CSU	à ça près que	#####
+N	à ça près que	CSU	à ça près que	#####
+N	à ceci près qu'	CSU	à ça près que	#####
+N	à ceci près que	CSU	à ça près que	#####
+N	à cela près qu'	CSU	à ça près que	#####
+N	à cela près que	CSU	à ça près que	#####
+S	à ce point qu'	CSU	à ce point que	#####
+S	à ce point que	CSU	à ce point que	#####
+S	à chaque fois qu'	CSU	à chaque fois que	#####
+S	à chaque fois que	CSU	à chaque fois que	#####
+MF	à condition que	CSU	à condition que	#####
+MF	à condition qu'	CSU	à condition que	#####
+M	à défaut que	CSU	à défaut que	#####
+N	afin qu'	CSU	afin que	#####
+N	afin que	CSU	afin que	#####
+MF	à force que	CSU	à force que	#####
+S	ainsi	CSU	ainsi	#####
+M	ainsi qu'	CSU	ainsi que	#####
+M	ainsi que	CSU	ainsi que	#####
+S	à la place que	CSU	à la place que	#####
+S	à la fin que	CSU	à la fin que	#####
+S	à l' époque où	CSU	à l'époque où	#####
+S	à l' heure où	CSU	à l'époque où	#####
+S	à l' instant où	CSU	à l'époque où	#####
+MF	alors même qu'	CSU	alors que	#####
+MF	alors même que	CSU	alors que	#####
+M	alors qu'	CSU	alors que	#####
+M	alors que	CSU	alors que	#####
+N	à mesure qu'	CSU	à mesure que	#####
+N	à mesure que	CSU	à mesure que	#####
+N	à moins qu'	CSU	à moins que	#####
+N	à moins que	CSU	à moins que	#####
+S	à partir du moment où	CSU	à partir du moment où	#####
+MF	à part qu'	CSU	à part que	#####
+MF	à part que	CSU	à part que	#####
+M	à présent qu'	CSU	à présent que	#####
+M	à présent que	CSU	à présent que	#####
+S	après qu'	CSU	après que	#####
+S	après que	CSU	après que	#####
+S	après quoi	CSU	après quoi	#####
+N	à seule fin qu'	CSU	à seule fin que	#####
+N	à seule fin que	CSU	à seule fin que	#####
+S	à supposer qu'	CSU	à supposer que	#####
+S	à supposer que	CSU	à supposer que	#####
+N	à telle enseigne qu'	CSU	à telle enseigne que	#####
+N	à telle enseigne que	CSU	à telle enseigne que	#####
+M	à tel point qu'	CSU	à tel point que	#####
+M	à tel point que	CSU	à tel point que	#####
+M	attendu qu'	CSU	attendu que	#####
+M	attendu que	CSU	attendu que	#####
+S	au cas où	CSU	au cas où	#####
+M	au début que 	CSU	au début que	#####
+N	au fur et à mesure qu'	CSU	au fur et à mesure que	#####
+N	au fur et à mesure que	CSU	au fur et à mesure que	#####
+S	aujourd'hui où	CSU	aujourd'hui où	#####
+S	aujourd'hui que	CSU	aujourd'hui que	#####
+M	au même titre qu'	CSU	au même titre que	#####
+M	au même titre que	CSU	au même titre que	#####
+S	au moment où	CSU	au moment où	#####
+M	au point qu'	CSU	au point que	#####
+M	au point que	CSU	au point que	#####
+M	aussi bien qu'	CSU	aussi bien que	#####
+M	aussi bien que	CSU	aussi bien que	#####
+S	aussi	CSU	aussi	#####
+S	aussi longtemps qu'	CSU	aussi longtemps que	#####
+S	aussi longtemps que	CSU	aussi longtemps que	#####
+M	aussitôt qu'	CSU	aussitôt que	#####
+M	aussitôt que	CSU	aussitôt que	#####
+N	autant dire qu'	CSU	autant dire que	#####
+N	autant dire que	CSU	autant dire que	#####
+M	autant qu'	CSU	autant que	#####
+M	autant que	CSU	autant que	#####
+S	au tout début que	CSU	au tout début que	#####
+AM	autrefois que	CSU	autrefois que	#####
+AM	autrefois qu'	CSU	autrefois que	#####
+S	avant même qu'	CSU	après que	#####
+S	avant même que	CSU	après que	#####
+S	avant qu'	CSU	après que	#####
+S	avant que	CSU	après que	#####
+N	because	CSU	because	#####
+N	bicause	CSU	because	#####
+M	bien qu'	CSU	bien que	#####
+M	bien que	CSU	bien que	#####
+AS	bientôt que	CSU	bientôt que	#####
+SM	ça fait que	CSU	ça fait que	#####
+M	cependant qu'	CSU	cependant que	#####
+M	cependant que	CSU	cependant que	#####
+M	ce qu'	CSU	ce que	#####
+M	ce que	CSU	ce que	#####
+S	ce qui fait que	CSU	ce qui fait que	#####
+N	c' est à dire qu'	CSU	c'est-à-dire que	#####
+N	c' est-à-dire qu'	CSU	c'est-à-dire que	#####
+N	c' est à dire que	CSU	c'est-à-dire que	#####
+N	c' est-à-dire que	CSU	c'est-à-dire que	#####
+M	c' est pourquoi	CSU	c'est pourquoi	#####
+S	cette fois où	CSU	cette fois où	#####
+S	cette fois qu'	CSU	cette fois que	#####
+S	cette fois que	CSU	cette fois que	#####
+S	chaque fois qu'	CSU	chaque fois que	#####
+S	chaque fois que	CSU	chaque fois que	#####
+S	chaqu'fois qu'	CSU	chaque fois que	#####
+S	chaqu'fois que	CSU	chaque fois que	#####
+N	comme	CSU	comme	#####
+S	comme que	CSU	comme que	#####
+M	comme quoi	CSU	comme quoi	#####
+M	comme si	CSU	comme si	#####
+S	considérant qu'	CSU	considérant que	#####
+S	considérant que	CSU	considérant que	#####
+S	considéré qu'	CSU	considérant que	#####
+S	considéré que	CSU	considérant que	#####
+S	dans la crainte qu'	CSU	dans la crainte que	#####
+S	dans la crainte que	CSU	dans la crainte que	#####
+S	dans la mesure où	CSU	dans la mesure où	#####
+S	dans le but qu'	CSU	dans le but que	#####
+S	dans le but que	CSU	dans le but que	#####
+S	dans le cas où	CSU	dans le cas où	#####
+S	dans le sens où	CSU	dans le sens où	#####
+S	dans le sens qu'	CSU	dans le sens que	#####
+S	dans le sens que	CSU	dans le sens que	#####
+S	dans les derniers temps que	CSU	dans les premiers temps	#####
+S	dans les premiers temps que	CSU	dans les premiers temps	#####
+S	dans l' espoir qu'	CSU	dans l'espoir que	#####
+S	dans l' espoir qu'	CSU	dans l'espoir que	#####
+S	dans l' espoir que	CSU	dans l'espoir que	#####
+S	dans l' espoir que	CSU	dans l'espoir que	#####
+S	dans l' hypothèse où	CSU	dans le cas où	#####
+S	dans l' idée qu'	CSU	dans l'espoir que	#####
+S	dans l' idée que	CSU	dans l'espoir que	#####
+S	dans l'intention qu'	CSU	dans l'espoir que	#####
+S	dans l'intention que	CSU	dans l'espoir que	#####
+M	d'autant plus qu'	CSU	d'autant que	#####
+M	d'autant plus que	CSU	d'autant que	#####
+N	d'autant qu'	CSU	d'autant que	#####
+N	d'autant que	CSU	d'autant que	#####
+S	de ce qu'	CSU	de ce que	#####
+S	de ce que	CSU	de ce que	#####
+S	de crainte qu'	CSU	de façon que	#####
+S	de crainte que	CSU	de façon que	#####
+N	de façon à ce qu'	CSU	de façon que	#####
+N	de façon à ce que	CSU	de façon que	#####
+N	de façon qu'	CSU	de façon que	#####
+N	de façon que	CSU	de façon que	#####
+M	déjà qu'	CSU	déjà que	#####
+M	déjà que	CSU	déjà que	#####
+M	de la même façon qu'	CSU	de la même façon que	#####
+M	de la même façon que	CSU	de la même façon que	#####
+M	de la même manière qu'	CSU	de la même façon que	#####
+M	de la même manière que	CSU	de la même façon que	#####
+MF	de là à ce qu'	CSU	de là à ce que	#####
+MF	de là à ce que	CSU	de là à ce que	#####
+N	de manière à ce qu'	CSU	de façon que	#####
+N	de manière à ce que	CSU	de façon que	#####
+N	de manière qu'	CSU	de façon que	#####
+N	de manière que	CSU	de façon que	#####
+M	de même qu'	CSU	de même que	#####
+M	de même que	CSU	de même que	#####
+S	de parce qu'	CSU	de parce que	#####
+S	de parce que	CSU	de parce que	#####
+MF	de peur qu'	CSU	de façon que	#####
+MF	de peur que	CSU	de façon que	#####
+S	depuis qu'	CSU	depuis que	#####
+S	depuis que	CSU	depuis que	#####
+M	des fois qu'	CSU	des fois que	#####
+M	des fois que	CSU	des fois que	#####
+M	dès lors qu'	CSU	dès lors que	#####
+M	dès lors que	CSU	dès lors que	#####
+N	de sorte qu'	CSU	de sorte que	#####
+N	de sorte que	CSU	de sorte que	#####
+S	dès qu'	CSU	dès que	#####
+S	dès que	CSU	dès que	#####
+MF	de telle façon qu'	CSU	de façon que	#####
+MF	de telle façon que	CSU	de façon que	#####
+MF	de telle manière qu'	CSU	de façon que	#####
+MF	de telle manière que	CSU	de façon que	#####
+MF	de telle sorte qu'	CSU	de façon que	#####
+MF	de telle sorte que	CSU	de façon que	#####
+M	dire que	CSU	dire que	#####
+M 	dire qu'	CSU	dire que	#####
+M	d'ici qu'	CSU	d'ici que	#####
+M	d'ici que	CSU	d'ici que	#####
+S	d'où	CSU	d'où	#####
+S	du fait qu'	CSU	du fait que	#####
+S	du fait que	CSU	du fait que	#####
+S	du moment qu'	CSU	du moment que	#####
+S	du moment que	CSU	du moment que	#####
+S	du temps où	CSU	du temps où	#####
+S	en admettant qu'	CSU	en admettant que	#####
+S	en admettant que	CSU	en admettant que	#####
+S	en ce qu'	CSU	en ce que	#####
+S	en ce que	CSU	en ce que	#####
+N	en ce sens qu'	CSU	en ce que	#####
+N	en ce sens que	CSU	en ce que	#####
+M	encore qu'	CSU	encore que	#####
+M	encore que	CSU	encore que	#####
+S	en dépit du fait qu'	CSU	en dépit du fait que	#####
+S	en dépit du fait que	CSU	en dépit du fait que	#####
+S	en dépit qu'	CSU	en dépit du fait que	####
+S	en dépit que	CSU	en dépit du fait que	#####
+M	en même temps qu'	CSU	en même temps que	#####
+M	en même temps que	CSU	en même temps que	#####
+M	en plus qu'	CSU	en plus que	#####
+M	en plus que	CSU	en plus que	#####
+M	en sorte qu'	CSU	en sorte que	#####
+M	en sorte que	CSU	en sorte que	#####
+SM	en supposant qu'	CSU	en admettant que	#####
+SM	en supposant que	CSU	en admettant que	#####
+N	en tant qu'	CSU	en tant que	#####
+N	en tant que	CSU	en tant que	#####
+A	est-ce que	CSU	est-ce-que	#####
+A	est-ce-que	CSU	est-ce-que	#####
+S	étant donné qu'	CSU	attendu que	#####
+S	étant donné que	CSU	attendu que	#####
+S	et même	CSU	et même	#####
+S	excepté qu'	CSU	excepté que	#####
+S	excepté que	CSU	excepté que	#####
+M	faute qu'	CSU	faute que	#####
+M	faute que	CSU	faute que	#####
+M	histoire qu'	CSU	histoire que	#####
+M	histoire que	CSU	histoire que	#####
+S	hormis le fait qu'	CSU	hormis le fait que	#####
+S	hormis le fait que	CSU	hormis le fait que	#####
+S	hormis qu'	CSU	hormis le fait que	#####
+S	hormis que	CSU	hormis le fait que	#####
+AM	jadis que	CSU	jadis que	#####
+S	jusqu'à ce qu'	CSU	jusqu'à ce que	#####
+S	jusqu'à ce que	CSU	jusqu'à ce que	#####
+S	le jour où	CSU	le jour où	#####
+S	le moins qu'	CSU	le moins que	#####
+S	le moins que	CSU	le moins que	#####
+M	le temps qu'	CSU	le temps que	#####
+M	le temps que	CSU	le temps que	#####
+M	loin que 	CSU	loin que 	#####
+N	lorsqu'	CSU	lorsque	#####
+N	lorsque	CSU	lorsque	#####
+M	maintenant qu'	CSU	maintenant que	#####
+M	maintenant que	CSU	maintenant que	#####
+S	malgré le fait qu'	CSU	malgré que	#####
+S	malgré le fait que	CSU	malgré que	#####
+S	malgré qu'	CSU	malgré que	#####
+S	malgré que	CSU	malgré que	#####
+AM	même que	CSU	même que	#####
+M	même si	CSU	même si	#####
+S	mis à part le fait qu'	CSU	malgré que	#####
+S	mis à part le fait que	CSU	malgré que	#####
+S	mis à part qu'	CSU	malgré que	#####
+S	mis à part que	CSU	malgré que	#####
+S	moyennant que	CSU	moyennant que	#####
+MF	ne serait-ce que	CSU	ne serait-ce que	#####
+MF	ne fût-ce que	 CSU	ne fût-ce que	 #####
+S	nonobstant qu'	CSU	moyennant que	#####
+S	nonobstant que	CSU	moyennant que	#####
+M	non plus qu'	CSU	non plus que	#####
+M	non plus que	CSU	non plus que	#####
+MS	non qu'	CSU	non que	#####
+MS	non que	CSU	non que	#####
+S	outre qu'	CSU	malgré que	#####
+S	outre que	CSU	malgré que	#####
+N	pac' qu'	CSU	parce que	#####
+N	pac' que	CSU	parce que	#####
+N	parce qu'	CSU	parce que	#####
+N	parce que	CSU	parce que	#####
+N	parc' qu'	CSU	parce que	#####
+N	parc' que	CSU	parce que	#####
+AM	pareil que	CSU	pareil que	#####
+S	par le fait qu'	CSU	par le fait que	#####
+S	par le fait que	CSU	par le fait que	#####
+M	partant que	CSU	partant que	#####
+S	pas que	CSU	pas que	#####
+N	pask'	CSU	parce que	#####
+N	paske	CSU	parce que	#####
+N	pcq	CSU	parce que	#####
+S	pdt qu'	CSU	pendant que	#####
+S	pdt que	CSU	pendant que	#####
+S	pendant qu'	CSU	pendant que	#####
+S	pendant que	CSU	pendant que	#####
+M	plus qu'	CSU	plus que	#####
+M	plus que	CSU	plus que	#####
+M	plutôt qu'	CSU	plus que	#####
+M	plutôt que	CSU	plus que	#####
+M	pour autant qu'	CSU	pour autant que	#####
+M	pour autant que	CSU	pour autant que	#####
+S	pour cette raison qu'	CSU	pour cette raison que	#####
+S	pour cette raison que	CSU	pour cette raison que	#####
+N	pour peu qu'	CSU	pour peu que	#####
+N	pour peu que	CSU	pour peu que	#####
+S	pour qu'	CSU	pour que	#####
+S	pour que	CSU	pour que	#####
+S	pour une fois qu'	CSU	pour une fois que	#####
+S	pour une fois que	CSU	pour une fois que	####
+N	pourvu qu'	CSU	pourvu que	#####
+N	pourvu que	CSU	pourvu que	#####
+M	preuve qu'	CSU	preuve que	#####
+M	preuve que	CSU	preuve que	#####
+S	puis	CSU	puis	#####
+N	puisqu'	CSU	puisque	#####
+N	puisque	CSU	puisque	#####
+N	qd	CSU	quand	#####
+N	quand bien même	CSU	quand bien même	#####
+N	quand bien même qu'	CSU	quand bien même que	#####
+N	quand bien même que	CSU	quand bien même que	#####
+N	quand	CSU	quand	#####
+A	que	CSU	que	#####
+A	qu'	CSU	que	#####
+N	quitte à ce qu'	CSU	quitte à ce que	#####
+N	quitte à ce que	CSU	quitte à ce que	#####
+S	quoi qu'	CSU	quoique	#####
+N	quoiqu'	CSU	quoique	#####
+S	quoi que	CSU	quoique	#####
+N	quoique	CSU	quoique	#####
+S	reste à savoir si	CSU	reste à savoir si	#####
+S	sachant qu'	CSU	attendu que	#####
+S	sachant que	CSU	attendu que	#####
+S	sans compter qu'	CSU	sans compter que	#####
+S	sans compter que	CSU	sans compter que	#####
+S	sans oublier qu'	CSU	sans compter que	#####
+S	sans oublier que	CSU	sans compter que	#####
+S	sans qu'	CSU	sans que	#####
+S	sans que	CSU	sans que	#####
+S	sauf qu'	CSU	sauf que	#####
+S	sauf que	CSU	sauf que	#####
+S	selon qu'	CSU	selon que	#####
+S	selon que	CSU	selon que	#####
+M	si bien qu'	CSU	si bien que	#####
+M	si bien que	CSU	si bien que	#####
+S	si ce n' est qu'	CSU	si ce n'est que	#####
+S	si ce n'est qu'	CSU	si ce n'est que	#####
+S	si ce n' est que	CSU	si ce n'est que	#####
+S	si ce n'est que	CSU	si ce n'est que	#####
+N	si	CSU	si	#####
+N	s'	CSU	si	#####
+S	si jamais	CSU	si jamais	#####
+S	sinon	CSU	sinon	#####
+M	sinon qu'	CSU	sinon que	#####
+M	sinon que	CSU	sinon que	#####
+M	si peu qu'	CSU	si peu que	#####
+M	si peu que	CSU	si peu que	#####
+N	si tant est qu'	CSU	si tant est que	#####
+N	si tant est que	CSU	si tant est que	#####
+S	sitôt qu'	CSU	sitôt que	#####
+S	sitôt que	CSU	sitôt que	#####
+S	soit	CSU	soit	#####
+N	sous prétexte qu'	CSU	sous prétexte que	#####
+N	sous prétexte que	CSU	sous prétexte que	#####
+MF	sous réserve qu'	CSU	sous prétexte que	#####
+MF	sous réserve que	CSU	sous prétexte que	#####
+M	suivant qu'	CSU	suivant que	#####
+M	suivant que	CSU	suivant que	#####
+M	surtout qu'	CSU	surtout que	#####
+M	surtout que	CSU	surtout que	#####
+N	tandis qu'	CSU	tandis que	#####
+N	tandis que	CSU	tandis que	#####
+N	tant et si bien qu'	CSU	tant et si bien que	#####
+N	tant et si bien que	CSU	tant et si bien que	#####
+M	tant qu'	CSU	tant que	#####
+M	tant que	CSU	tant que	#####
+MF	toujours est-il qu'	CSU	toujours est-il que	#####
+MF	toujours est-il que	CSU	toujours est-il que	#####
+S	toutes les fois où	CSU	toutes les fois où	#####
+S	toutes les fois qu'	CSU	toutes les fois que	#####
+S	toutes les fois que	CSU	toutes les fois que	#####
+MF	une fois qu'	CSU	une fois que	#####
+MF	une fois que	CSU	une fois que	#####
+S	un jour qu'	CSU	un jour que	#####
+S	un jour que	CSU	un jour que	#####
+M	vu qu'	CSU	attendu que	#####
+M	vu que	CSU	attendu que	#####

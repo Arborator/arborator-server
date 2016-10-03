@@ -1,0 +1,183 @@
+# signification du statut (première colonne)
+# A(ajout)              par rapport au lefff
+# S(suppression)        par rapport au lefff
+# N(neutre)             était dans le lefff et on le conserve
+# M(morph)              expression polylexicale potentiellement ambigue, à représenter par lien morph
+# MF(morph figée)       expression polylexicale à représenter par lien morph très largement figée
+# X(exogène)            expression polylexicale potentiellement ambigue exogène (aucun des mots formant l'expression possède la catégorie de l'expression)
+# XF(exogène figée)     expression polylexicale exogène très largement figée
+S	assez d'	DET	assez de	#####i
+S	assez de	DET	assez de	#####i
+S	assez de la	DET	beaucoup de	##f#s##d
+S	assez des	DET	beaucoup de	###p##d
+S	assez du	DET	beaucoup de	##m#s##d
+N	aucun DET	aucun	##m#s##i	
+N	aucune		DET	aucun	##f#s##i
+S	autant d'	DET	autant de	#####i
+S	autant de	DET	autant de	#####i
+S	autant de la	DET	beaucoup de	##f#s##d
+S	autant des	DET	beaucoup de	###p##dS
+S	autant du	DET	beaucoup de	##m#s##d
+S	bcp de	DET	beaucoup de	#####i
+S	beaucoup d'	DET	beaucoup de	#####i
+S	beaucoup de	DET	beaucoup de	#####i
+S	beaucoup de la	DET	beaucoup de	##f#s##d
+S	beaucoup des	DET	beaucoup de	###p##d
+S	beaucoup du	DET	beaucoup de	##m#s##d
+S	bien de la	DET	beaucoup de	##f#s##i
+S	bien des	DET	beaucoup de	###p##i
+S	bien du		DET	beaucoup de	##m#s##i
+N	ce   DET	ce	##m#s##e	
+S	ce putain d'	DET	ce putain de	##m#s##e
+S	ce putain de	DET	ce putain de	##m#s##e
+S	certain	  DET	certain	##m#s##i
+S	certaine	DET	certain	##f#s##i
+N	certaines	DET	certain	##f#p##i
+N	certains	DET	certain	##m#p##i
+N	ces	DET	ce	###p##e	
+S	ces putain d'	DET	ce putain de	###p##e
+S	ces putain de	DET	ce putain de	###p##e
+N	cet	DET	ce	##m#s##e	
+N	cette	DET	ce	##f#s##e	
+S	cette putain d'	DET	ce putain de	##f#s##e
+S	cette putain de	DET	ce putain de	##f#s##e
+N	chaque	DET	chaque	###s##i
+S	combien d'	DET	combien de	#####i
+S	combien de	DET	combien de	#####i
+S	combien de la	DET	combien de	##f#s##d
+S	combien des	DET	combien de	###p##d
+S	combien du	DET	combien de	##m#s##d
+N	c't'	DET	ce	#####e
+N	ct'	DET	ce	#####e
+S	d'	DET	de	###p##i
+S	de	DET	de	###p##i
+S	de la	DET	le	##f#s##i
+S	de l'	DET	le	###s##i
+S	des	DET	le	###p##i
+S	des drôle d'	DET	des drôles de	###p##i
+S	des drôle de	DET	des drôles de	###p##i
+S	des telles	DET	un tel	##f#p##i
+S	des tels	DET	un tel	##m#p##i
+S	de telles	DET	un tel	##f#p##i
+S	de tels	DET	un tel	##m#p##i
+XF	dieu sait quel	DET	dieu sait quel	##m#s##i
+XF	dieu sait quelle	DET	dieu sait quel	##f#s##i
+XF	dieu sait quelles	DET	dieu sait quel	##f#p##i
+XF	dieu sait quels	DET	dieu sait quel	##m#p##i
+S	du	DET	du	##m#s##i
+N	force	DET	force	#####i
+N	la	DET	le	##f#s##d
+N	ladite	DET	ledit	##f#s##d
+S	la plupart de la	DET	la plupart du	##f#s##d
+S	la plupart des	DET	la plupart du	###p##d
+S	la plupart du	DET	la plupart du	##m#s##d
+N	l'	DET	le	###s##d
+N	le	DET	le	##m#s##d
+N	ledit	DET	ledit	##m#s##d
+M	le moins d'	DET	le moins de	#####d
+M	le moins de	DET	le moins de	#####d
+M	le plus d'	DET	le plus de	#####d
+M	le plus de	DET	le plus de	#####d
+N	les	DET	le	###p##d
+N	lesdites	DET	ledit	##f#p##d
+N	lesdits	DET	ledit	##m#p##d
+N	leur	DET	son	###s##o
+N	leurs	DET	son	###p##o
+N	ma	DET	son	##f#s##o
+N	maint	DET	maint	##m#s##i
+N	mainte	DET	maint	##f#s##i
+N	maintes	DET	maint	##f#p##i
+N	maints	DET	maint	##m#p##i
+N	mes	DET	son	###p##o
+S	moins d'	DET	moins de	#####i
+S	moins de	DET	moins de	#####i
+S	moins de la	DET	moins de	##f#s##d
+S	moins des	DET	moins de	###p##d
+S	moins du	DET	moins de	##m#s##d
+N	mon	DET	son	###s##o
+N	n'importe quel	DET	n'importe quel	##m#s##i
+N	n'importe quelle	DET	n'importe quel	##f#s##i
+N	n'importe quelles	DET	n'importe quel	##f#p##i
+N	n'importe quels	DET	n'importe quel	##m#p##i
+N	nos	DET	son	###p##o
+N	notre	DET	son	###s##o
+N	nul	DET	nul	##m#s##i
+N	nulle	DET	nul	##f#s##i
+N	nulles	DET	nul	##f#p##i
+N	nuls	DET	nul	##m#p##i
+S	pareil	DET	pareil	##m#s##d
+S	pareille	DET	pareil	##f#s##d
+S	pareilles	DET	pareil	##f#p##d
+S	pareils	DET	pareil	##m#p##d
+S	pas d'	DET	pas de	#####i
+S	pas de	DET	pas de	#####i
+S	pas mal d'	DET	pas mal de	#####i
+S	pas mal de	DET	pas mal de	#####i
+S	pas mal de la	DET	pas mal de	##f#s##d
+S	pas mal des	DET	pas mal de	###p##d
+S	pas mal du	DET	pas mal de	##m#s##d
+S	plein d'	DET	plein de	#####i
+S	plein de	DET	plein de	#####i
+S	plus d'		DET	plus de	#####i
+S	plus de		DET	plus de	#####i
+S	plus de la	DET	moins de	##f#s##d
+S	plus des	DET	moins de	###p##d
+S	plus du	DET	moins de	##m#s##d
+N	plusieurs	DET	plusieurs	###p##i
+N	qq	DET	quelque	#####i
+S	qqes	DET	quelque	###p##i
+S	qqs	DET	quelque	###p##i
+S	quel	DET	quel	##m#s##
+S	quelle	DET	quel	##f#s##
+S	quelles	DET	quel	##f#p##
+N	quelqu'	DET	quelque	###s##i
+N	quelque	DET	quelque	###s##i
+S	quelques	DET	quelque	###p##i
+S	quels	DET	quel	##m#p##
+N	sa	DET	son	##f#s##o
+N	ses	DET	son	###p##o
+N	son	DET	son	###s##o
+N	ta	DET	son	##f#s##o
+S	tant d'	DET	tant de	#####i
+S	tant de	DET	tant de	#####i
+S	tant de la	DET	tant de	##f#s##d
+S	tant des	DET	tant de	###p##d
+S	tant du	DET	tant de	##m#s##d
+S	tel	DET	tel	##m#s##d
+N	tel et tel	DET	tel	##m#s##i
+S	telle	DET	tel	##f#s##d
+N	telle et telle	DET	tel	##f#s##i
+N	telle ou telle	DET	tel	##f#s##i
+M	tellement de	DET	tellement de	#####
+S	telles	DET	tel	##f#p##d
+N	telles et telles	DET	tel	##f#p##i
+N	telles ou telles	DET	tel	##f#p##i
+N	tel ou tel	DET	tel	##m#s##i
+S	tels	DET	tel	##m#p##d
+N	tels et tels	DET	tel	##m#p##i
+N	tels ou tels	DET	tel	##m#p##i
+N	tes	DET	son	###p##o
+N	ton	DET	son	###s##o
+S	tous	DET	tous	##m#p##i
+S	tout	DET	tous	##m#s##i
+S	toute	DET	tous	##f#s##i
+S	toutes	DET	tous	##f#p##i
+S	trop de	DET	trop de	#####i
+N	un	DET	un	##m#s##i
+S	un de ces	DET	un	##m#s##i
+S	un drôle d'	DET	un drôle de	##m#s##i
+S	un drôle de	DET	un drôle de	##m#s##i
+N	une	DET	un	##f#s##i
+S	une de ces	DET	un de ces	##f#s##i
+M	une drôle d'	DET	un drôle de	##f#s##i
+M	une drôle de	DET	un drôle de	##f#s##i
+S	une telle	DET	un tel	##f#s##i
+S	un peu d'	DET	un peu de	#####i
+S	un peu de	DET	un peu de	#####i
+S	un peu de la	DET	un peu de	##f#s##d
+S	un peu des	DET	un peu de	###p##d
+S	un peu du	DET	un peu de	##m#s##d
+S	un tel	DET	un tel	##m#s##i
+N	vos	DET	son	###p##o
+N	vot'	DET	son	###s##o
+N	votre	DET	son	###s##o

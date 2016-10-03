@@ -42,7 +42,6 @@ graphical=0
 ##############################################
 ######################### functions
 
-#def printhtmlheader(project,projectconfig,textid,textname,username,userid,todo,validator,addEmptyUser,opensentence,sql):
 def printhtmlheader():
 	"""
 	all strings in parameters are already in utf-8
@@ -83,7 +82,6 @@ def printhtmlheader():
 	print "validator= '"+str(validator)+"';"
 	if addEmptyUser: print "addEmptyUser= '"+str(addEmptyUser)+"';"
 	else: print "addEmptyUser= null;"
-	#print "addEmptyUser= "+str(addEmptyUser)+";"
 	print "validvalid= '"+str(validvalid)+"';"
 	print "opensentence= '"+str(opensentence)+"';"
 	print "editable= "+str(sql.editable)+";"
@@ -262,12 +260,14 @@ def start():
 		print logout(userdir) # printing cookie header. important!
 		print "Content-Type: text/html\n" # blank line: end of headers
 		print '<script type="text/javascript">window.location.href=".";</script>'
-	project = form.getvalue("project",None)
-	if project: project =project.decode("utf-8")
-	projectEsc=project.replace("'","\\'").replace('"','\\"')
+	project = form.getvalue("project","")
+	projectEsc=""
+	if project: 
+		project =project.decode("utf-8")
+		projectEsc=project.replace("'","\\'").replace('"','\\"')
 	action = form.getvalue("action",None)
-	if action: action =action.decode("utf-8")
-	if action:
+	if action: 
+		action =action.decode("utf-8")
 		if action.startswith("project_"):project=action[8:]
 	if project: action="project_"+project
 	
@@ -290,7 +290,11 @@ def start():
 	textid = form.getvalue("textid",None)
 	if textid: 	textid=int(textid)
 	else:		textid=1
-	_,textname,_ = sql.getall(None, "texts",["rowid"],[textid])[0]
+	try:
+		_,textname,_ = sql.getall(None, "texts",["rowid"],[textid])[0]
+	except:
+		print "something went seriously wrong: The text you are looking for does not seem to exist!",project.encode("utf-8")
+		textname="text not found!"
 	userid = sql.userid(username,realname)
 	opensentence = form.getvalue("opensentence",1)
 
@@ -301,20 +305,16 @@ def start():
 	validvalid=sql.validvalid(textid)
 	
 	exotype, exotoknum =sql.getExo(textid)
-	#addEmptyUser=None
 	#print "uu",sql.exotypes[exotype],sql.exotypes[exotype]=="graphical feedback"
 	if sql.exotypes[exotype] in ["teacher visible","graphical feedback", "percentage"] :
 		addEmptyUser=username
 	if sql.exotypes[exotype] in ["teacher visible"] :
 		validvalid+=[sql.userid(sql.teacher)]
-		
 	if sql.exotypes[exotype]=="graphical feedback":
 		graphical=1
-	#print "addEmptyUser",addEmptyUser
 	if exotoknum and not adminLevel: 	quantityInfo = ">"+str(exotoknum)+" tokens"
 	else: 					quantityInfo = str(sql.getnumber(None, "sentences",["textid"],[textid]))+" sentences"
 	
-	#return project,projectconfig,sql,thisfile,textid,textname,username,userid,adminLevel,todo,validator,addEmptyUser,validvalid,opensentence
 
 	
 #def main(project,sql,textid,userid,adminLevel,todo,validvalid,validator):
