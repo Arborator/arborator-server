@@ -31,8 +31,10 @@ defaultCat="_"
 
 inDrawTrees=false;
 sentencesText="One sentence per line\nClick outside of this area when ready";
-trees=[];
-conlltrees=[];
+
+trees=[]; // list of tree objects
+uextras=[]; // list of comments. each comment is a hashtable position(=line)->comment
+conlltrees=[]; // list of conll strings
 
 
 var root = 'annodoc/';
@@ -44,8 +46,9 @@ var webFontURLs = [
 
 svgheader = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n'
 
-	
+
 $(function() {
+
 // 	console.log( "ready!" );
 	$("#annodoccheck").prop('checked', false);
 	$("#annodoccheck").button();
@@ -54,15 +57,25 @@ $(function() {
 		else {$( ".annodoc" ).remove();$(this).button('option', 'label', 'Show Annodoc graph');}
 	}); 
 	settings();
+
+	if (window.opener) 	// this window was opened by another window i.e. by depedit
+		conllarea=window.opener.$(window.name); // use the name that depedit gave me to connect to the right conll area
+		
+	else 			// this window is independent
+		{
+			conllarea=$("#conll");
+			$("#toggleAndBoxx").show();
+		}
+
 	readConll();
-	setupStyleDialog() 
+	setupStyleDialog()
 	drawTrees();
 
 	$("#sentences").val(sentencesText)
-	$('#conll').focus(function() {
+	conllarea.focus(function() {
 		nokeys=true;
 	});
-	$('#conll').blur(function() {
+	conllarea.blur(function() {
 // 		console.log("textarea changed!!");
 		$("#funchoice").empty();
 		$("#catchoice").empty();
@@ -77,15 +90,16 @@ $(function() {
 		nokeys=true;
 	});
 	$('#sentences').blur(function() {
-		console.log("#sentences changed!!");
+// 		console.log("#sentences changed!!");
 		nokeys=false;
-		if (sentencesText!=$("#sentences").val())
+		if (sentencesText!=$("#sentences").val()) // TODO: sentence really changed: set sentencesText
 		{
 			conllize();
 			$("#trees").empty();
 			readConll();
 			setupStyleDialog() 
 			drawTrees();
+			sentencesText=$("#sentences").val();
 		}
 	});
 	$('#addfuncs').focus(function() {
@@ -130,14 +144,18 @@ $(function() {
 		$('p').css('color', c);
 	});
 	
-	$("#conll").focus();
+	
+	
+	
+	conllarea.focus();
+	
 // 	help();
 });
 
 
 settings = function() 
 	{
-		shownfeatures=["t", "cat", "lemma","gloss"];
+		shownfeatures=["t", "cat", "lemma","gloss"]; // recomputed in readConll
 		erase="--ERASE--"
 		categoryindex=1;
 		tab=8; 			// space between tokens
@@ -255,7 +273,7 @@ function final() {
 			});
 			var thisconll = wordsToConll(basewords);
 			conlltrees.splice(nr,2,thisconll)
-			$("#conll").val(conlltrees.join("\n"));
+			conllarea.val(conlltrees.join("\n"));
 			$("#trees").empty();
 			readConll();
 			setupStyleDialog() 
@@ -296,7 +314,7 @@ function final() {
 			});
 			
 			conlltrees.splice(nr,1,wordsToConll(newwords1),wordsToConll(newwords2))
-			$("#conll").val(conlltrees.join("\n"));
+			conllarea.val(conlltrees.join("\n"));
 			$("#trees").empty();
 			readConll();
 			setupStyleDialog() 
@@ -375,7 +393,7 @@ function final() {
 
 	
 function readConll() {
-	// read the conll representation of the whole treebank that is in the conll field
+	// reads the conll representation of the whole treebank that is in the conll field
 	categories={};
 	addcats=$.trim($("#addcats").val())
 	if (addcats) { $.each(addcats.split(/[,\s]+/), function(){ categories[this]=true;}) }
@@ -385,12 +403,13 @@ function readConll() {
 	if (addfuncs) { $.each(addfuncs.split(/[,\s]+/), function(){functions[this]=true;}) }
 	$.each(funcDic, function(key,val){functions[key]=true;});
 	
-	trees=[];
-	uextras=[];
-	conlltrees=[];
+	trees=[]; // list of tree objects
+	uextras=[]; // list of comments. each comment is a hashtable position(=line)->comment
+	conlltrees=[]; // list of conll strings
 	treenr=0;
 	
-	var treelines = $.trim($("#conll").val()).split(/\n\s*\n\s*\n*/);
+	var treelines = $.trim(conllarea.val()).split(/\n\s*\n\s*\n*/);
+// 	console.log(232,treelines)
 	$.each(treelines, function(i,treeline){ // splits the conll txt into tree segments:
 		
 		words=[]
@@ -404,7 +423,7 @@ function readConll() {
 		sentence="";
 		$.each(words, function(jj,word){ // making the sentence with correct spacing:
 			sentence+=word;
-			if (!(("NoSpaceAfter" in data.tree[jj+1]) && data.tree[jj+1]["NoSpaceAfter"]==true)) sentence+=" ";
+			if (jj+1 in data.tree && !(("NoSpaceAfter" in data.tree[jj+1]) && data.tree[jj+1]["NoSpaceAfter"]==true)) sentence+=" ";
 		});
 		gt=''
 		if (treenr!=treelines.length-1) gt+='<div class="connect" title="connect with next sentence." id="connect'+i+'">&gt;</div>'
@@ -413,7 +432,7 @@ function readConll() {
 		
 		treenr++;
 	});
-	$('#conll').css("backgroundImage","url('images/conll"+el+".png')");	
+	conllarea.css("backgroundImage","url('images/conll"+el+".png')");	
 	categories=$.map(categories, function(element,index) {return index}).sort() // to array
 	$.each(categories, function(key, val) 
 			{
@@ -424,6 +443,17 @@ function readConll() {
 	functions=$.map(functions, function(element,index) {return index}).sort() // to array
 	functions.push("");
 	functions.push(erase);
+	
+	// 	adapt which nodes should be shown depending on what we find on the first node
+	firstnode=trees[0][Math.min.apply(Math,Object.keys(trees[0]))]; // take lowest existing treenode number
+	shownfeatures = $.grep(shownfeatures, function (attri,i)
+		{ // for each shownfeatures :
+			if (i < 2 || ((attri in firstnode) && firstnode[attri]!=defaultCat)) { 
+				// either the first two (token and cat) or non default value:
+				return true; // keep it
+				}
+			return false; // kick it out
+		});
 	
 }
 
@@ -447,6 +477,8 @@ function conllNodesToTree(treeline)
 			}
 			var elements = nodeline.split('\t');
 			el=elements.length;
+// 			console.log('###',nodeline,el);
+
 			if (!(el in conlls) && el>10) el=10;
 			if (el > 4) id=elements[conlls[el]["id"]];
 			else if (elements[conlls[el]["t"]] != "_") id++;
@@ -540,7 +572,7 @@ function conllize()
 			}
 			conll+="\n"
 		})
-		$("#conll").val(conll);
+		conllarea.val(conll);
 	}
 
 
@@ -671,7 +703,8 @@ wordsToConll = function (words) {
 drawalldeps = function() 
 	{
 	currentnr = $(currentsvg).parent().attr("nr");
-	var thisconll=wordsToConll(currentsvg.words)	
+	var thisconll=wordsToConll(currentsvg.words);
+	conlltrees[currentnr]=thisconll;
 	for (var i in currentsvg.words)
 		{
 			var n = currentsvg.words[i];
@@ -683,7 +716,7 @@ drawalldeps = function()
 			n.svgdep={};
 			var c=0;
 			
-			var distarray = $.map(n.gov, function(value, index) {return [[Math.abs(index-i),index]];}).sort(); // order drawing of governors by increasing distance
+			var distarray = $.map(n.gov, function(value, index) {return [[Math.abs(index-i),index]];}).sort(); // order drawing of multiple governors by increasing distance
 			for (var jj in distarray) 
 			{
 				var j=distarray[jj][1];
@@ -697,20 +730,52 @@ drawalldeps = function()
 		
 	if (inDrawTrees) return; // if i got here by reading the conll text content, no need to again write it back into the conll textarea
 	
+	
 	// making new conlltext
 	var conlltext = "";
-	
 	$.each(conlltrees, function(i, conlltree){ // just modifies the changed tree, keeps the other conll strings
-			if (i==currentnr) conlltext+=thisconll+"\n\n"
-			else conlltext+=conlltrees[i]+"\n\n"
+			if (i==currentnr) conlltext+=thisconll+"\n";
+			else conlltext+=conlltrees[i]+"\n"
 		})
-	$("#conll").val(conlltext);
 	
+// 	if (autostart) 
+	conllarea.val(conlltext);
+			
 	
-	
-	};
-	
+// 	console.log("autostart",autostart)
 
+	
+// 	console.log(window.location.href.slice(-13) != "?autostart=no", 88888, window.opener)
+	};
+
+
+// overriding the changeCat function to add conll stuff
+
+function changeCat(){ // called by onclick on the menu or return
+
+	var cc=$('#catform');
+	if (cc.is(":hidden")) return false;
+	var cat=$("#catchoice")[0].options[$("#catchoice")[0].selectedIndex].value;
+	if (cat==null) cat=defaultcategory;
+	var id = cc.data("index");
+	establishCat(id,cat);
+	cc.hide();
+	
+	currentnr = $(currentsvg).parent().attr("nr");
+	var thisconll=wordsToConll(currentsvg.words);
+	conlltrees[currentnr]=thisconll;
+// 	console.log(currentnr);
+	var conlltext = "";
+	$.each(conlltrees, function(i, conlltree){ // just modifies the changed tree, keeps the other conll strings
+			if (i==currentnr) conlltext+=thisconll+"\n";
+			else conlltext+=conlltrees[i]+"\n"
+		})
+	conllarea.val(conlltext);
+		
+}	
+	
+	
+	
 deptreeexperiment = function(){ // unfinished experiment of creating an unordered tree representation
 		
 	var roots=[];

@@ -97,9 +97,12 @@ textarea, pre { -moz-tab-size:20; -o-tab-size:20; -webkit-tab-size:20; tab-size:
 	z-index: 10;
 	width:630;
 	padding: 2;
-    
 }
 
+.toggleAndBoxx{
+	display:none;
+	
+}
 .arrow{
 	color: #654b6d;
     font-size: 44px;
@@ -118,7 +121,7 @@ textarea, pre { -moz-tab-size:20; -o-tab-size:20; -webkit-tab-size:20; tab-size:
 	position: relative;
 /* 	opacity:0.4; */
 	cursor:pointer;
-	z-index: 12;
+	z-index: 9;
 	float:left;
 	display:none;
 }

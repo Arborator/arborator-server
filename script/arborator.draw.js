@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2010-2015, Kim Gerdes
+ * Copyright 2010-2016, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -55,7 +55,7 @@ function Pnode(index,token)
 		for (var i in shownfeatures) 
 			{	
 			var f = shownfeatures[i]; // f= eg. "cat"
-			if (token[f]===undefined) {token[f] = "😐";}
+			if (token[f]===undefined) {token[f] = "_";} // 😐
 			this.features[f]=token[f];
 			
 			if ( (token[f] instanceof Object) ) // mode compare!!!
@@ -137,6 +137,7 @@ createConnection = function () {
 	
 	$(currentsvg).mousemove(function(e) 
 	{
+// 		console.log("ddd",currentsvg.id,$(currentsvg));
 		if (currentsvg!=this) 
 		{
 			reset()
@@ -263,6 +264,7 @@ clickOpenFunctionMenu = function(funcnode)  // funcnode=svg text node of the dep
 	{
 // 		console.log("clickOpenFunctionMenu",funcnode,$(currentsvg).position())
 // 		svgpos=$(currentsvg).position();
+		console.log("jjjj",$(currentsvg),currentsvg.id);
 		svgpos=$(currentsvg).offset()
 		openFunctionMenu(funcnode.index, funcnode.govind, funcnode.attr("text"), svgpos.left+funcnode.attr("x")-20, svgpos.top+funcnode.attr("y")-7 );   // TODO: make the position of the function menu parametrizable	
 	}
@@ -270,6 +272,8 @@ clickOpenFunctionMenu = function(funcnode)  // funcnode=svg text node of the dep
 	
 openFunctionMenu = function(ind,govind,func,x,y)  // called from clickOpenFunctionMenu and from changeDrag, changeFunc closes the menu
 	{
+// 		currentnr = $(currentsvg).parent().attr("nr");
+		console.log("kkkk",$(currentsvg),currentsvg.id);
 		var ff=$('#funcform');
 		var os=$("#funchoice")[0].options;
 		funcnum=functions.indexOf(func);
@@ -555,7 +559,7 @@ onkey = function () {
 }
 
 keyOpenMenu = function (cat) {
-
+// 	console.log("keyOpenMenu",cat);
 	
 // 	$("#sentinfo").html(" lastSelected "+" "+cat)
 
@@ -694,8 +698,8 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi)
 		t.attr(attris["deptext"]);
 		t.index=ind;
 		t.govind=govind;
-		
 		if (editable) t.click(function (e) {
+// 				console.log(e);
 				clickOpenFunctionMenu(this);
 			})
 		

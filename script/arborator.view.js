@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2010-2012, Kim Gerdes
+ * Copyright 2010-2016, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -22,11 +22,11 @@
 
 shownfeatures = ['t','cat','lemma'];
 shownsentencefeatures = ['markupIU'];
-functions = ["dep", "sub", "pred", "obj", "obl", "ad", "root", "para", "junc", "dep_inherited", "sub_inherited", "pred_inherited", "obj_inherited", "obl_inherited", "ad_inherited", "root_inherited", "para_coord", "para_hyper", "para_intens", "para_disfl", "para_reform", "para_dform", "para_negot", "attention", "--ERASE--", "--ERASE--"];
-funcDic = {"ad": {"stroke": "#000000", "stroke-width": "1", "stroke-dasharray": ""}, "--ERASE--": {"stroke": "#d00202", "stroke-width": "1"}, "pred_inherited": {"stroke": "#999999", "stroke-width": "1", "stroke-dasharray": ". "}, "para_disfl": {"stroke": "#1437AD", "stroke-width": "1", "stroke-dasharray": ""}, "para_intens": {"stroke": "#1437AD", "stroke-width": "1", "stroke-dasharray": ""}, "sub_inherited": {"stroke": "#999999", "stroke-width": "1", "stroke-dasharray": ". "}, "sub": {"stroke": "#000000", "stroke-width": "1", "stroke-dasharray": ""}, "obl_inherited": {"stroke": "#999999", "stroke-width": "1", "stroke-dasharray": ". "}, "pred": {"stroke": "#000000", "stroke-width": "1", "stroke-dasharray": ""}, "para_negot": {"stroke": "#1437AD", "stroke-width": "1", "stroke-dasharray": ""}, "para_coord": {"stroke": "#1437AD", "stroke-width": "1", "stroke-dasharray": ""}, "dep_inherited": {"stroke": "#999999", "stroke-width": "1", "stroke-dasharray": ". "}, "para": {"stroke": "#01949B", "stroke-width": "1", "stroke-dasharray": ""}, "junc": {"stroke": "#00C618", "stroke-width": "1", "stroke-dasharray": ""}, "attention": {"stroke": "#DD137B", "stroke-width": "1", "stroke-dasharray": "- "}, "para_dform": {"stroke": "#1437AD", "stroke-width": "1", "stroke-dasharray": ""}, "para_hyper": {"stroke": "#1437AD", "stroke-width": "1", "stroke-dasharray": ""}, "ad_inherited": {"stroke": "#999999", "stroke-width": "1", "stroke-dasharray": ". "}, "root_inherited": {"stroke": "#999999", "stroke-width": "1", "stroke-dasharray": ". "}, "para_reform": {"stroke": "#1437AD", "stroke-width": "1", "stroke-dasharray": ""}, "obl": {"stroke": "#000000", "stroke-width": "1", "stroke-dasharray": ""}, "obj": {"stroke": "#000000", "stroke-width": "1", "stroke-dasharray": ""}, "dep": {"stroke": "#000000", "stroke-width": "1", "stroke-dasharray": ""}, "obj_inherited": {"stroke": "#999999", "stroke-width": "1", "stroke-dasharray": ". "}, "root": {"stroke": "#000000", "stroke-width": "1", "stroke-dasharray": ""}};
+functions = [];
+funcDic = {};
 categoryindex = '1';
 root = 'ROOT';
-catDic =  {"Adv": {"fill": "#69399d"}, "PP": {"fill": "#69399d"}, "Qu": {"fill": "#69399d"}, "D": {"fill": "#69399d"}, "Cl": {"fill": "#69399d"}, "I": {"fill": "#69399d"}, "Pro": {"fill": "#69399d"}, "J": {"fill": "#69399d"}, "Pre ": {"fill": "#69399d"}, "N": {"fill": "#69399d"}, "V": {"fill": "#69399d"}, "CS": {"fill": "#69399d"}, "X": {"fill": "#69399d"}, "Adj": {"fill": "#69399d"}} ;
+catDic =  {} ;
 
 
 tab=8; 		// space between tokens
@@ -42,10 +42,10 @@ worddistancefactor = 2; 	// distant words get higher curves. this factor fixes h
 extraspace=50 		// extends the width of the svg in order to fit larger categories
 defaultattris={"font": '14px "Arial"', "text-anchor":'start'};
 attris = {	"t":	{"font": '18px "Arial"', "text-anchor":'start',"fill": '#000',"stroke-width": '0'}, 
-	"cat":	{"font": '12px "Times"', "text-anchor":'start',"fill": '#036'},
-	"lemma":	{"font": '14px "Times"', "text-anchor":'start',"fill": '#036'},
-	"depline":	{"stroke": '#999',"stroke-width":'1',"stroke-dasharray": ''},
-	"deptext":	{"font": '12px "Times"', "font-style":'italic', "fill": '#999'},
+	"cat":	{"font": '12px "Times"', "text-anchor":'start',"fill": '#000'},
+	"lemma":	{"font": '14px "Times"', "text-anchor":'start',"fill": '#000'},
+	"depline":	{"stroke": '#000',"stroke-width":'1',"stroke-dasharray": ''},
+	"deptext":	{"font": '12px "Times"', "font-style":'italic', "fill": '#000'},
 	"form":	{"font-style":'italic'}
 	  };
 

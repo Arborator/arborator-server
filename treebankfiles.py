@@ -5,6 +5,12 @@
 # this file contains loads of useful functions
 # - for importing files containing treebanks (parse files) into the arborator
 # - and also for correction during or after the import process
+
+#simple usage, for example, to import a group of mate parse files into the database:
+	#readinallmates("test_mini_db","corpus/mate/",filepattern="*_Parse")
+#this will import all files in corpus/mate that fit the pattern into the database creating a new text under the name of the file
+#the filename will be abreviated: see the readinallmates function itself
+		
 #######################################################################################
 
 
@@ -23,7 +29,7 @@ logfile=None
 # import token name: how the token is named in the xml file: defined here, will also be used for the internal storage of read in conll files
 # export token name: how the token feature is encoded in the database: defined in the project's config file
 
-tokenname="orthotext"
+tokenname="t"
 
 
 # central functions:
@@ -64,6 +70,7 @@ except:	pass
 import database
 import config
 import conll
+
 
 
 
@@ -1186,7 +1193,6 @@ def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseA
 			sentences=allsentences[steps*i:steps*(i+1)]
 			
 			#print sentences
-			#annotatorName=sql.baseAnnotatorName
 			annotatorName=sql.importAnnotatorName
 			
 			dbtextname = filename.split("/")[-1].decode("utf-8")
@@ -1194,6 +1200,13 @@ def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseA
 				dbtextname=".".join(dbtextname.split(".")[:-1])
 			if dbtextname.endswith(".trees"):
 				dbtextname=".".join(dbtextname.split(".")[:-1])
+				
+			if dbtextname.endswith("-one-word-per-line.conll14_Parse"): # Chloé ! à adapter si besoin ou encore mieux généraliser de manière à ce que tout ce qui est devant le premier point suffit pour identifier un texte
+				dbtextname=dbtextname[:-len("-one-word-per-line.conll14_Parse")]
+			
+			
+				
+				
 			if steps<len(allsentences):
 				dbtextname+=".no"+str(i)
 				print dbtextname
@@ -1211,7 +1224,7 @@ def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseA
 	
 	
 	#sql = database.SQL(projectname)
-	#annotatorName=sql.projectconfig["configuration"]["baseAnnotatorName"]
+	#annotatorName=sql.projectconfig["configuration"]["importAnnotatorName"]
 	#files=os.listdir(conllfilepath)
 	#for i,infile in enumerate(files):
 		#print "\n\n________________________________________current file is: " + conllfilepath+infile,"file",i+1,"of",len(files)
@@ -1228,7 +1241,7 @@ def readinallconll(projectname,conllfilepath,useFileInfo=True,eraseAllAnnos=Fals
 	all conll10 files found in the conllfilepath are read into the projectname database
 	"""
 	sql = database.SQL(projectname)
-	annotatorName=sql.projectconfig["configuration"]["baseAnnotatorName"]
+	annotatorName=sql.projectconfig["configuration"]["importAnnotatorName"]
 	#print sql.cleanDatabase("output_D211.xml")
 	files=os.listdir(conllfilepath)
 	for i,infile in enumerate(files):
@@ -1247,7 +1260,7 @@ def readinsingleconll(projectname,conllfile,useFileInfo=True,eraseAllAnnos=False
 	all conll10 files found in the conllfilepath are read into the projectname database
 	"""
 	sql = database.SQL(projectname)
-	annotatorName=sql.projectconfig["configuration"]["baseAnnotatorName"]
+	annotatorName=sql.projectconfig["configuration"]["importAnnotatorName"]
 	#print sql.cleanDatabase("output_D211.xml")
 
 	print "________________________________________current file is: " + conllfile
@@ -1276,6 +1289,15 @@ def writeConfigs(project,allcats,allfuncs):
 
 					
 def computeDifference(tree):
+	"""
+	for a conll 14 tree with gold + parse results (lemma + lemma2, tag + tag2, ...)
+	gives back scores: (l, t, g, f, len(tree) )
+	l: number of correct lemmas
+	t: number of correct tags
+	g: number of correct govs
+	l: number of correct function labels
+	len(tree)
+	"""
 	l,t,g,f=0.0,0.0,0.0,0.0
 	for i in tree:
 		node=tree[i]
@@ -1295,10 +1317,11 @@ def computeDifference(tree):
 def readInTestResults(projectname,conllfilename,gold="gold",parser="parser"):
 	"""
 	reads in the result of the mate transition parser into visually comparable results
+	the result file is a conll 14 files with double annotation (lemma + lemma2, ...)
 	"""
 	print "________________________________________current file is: " + conllfilename
 	shortname = conllfilename.split("/")[-1]
-	if projectname:
+	if projectname: # really modifying the database
 		
 		sql = database.SQL(projectname)
 		db,cursor=sql.open()
@@ -1307,7 +1330,7 @@ def readInTestResults(projectname,conllfilename,gold="gold",parser="parser"):
 		parserid = sql.enter(cursor, "users",["user","realname"],(parser,parser,))
 		
 		
-		sents={}
+		sents={} # score of correct functions -> list of trees having that score. allows to sort by annotation quality. the list of trees are triples: ( goldtree,parsetree,info )
 		goldsentences,parsesentences,sentencefeatures=[],[],[]
 		l,t,g,f,length=0.0,0.0,0.0,0.0,0
 		allcats,allfuncs={},{}
@@ -1447,11 +1470,14 @@ if __name__ == "__main__":
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Triv*")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Pett*")
-	readinallmates("lingCorpus","corpus/conll/",filepattern="*")
+	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Fum*")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/parses/",filepattern="*")
 	#readinallmates("decoda","/home/gerdes/arborator/corpus/decoda/",filepattern="decoda.test*")
 	
-	#readinallmates("orfeo","/home/gerdes/arborator/corpus/orfeo/",filepattern="*")
+	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/2015lingCorpus/",filepattern="*")
+	readinallmates("test_mini_db","corpus/mate/",filepattern="*_Parse")
+	
+	
 	
 	#readInTestResults(None,"/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")
 	#readInTestResults("canons","/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")

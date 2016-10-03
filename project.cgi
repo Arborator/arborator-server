@@ -280,10 +280,9 @@ def printhtmlheader(project):
 		$('#dialog').dialog('open');
 	}
 	adduser = function(textid, text, offset) {
-		$("#userform").offset(offset).css({ display: 'inline' } );
-		//console.log(textid,text,$("#textid"));
 		$("#utextid").attr("value",textid);
 		$("#uremove").attr("value",0);
+		$("#userform").css({ display: 'block',top: offset.top, left: offset.left } );
 		}
 		
 	userchoice = function(v) {
@@ -316,15 +315,59 @@ def printhtmlheader(project):
 				}
 			});
 	
-	
-	
-	
-	
-		//$("#statustextid").attr("value",tid);
-		//$("#nextstatusform").submit();
 		}	
-		
-		
+	
+	
+	
+	nl2br = function(str) {   
+		return (str + '').replace(/([^>\\r\\n]?)(\\r\\n|\\n\\r|\\r|\\n)/g, '$1'+ '<br>' +'$2');
+	}
+
+	startmate = function() {
+		//$("#startmateform :input").prop('disabled', true);
+		//checkMate();
+		$("#parseStatus").css('background-image', 'url("images/ajax-loader.gif")');  
+		$.ajax({
+			type: "POST",
+			url: "mate.cgi",
+			data: {"project":project,"parserType":$( "#parserType" ).val(), "whoseTrees":$( "#whoseTrees" ).val(), "evaluationPercent":$( "#evaluationPercent" ).val(), "additionnalLexicon":$( "#additionnalLexicon" ).val(), "resultAnnotator":$( "#resultAnnotator" ).val()}, 
+			success: function(answer){
+					$("#parseStatus").html(answer);
+					console.log("finished!",answer);
+					//clearInterval(timer);
+				},
+			error: function(XMLHttpRequest, textStatus, errorThrown){
+				console.log("mate error",project)
+				
+				}
+			});
+	
+		timer = setInterval(checkMate, 5000);
+		}
+	
+	checkMate = function() {
+		$.ajax({
+			url : "mate/parse.log",
+			dataType: "text",
+			cache: false,
+			processData: false,
+			success : function (data) {
+				$("#parseStatus").html(nl2br(data));
+				if (data.match("^Ready"))
+					{
+						console.log("Done");
+						clearInterval(timer);
+						$("#parseStatus").css('background-image', 'none'); 
+						//$("#startmateform :input").prop('disabled', false);
+					}
+				}
+			});
+			
+
+			
+		}
+	
+	
 	$(function () {
 		$("#dialog").dialog({
 			bgiframe: true,
@@ -458,11 +501,10 @@ def printalltexts(project,sql,adminLevel):############################# all text
 	The <b>{project}</b> Project has {nrt} texts and {nrs} sentences. <br/>
 	<br/>
 	<table class='whitable'>
-	<thead><tr><th>text name</th><th>number of sentences</th><th>number of tokens</th><th >annotators</th><th>validator</th><th title='non sollicitated trees by users not assigned to this text are listed here.'>other trees</th><th>exo</th><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr></thead>
+	<thead><tr><th>text name</th><th>number of sentences</th><th>number of tokens</th><th>sentence length</th><th >annotators</th><th>validator</th><th title='non sollicitated trees by users not assigned to this text are listed here.'>other trees</th><th>exo</th><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr></thead>
 	""".format(project=project,nrt=nrt,nrs=sql.getNumberSentences())
 	
 	tuples=[]
-
 	for t,tid,nrtokens in sorted( [(t,tid,nrtokens) for tid,t,nrtokens in sql.getall(None, "texts",None,None)]): # got to get it in alphabetical order .decode("utf-8")
 		
 		c1= u"<b><a  style='cursor:pointer;dispay:block'  onclick=edit('{tid}',1)>{t}</a></b></td>".format(tid=tid, t=t)
@@ -470,8 +512,10 @@ def printalltexts(project,sql,adminLevel):############################# all text
 		stotal+=sn
 		c2=str(sn)
 		if not nrtokens:	nrtokens=sql.getNumberTokensPerText(tid) # ,recompute=True
+		#nrtokens=sql.getNumberTokensPerText(tid,recompute=True) # recomputes the token number
 		ttotal+=nrtokens
-		c3=str(nrtokens)		
+		c3=str(nrtokens)
+		c4=str(round(float(nrtokens)/sn,2))
 		a,v = "",""
 		tannot,tvalit=0,0
 		reals=[]
@@ -493,48 +537,59 @@ def printalltexts(project,sql,adminLevel):############################# all text
 				else: # annotators
 					a+=av
 					tannot+=1		
-		if not a: a="<div  style='float:left;margin-right:15px;'>nobody yet</div>"
-		if not v: v="<div  style='float:left;margin-right:15px;'>nobody yet</div>" 
+		if not a: a="<div style='float:left;margin-right:15px;'>nobody yet</div>"
+		if not v: v="<div style='float:left;margin-right:15px;'>nobody yet</div>" 
 		tanno+=tannot
-		tvali+=tvalit
-		#c4,c5=a.encode("utf-8"),v.encode("utf-8")
-		c4,c5=a,v
+		tvali+=tvalit		
+		c5,c6=a,v
 		
 		otherreals=[r for r, in sql.treesForText(tid) if r and r not in reals]
 		#print "otherreals",otherreals, tid
-		if otherreals:	c6=" ".join(otherreals)
-		else:		c6="&nbsp;"
+		if otherreals:	c7=" ".join(otherreals)
+		else:		c7="&nbsp;"
 		if adminLevel:
+			# exo stuff:
 			et,esn = sql.getExo(tid)
 			et = sql.exotypes[et] # transform exotypenumber into text
 			if not esn: esns=""
 			else: esns=esn
-			c7= """<a style='cursor:pointer;' onclick='$("#exoform").val("{et}").css({{ top: $(this).offset().top-5, left: $(this).offset().left-5 }}).toggle();$("#exoform select").val("{et}");$("#exotoknum").val("{esn}");var e=arguments[0];e.stopPropagation();$("#etextid").val({tid})'>{et} {esns}</a>""".format(tid=tid,et=et,esn=esn,esns=esns)
-			c8 = u"""<div style='float:left;cursor:pointer;' title='asign this text to a user' onclick="var e=arguments[0];e.stopPropagation();adduser({tid},'{t}',$(this).offset()); ">asign<div style='float:right;cursor:pointer;' class='ui-button-icon-primary ui-icon ui-icon-person' ></div></div>&nbsp;&nbsp;&nbsp; """.format(tid=tid,t=t)
-			c9 = u"""		<span style='cursor:pointer;'onclick="var e=arguments[0];e.stopPropagation();exportAnnos({tid},'{t}',$(this).offset());"  title='export annotations of this text' ><img src="images/dbexport.bw.png" border="0"></span>""".format(tid=tid,t=t)
+			c8= """<a style='cursor:pointer;' onclick='$("#exoform").val("{et}").css({{ top: $(this).offset().top-5, left: $(this).offset().left-5 }}).toggle();$("#exoform select").val("{et}");$("#exotoknum").val("{esn}");var e=arguments[0];e.stopPropagation();$("#etextid").val({tid})'>{et} {esns}</a>""".format(tid=tid,et=et,esn=esn,esns=esns)
+			# user assignment:
+			c9 = u"""<div style='float:left;cursor:pointer;' title='asign this text to a user' onclick="var e=arguments[0];e.stopPropagation();adduser({tid},'{t}',{{ top: e.pageY, left: e.pageX }}); ">asign<div style='float:right;cursor:pointer;' class='ui-button-icon-primary ui-icon ui-icon-person' ></div></div>&nbsp;&nbsp;&nbsp; """.format(tid=tid,t=t)
+			# export
+			c10 = u"""		<span style='cursor:pointer;'onclick="var e=arguments[0];e.stopPropagation();exportAnnos({tid},'{t}',$(this).offset());"  title='export annotations of this text' ><img src="images/dbexport.bw.png" border="0"></span>""".format(tid=tid,t=t)
 		else:
-			c7= sql.exotypes[sql.getExo(tid)[0]] # only exotype is shown
-			c8= "&nbsp;"			
-			c9 = """&nbsp;"""
+			c8= sql.exotypes[sql.getExo(tid)[0]] # only exotype is shown
+			c9= "&nbsp;"			
+			c10 = """&nbsp;"""
 			
-		if adminLevel>1:	c10= u"""		<span class='ui-button-icon-primary ui-icon ui-icon-trash' style='cursor:pointer;' onclick="var e=arguments[0]; e.stopPropagation(); removeSample({tid},'{t}');"  title='remove all sentences from this file from database' ></span>""".format(tid=tid,t=t)
-		else: 		c10= "&nbsp;"
+		if adminLevel>1:	c11= u"""		<span class='ui-button-icon-primary ui-icon ui-icon-trash' style='cursor:pointer;' onclick="var e=arguments[0]; e.stopPropagation(); removeSample({tid},'{t}');"  title='remove all sentences from this file from database' ></span>""".format(tid=tid,t=t)
+		else: 		c11= "&nbsp;"
 
-		tuples+=[(c1,c2,c3,c4,c5,c6,c7,c8,c9,c10)]
+		tuples+=[(c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11)]
 	
 	for tup in tuples:
-		print ("<tr><td>" + u"</td><td>".join(tup) + "</td></tr>").encode('utf-8')
+		print ('<tr><td>' + u"</td><td>".join(tup) + "</td></tr>").encode('utf-8')
 	
 	
 	if adminLevel:allexport="""<span style='cursor:pointer;'onclick="var e=arguments[0];e.stopPropagation();exportAnnos(-1,'all',$(this).offset());"  title='export all annotations - very slow! blocks the database!' ><img src="images/dbexport.bw.png" border="0"></span>"""
 	else:allexport=""
 	evallinkhtml = '<a href="getEvaluation.cgi?project='+project+'">evaluation</a>'+' <a href="getEvaluation.cgi?project='+project+'&csv=csv">csv</a>'
-	if nrt: 
+	nvs=sql.getNumberValidatedSentences()
+	nvt=sql.getNumberValidatedTokens()
+	
+	if nrt: # at least some texts exist
 		if tanno: annota="{tanno} annotation assignments<br> (an average of {ava:.2f} assignments per text)".format(tanno=tanno,ava=float(tanno)/nrt)
 		else: annota="&nbsp;"
 		if tvali:	validata="{tvali} validation assignments <br> (an average of {avv:.2f} validators per text)".format(tvali=tvali,avv=float(tvali)/nrt)
 		else:	validata="&nbsp;"
-		print """<TFOOT>	<tr style='padding-top:20;'><td>{nrt} texts</td><td>{stotal} sentences</td><td>{ttotal} tokens</td><td>{annota}</td><td>{validata}</td><td>&nbsp;</td><td>{evallinkhtml}</td><td>&nbsp;</td><td>{allexport}&nbsp;</td><td>&nbsp;</td></tr> 	</TFOOT>""".format(stotal=stotal, nrt=nrt, ttotal=ttotal,annota=annota,validata=validata,evallinkhtml=evallinkhtml if adminLevel else "&nbsp;", allexport=allexport)
+		
+		if stotal:	avsentlen=round(float(ttotal)/stotal,2)
+		else:		avsentlen="n/a"
+		if nvs:		avsentlenval=round(float(nvt)/nvs,2)
+		else:		avsentlenval="n/a"
+		
+		print """<TFOOT>	<tr style='padding-top:20;'><td>{nrt} texts</td><td>{stotal} sentences<br>{nvs} validated</td><td>{ttotal} tokens<br>{nvt} validated</td><td>{avsentlen}<br>{avsentlenval} validated</td><td>{annota}</td><td>{validata}</td><td>&nbsp;</td><td>{evallinkhtml}</td><td>&nbsp;</td><td>{allexport}&nbsp;</td><td>&nbsp;</td></tr> 	</TFOOT>""".format(stotal=stotal, nvs=nvs, nvt=nvt, nrt=nrt, ttotal=ttotal,avsentlen=avsentlen, avsentlenval=avsentlenval, annota=annota,validata=validata,evallinkhtml=evallinkhtml if adminLevel else "&nbsp;", allexport=allexport)
 	print "</table></div>"
 
 
@@ -629,8 +684,8 @@ def printuserassignments(project,projectconfig,sql,adminLevel, lastseens):
 		
 	if adminLevel>1:
 		print """<div class="ui-widget ui-widget-content ui-corner-all box">
-	<a href="uploader.cgi?project={project}"><span class='ui-button-icon-primary ui-icon ui-icon-folder-open' style='' title='add conll or xml files containing annotations to the database' ></span>Add files to the database</a>
-	</div></div></div></div></div></div>&nbsp;<br/>&nbsp;""".format(project=project)
+	<a href="uploader.cgi?project={project}"><span class='ui-button-icon-primary ui-icon ui-icon-folder-open' style='' title='Add Conll or XML files containing annotations to the database' ></span>Add files to the database</a>
+	</div></div></div></div></div></div>&nbsp;""".format(project=project)
 	
 	return now
 
@@ -666,10 +721,10 @@ def printmenues(project,sql):
 		</div>		""".format(project=project, options="\n".join(["<option>"+ty+"</option>" for ty in sql.exotypes]))
 	
 	
-	print """<div id="userform" style=" position:absolute;display: none;" onclick="var e=arguments[0];e.stopPropagation();">
+	print """<div id="userform" style="position:absolute; display:none;" onclick="var e=arguments[0];e.stopPropagation();">
 			<form  method="post" action="project.cgi?project={project}" id="useraddremove" name="useradd">
 				<select id="userchoice" name="userchoice" style="width:180px;"  >""".format(project=project)
-	for uid,user,realname in sorted(sql.getall(None, "users",None,None), key=lambda x: x[2]):
+	for uid,user,realname in sorted(sql.getall(None, "users",None,None), key=lambda x: x[2].lower()):
 			if user!=parser:
 				#print [user]
 				print "			<option>",
@@ -751,6 +806,36 @@ def printmenues(project,sql):
 		
 		""".format(project=project)
 
+def printmate(project,projectconfig, sql, adminlevel):
+	if projectconfig.get("configuration",{}).get("mate",{}):
+	
+		print """
+	<div class="ui-widget ui-widget-content ui-corner-all box" style="text-align:-moz-center;">Mate:
+	
+		<form  method="post" id="startmateform" name="startmateform">
+			For the <input type="hidden" id="etextid" name="textid" value="">
+				<select id="parserType" name="parserType" style="width:100px;height:25px;"  >
+					{parsertypeoptions}
+				</select>-based parser, take
+			<input type="radio" name="whoseTrees" value="v" checked>the validators' trees <input type="radio" name="whoseTrees">all validated trees,
+			and use <input id="evaluationPercent" type="text" value="10" name="evaluationPercent" title="percentage of training data used for evaluation" style="width:33px;">% for evaluation.
+			<br/>
+			Use <input id="additionnalLexicon" type="text" value="" name="additionnalLexicon" title="name of additional lexicon to use" style="width:93px;"> as additional lexicon and store the parse results under
+			<input id="resultAnnotator" type="text" value="mate" name="resultAnnotator" title="username for resulting trees" style="width:63px;">.
+			<br/>
+			<input type="button" cursor="pointer" id="buttonstartmate" name="buttonstartmate" value="start Mate" style="width:155px;z-index:33;" class="fg-button ui-state-default ui-corner-all" onclick="startmate();">
+			
+		</form>
+		<div id="parseStatus" class="ui-widget ui-widget-content ui-corner-all box" style="background-position: center center;background-repeat:no-repeat;">			
+		</div>
+	
+	</div>&nbsp;<br/>&nbsp;""".format(project=projectconfig.get("mate",None),parsertypeoptions="\n".join(["<option>"+ty+"</option>" for ty in ["graph","transition"]]))
+
+#parserType
+#whoseTrees
+#evaluationPercent
+#additionnalLexicon
+#resultAnnotator
 
 	
 def printfooter(project,username,thisfile, now):
@@ -776,6 +861,7 @@ def printfooter(project,username,thisfile, now):
 		
 if __name__ == "__main__":
 	
+	
 	project,projectconfig,sql,thisfile,username,userid,adminLevel,form = start()
 	
 	printhtmlheader(project.encode("utf-8"))
@@ -785,8 +871,10 @@ if __name__ == "__main__":
 	printmyassignments(project,sql,projectconfig,userid)
 	printalltexts(project.encode("utf-8"),sql,adminLevel)
 	lastseens,now=sql.usersLastSeen()
-	if adminLevel:	printuserassignments(project.encode("utf-8"),projectconfig,sql,adminLevel, lastseens)
-		
+	if adminLevel:	
+		printuserassignments(project.encode("utf-8"),projectconfig,sql,adminLevel, lastseens)
+		printmate(project.encode("utf-8"),projectconfig,sql,adminLevel)
+	
 	printmenues(project.encode("utf-8"),sql)
 	printfooter(project,username,thisfile,now)
 	
