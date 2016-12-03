@@ -24,14 +24,10 @@
 ####
 
 import cgitb, cgi, os, sys
-
 sys.path.append('modules')
 from logintools import isloggedin
 from logintools import logout
-import config
-
-
-
+from lib import config
 thisfile = os.environ.get('SCRIPT_NAME',"index.cgi").split("/")[-1]
 cgitb.enable()
 form = cgi.FieldStorage()

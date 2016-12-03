@@ -29,11 +29,11 @@
 module called from the editor.cgi to save trees
 """
 
-import cgi,sys
-from os       import environ
-import database,json
+import cgi, sys, json
+from os import environ
 sys.path.append('modules')
 from logintools import isloggedin
+from lib import database
 
 test = isloggedin("users/")
 if not test:sys.exit()

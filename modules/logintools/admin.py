@@ -17,7 +17,9 @@
 import sys
 import os
 sys.path.append('../modules')
-sys.path.append('../..')
+sys.path.append('../../lib')
+sys.path.insert(0, 'lib')
+
 from database import SQL
 from configobj import ConfigObj
 from pathutils import *
@@ -325,10 +327,11 @@ def edituser(theform, userdir, thisscript, userconfig, action, newcookie, msg=No
         thisuser = userlist[index-1]
         index += 1
         thisuserc = ConfigObj(userdir+thisuser+'.ini')
-
+	
         #print "Content-Type: text/html\n" # blank line: end of headers
-        #print userdir,thisuser,thisuserc
-        adminlev = thisuserc['admin']
+        #print userdir,thisuser,thisuserc,"admin" in thisuserc, "admin" in thisuserc.keys()
+        if thisuserc=={}: continue
+        adminlev = thisuserc.get('admin',0)
         if realadminlev <= int(adminlev):
             continue
         loginname = thisuser

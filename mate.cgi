@@ -24,12 +24,8 @@
 ####
 
 
-#import traceback,
-import cgi,cgitb, codecs,time, subprocess, sys, os
-
-
+import cgi, cgitb, codecs, time, subprocess, sys, os
 cgitb.enable()
-
 form = cgi.FieldStorage()
 
 project = form.getvalue('project','').decode("utf-8") # graph / transition

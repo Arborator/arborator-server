@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2010-2015, Kim Gerdes
+ * Copyright 2010-2016, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -814,19 +814,21 @@ reallysplitRight = function(project,nr, sid, toknr) {
 check = function(project,snr, sid, graphical) {	
 	
 	prepareData(snr); // useful to be able to compare even before saving
-	console.log(allData);
+// 	console.log(allData, allGoodData, snr);
+
 	var goodcat=[],badcat=[],gooddep=[],baddep=[];
 	if (!(snr in allGoodData)) return;
 	$.each(allGoodData[snr], function(toknr, nodedic) 
 	{
+		console.log(toknr,allData[snr][toknr]);
 		if (nodedic.tag == allData[snr][toknr].tag) goodcat.push(toknr);	
 		else badcat.push(toknr);
+		if ($.isEmptyObject( nodedic.gov )) return;
 		$.each(nodedic.gov, function(govnum, func) 
 		{
-			if (func == allData[snr][toknr].gov[govnum]) gooddep.push(toknr);
+			if ((func == allData[snr][toknr].gov[govnum] || allData[snr][toknr].gov[govnum]==null && govnum==-1)) gooddep.push(toknr);
 			else baddep.push(toknr);
 		})
-		
 	});
 	if (badcat.length==1) 	html="1 category error: "
 	else 		html=badcat.length+" category errors: "
@@ -972,31 +974,6 @@ saveTree = function (project,nr,sid,uid,username) {
 	// 	console.log("saved",project,nr,sid,uid,username)
 	}
 
-	
-	
-	
-// quickPut = function () {
-// 
-// 	$.ajax({
-// 		type: "POST",
-// 		url: "put.cgi",
-// 		data: {"conll":$('#conll').val(),"addfuncs":$('#addfuncs').val(),"addcats":$('#addcats').val() }, //
-// 		success: function(answer){
-// // 				console.log("answer---",answer,"----answer end")
-// 				$("#trees").html(answer);
-// 				redi();
-// 				
-// 				
-// 			},
-// 		error: function(XMLHttpRequest, textStatus, errorThrown){
-// 			console.log("error",project)
-// 			alert("error saving"+XMLHttpRequest+ "\n"+textStatus+ "\n"+errorThrown);
-// // 			$("#save"+nr).removeClass( "ui-state-disabled " );	
-// 			}
-// 		});
-// 	// 	console.log("saved",project,nr,sid,uid,username)
-// 	}
-// 
 
 
 allTreesConll = function () {
@@ -1010,7 +987,6 @@ allTreesConll = function () {
 
 	}
 	trees=JSON.stringify(dirtySVGs, "")
-// 	console.log("_____",trees);
 
 
 

@@ -25,22 +25,8 @@
 
 
 import os, cgitb, cgi,time, sys, glob
-import config, conll, database
-
+from lib import config, conll, database
 cgitb.enable()
-#<script type="text/javascript" src="script/jquery.js"></script>
-		#<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" media="screen" />
-#<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-#<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-#<script type="text/javascript" src="script/jquery-ui-1.11.4.custom.min.js"></script>
-#<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-		#<script type="text/javascript" src="script/raphael.export.js"></script>
-
-
-		#<link rel="stylesheet" type="text/css" href="annodoc/jquery-ui-redmond.css"/>
-		#<link rel="root" href=""/> <!-- for JS -->
-		
-#<script type="text/javascript" src="annodoc/jquery.min.js"></script>
 
 def printhtmlheader():
 	print """<html><head>

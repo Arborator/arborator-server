@@ -1,0 +1,23 @@
+22 donc donc ADV
+14 parce que parce que CSU
+4 plus plus ADV
+3 ensuite ensuite ADV
+2 aussi aussi ADV
+2 à à PRE
+2 comme comme PRE
+1 en tout cas en tout cas ADV
+1 plus plus NOM
+1 parce qu' parce que CSU
+1 hm hm INT
+1 sauf sauf PRE
+1 au à+le PRE
+1 en en PRE
+1 mais mai NOM
+1 pas pas ADN
+1 sinon sinon ADV
+1 soit être VRB
+1 notamment notamment ADV
+1 également également NOM
+1 si si CSU
+1 comme comme CSU
+total of 64 cases

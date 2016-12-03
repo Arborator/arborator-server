@@ -1,0 +1,41 @@
+# conllu format
+1	faut	falloir	V	_	_	0	root	_	must
+2	que	que	C	_	_	4	mark	_	that
+3	tu	tu	Pron	_	_	4	nsubj	_	you
+4	fasses	faire	V	_	_	1	ccomp	_	make
+5	envie	envie	N	_	_	4	dobj	_	desire
+6-7	aux	aux	P+D	_	_	_	_	_	to_the
+6	à	à	P	_	_	8	case	_	to
+7	les	le	D	_	_	8	det	_	the
+8	enfants	enfant	N	_	_	4	iobj	5:nmod	kids
+9	de	de	P	_	_	10	mark	_	to
+10	faire	faire	V	_	_	5	ccomp	_	make
+11-12	du	du	P+D	_	_	_	_	_	of_the
+11	de	de	P	_	_	13	case	_	of
+12	le	le	D	_	_	13	det	_	the
+13	bruit	bruit	N	_	_	10	dobj	_	noise
+
+# conllu format using SpaceAfter=No
+1	Can	can	AUX	MD	VerbForm=Fin	3	aux	_	_
+2	you	you	PRON	PRP	Case=Nom|Person=2|PronType=Prs	3	nsubj	_	_
+3	use	use	VERB	VB	VerbForm=Inf	0	root	_	_
+4	the	the	DET	DT	Definite=Def|PronType=Art	10	det	_	_
+5	'	'	PUNCT	``	_	6	punct	_	SpaceAfter=No
+6	find	find	VERB	VB	VerbForm=Inf	10	compound	_	_
+7	my	my	PRON	PRP$	Number=Sing|Person=1|Poss=Yes|PronType=Prs	8	nmod:poss	_	_
+8	phone	phone	NOUN	NN	Number=Sing	6	dobj	_	SpaceAfter=No
+9	'	'	PUNCT	''	_	6	punct	_	_
+10	feature	feature	NOUN	NN	Number=Sing	3	dobj	_	_
+11	to	to	PART	TO	_	12	mark	_	_
+12	track	track	VERB	VB	VerbForm=Inf	3	advcl	_	_
+13	someone	someone	NOUN	NN	Number=Sing	16	nmod:poss	_	_
+14	else	else	ADJ	JJ	Degree=Pos	13	amod	_	SpaceAfter=No
+15	's	's	PART	POS	_	13	case	_	_
+16	phone	phone	NOUN	NN	Number=Sing	12	dobj	_	SpaceAfter=No
+17	?	?	PUNCT	.	_	3	punct	_	_
+
+# I wrote the letter with a quill.
+1	Я	ja	PRON	_	Case=Nom|Number=Sing|Person=1|PronType=Prs	2	nsubj	_	I
+2	написал	napisat'	VERB	_	Gender=Masc|Number=Sing|VerbForm=Part|Voice=Act	0	root	_	wrote
+3	письмо	pis'mo	NOUN	_	Case=Acc|Gender=Neut|Number=Sing	2	dobj	_	the-letter
+4	пером	pero	NOUN	_	Case=Ins|Gender=Neut|Number=Sing	2	nmod	_	with-a-quill 

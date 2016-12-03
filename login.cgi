@@ -27,12 +27,11 @@
 
 #import time, re, sha, Cookie,  sys,codecs
 import os, cgitb, cgi,time, sys, glob
-import config, database 
-
 sys.path.append('modules')
 from logintools import login
 from logintools import isloggedin
 from logintools import logout
+from lib import config, database 
 
 
 verbose=False

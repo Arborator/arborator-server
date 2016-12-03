@@ -24,18 +24,12 @@
 ####
 
 
-
-#import time, re, sha, Cookie,  sys,codecs
-import os, cgitb, cgi,time, sys, glob, codecs
-#from xml.dom import minidom
-#import arboratorsession, 
-import config
-
+import os, cgitb, cgi, time, sys, glob, codecs
 sys.path.append('modules')
 from logintools import login
 from logintools import isloggedin
 from logintools import logout
-
+from lib import config
 
 
 verbose=False
@@ -168,8 +162,8 @@ for infile in sorted(glob.glob(os.path.join("corpus/conll/", '*.*'))): #  os.pat
 	filename=os.path.basename(infile).decode("utf-8")
 	try:
 		f=codecs.open(infile,"r","utf-8")
-	except:
-		print "can't read",filename,"!\n<br>"
+	except Exception as e: 
+		print "can't read",filename,"!\n <br>",e,"<br><br>"
 		continue
 	ns=1
 	conll=None

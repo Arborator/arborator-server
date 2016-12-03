@@ -25,22 +25,10 @@
 #     USA
 ####
 
-
-#import cgi
-#from xml.dom.ext import PrettyPrint
-#from datetime import date
-#from time     import mktime, time
-#from sqlite3   import connect
-#from os       import environ
 from sys      import exit
 from xml.dom import minidom
-
-#import traceback,
 import sys,cgi,cgitb,json
-#import treebankfiles
-
-import rhapsoxml
-
+from lib import rhapsoxml
 cgitb.enable()
 
 # this is the export script called from the editor or the viewer for exporting _individual_ trees
@@ -95,11 +83,11 @@ def printconll(nodedic,cat):
 	
 
 def consolidateconll(trees, filename, exptype):
-	from conll import conll2trees
+	from conll import conllFile2trees
 	from json import loads
 	trees=loads(trees)
-	#print "iiiiiiiiiiiiiii",conll2trees(filename)
-	for i,tree in enumerate(conll2trees(filename)):
+	#print "iiiiiiiiiiiiiii",conllFile2trees(filename)
+	for i,tree in enumerate(conllFile2trees(filename)):
 		#print "******",i,tree
 		if str(i) in trees:
 			nodedic={}

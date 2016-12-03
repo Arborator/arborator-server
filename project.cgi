@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ####
-# Copyright (C) 2009-2015 Kim Gerdes
+# Copyright (C) 2009-2016 Kim Gerdes
 # kim AT gerdes. fr
 #
 # This program is free software; you can redistribute it and/or
@@ -24,16 +24,13 @@
 ####
 
 import os, cgitb, cgi,time, sys, glob
-import config, database
 from time import asctime, localtime
-
 sys.path.append('modules')
 from logintools import login
 from logintools import isloggedin
 from logintools import logout
-
+from lib import config, database
 cgitb.enable()
-
 
 
 ##############################################################################################"
@@ -150,7 +147,7 @@ def reaction(project,projectconfig,sql,userid,form,query):
 	"""
 	filename = form.getvalue("filename",None)
 	if filename: # upload file	
-		from treebankfiles import uploadConll
+		from lib.treebankfiles import uploadConll
 		filetype = form.getvalue("filetype",None)
 		print "trying to upload",filename,filetype,"into the database of the project",project.encode("utf-8")
 		if filetype in ["conll4","conll10","conll14"]:
@@ -509,13 +506,15 @@ def printalltexts(project,sql,adminLevel):############################# all text
 		
 		c1= u"<b><a  style='cursor:pointer;dispay:block'  onclick=edit('{tid}',1)>{t}</a></b></td>".format(tid=tid, t=t)
 		sn=sql.getnumber(None, "sentences", ["textid"], [tid])
+		
 		stotal+=sn
 		c2=str(sn)
 		if not nrtokens:	nrtokens=sql.getNumberTokensPerText(tid) # ,recompute=True
 		#nrtokens=sql.getNumberTokensPerText(tid,recompute=True) # recomputes the token number
 		ttotal+=nrtokens
 		c3=str(nrtokens)
-		c4=str(round(float(nrtokens)/sn,2))
+		if sn: c4=str(round(float(nrtokens)/sn,2))
+		else: c4="0"
 		a,v = "",""
 		tannot,tvalit=0,0
 		reals=[]

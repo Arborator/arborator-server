@@ -1,17 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import cgi
-
-#from os       import environ
-
-#import traceback,
 import sys,cgi,cgitb
-import database
 sys.path.append('modules')
 from logintools import isloggedin
-
-
+from lib import database
 cgitb.enable()
 
 form = cgi.FieldStorage()

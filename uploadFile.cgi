@@ -25,8 +25,10 @@
 #     USA
 ####
 
-import cgi, os, shutil, config, codecs, re, sys
-import cgitb
+import cgi, os, shutil, codecs, re, sys, cgitb
+
+from lib import config
+
 print "Content-Type: application/json\n"
 cgitb.enable()
 #print "Content-Type: text/html\r\n\r\nxxxxxxxx"
@@ -99,7 +101,7 @@ if method == "POST":
 					ns+=1						
 						
 		elif analyze=='chinese':
-			from parse import zhparse
+			from lib.parse import zhparse
 			temp=open("corpus/zh.utf-8","wb")
 			temp.write(filecontent)
 			temp.close()
@@ -141,7 +143,7 @@ if method == "POST":
 			out = codecs.open(foutname, "w","utf-8")
 			
 			if analyze=='chinese':
-				from parse import zhparse
+				from lib.parse import zhparse
 				temp=open("corpus/zh.utf-8","wb")
 				temp.write(filecontent)
 				temp.close()

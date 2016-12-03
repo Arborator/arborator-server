@@ -473,11 +473,10 @@ function conllNodesToTree(treeline)
 				if (!(lastid in uextra)) uextra[lastid]=[];
 				uextra[lastid].push(nodeline)
 				return true;
-				
 			}
 			var elements = nodeline.split('\t');
 			el=elements.length;
-// 			console.log('###',nodeline,el);
+			//console.log('###',nodeline,el);
 
 			if (!(el in conlls) && el>10) el=10;
 			if (el > 4) id=elements[conlls[el]["id"]];

@@ -30,16 +30,12 @@ allows edits of the configuration
 
 """
 
-import os, cgitb, cgi, sys, glob
-import config, database
-
-import codecs
-
+import os, cgitb, cgi, sys, glob, codecs
+from lib import config, database
 sys.path.append('modules')
 from logintools import login
 from logintools import isloggedin
 from logintools import logout
-
 cgitb.enable()
 
 

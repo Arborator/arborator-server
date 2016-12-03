@@ -22,15 +22,13 @@
 #     Boston, MA  02111-1307
 #     USA
 ####
-
+#print 'Content-type: text/html\n\nxxxxx'
 import sys,cgi,os,datetime,cgitb, codecs
 from time import time
-from configobj import ConfigObj
-from database import SQL
+from lib.configobj import ConfigObj
 sys.path.append('modules')
-
-
 from logintools import isloggedin
+from lib.database import SQL
 
 
 form = cgi.FieldStorage()
@@ -99,14 +97,16 @@ def evaluateTree(usertree, teachertree):
 			if teachertree[i][cc]==usertree[i].get(cc,None):correctcats+=1
 			if teachertree[i].get("lemma","")==usertree[i].get("lemma"," "):correctlemmas+=1
 			#print "<br>",usertree[i]["gov"]
-			govlen=float(len(teachertree[i]["gov"]))
+			govlen=0.0
+			if "gov" in teachertree[i]: govlen=float(len(teachertree[i]["gov"]))
 			if not govlen:govlen=1.0
-			if teachertree[i]["gov"]:
+			if "gov" in teachertree[i]:
 				for g,func in teachertree[i]["gov"].iteritems():
 					#print g,usertree[i]["gov"],g in usertree[i]["gov"]
-					if g in usertree[i]["gov"]:correctdeps+=1/govlen
-					#print correctdeps
-					if func == usertree[i]["gov"].get(g,None):correctfuncs+=1/govlen
+					if "gov" in usertree[i]:
+						if g in usertree[i]["gov"]:correctdeps+=1/govlen
+						#print correctdeps
+						if func == usertree[i]["gov"].get(g,None):correctfuncs+=1/govlen
 			else:
 				correctdeps+=1
 				correctfuncs+=1

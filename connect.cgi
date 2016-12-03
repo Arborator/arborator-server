@@ -5,7 +5,7 @@ import cgi,sys
 from os import environ
 sys.path.append('modules')
 from logintools import isloggedin
-from database import SQL
+from lib.database import SQL
 
 test = isloggedin("users/")
 if not test:sys.exit()

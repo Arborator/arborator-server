@@ -26,13 +26,11 @@
 ####
 
 import os, cgitb, cgi, sys
-import config, database
-
 sys.path.append('modules')
 from logintools import login
 from logintools import isloggedin
 from logintools import logout
-
+from lib import config, database
 cgitb.enable()
 
 # global variables:
@@ -271,7 +269,20 @@ def start():
 		if action.startswith("project_"):project=action[8:]
 	if project: action="project_"+project
 	
-	action, userconfig = login(form, userdir, thisfile, action)
+	try:
+		action, userconfig = login(form, userdir, thisfile, action)
+	except IOError, e:
+		print "Content-Type: text/html\n" # blank line: end of headers
+		print "login failed",e
+		sys.exit()
+	#try:
+		
+	#except IOError, e:
+		#print "login failed",e
+		#sys.exit()
+		#raise IOError('Reading user file failed: %s' % e)
+	#except:
+		#print "login failed"
 	adminLevel, username, realname = int(userconfig["admin"]),userconfig["username"].decode("utf-8"),userconfig["realname"].decode("utf-8")
 	
 	print "Content-Type: text/html\n" # blank line: end of headers

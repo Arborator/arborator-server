@@ -35,8 +35,9 @@
 		$.ajax({
 			type: "POST",
 			dataType: "text",
-			url: "depedit.cgi",
-			data: {"conllin":$("#conllin").val(),"grammar":$("#grammar").val()}, 
+			url: "runDepedit.cgi",
+			data: {"conllin":$("#conllin").val(),"grammar":$("#grammar").val(), "project":$( "#projects" ).val(), "addName":$( "#addName" ).val()}, 
+// 			data: {"project":project,"projects":$( "projects" ).val(), "evaluationPercent":$( "#evaluationPercent" ).val(), "additionnalLexicon":$( "#additionnalLexicon" ).val(), "resultAnnotator":$( "#resultAnnotator" ).val()}
 			success: function(answer){
 					console.log("success");
 					$("#conllout").val(answer);
@@ -102,7 +103,57 @@
 		$("#grammar").linedtextarea();
 	
 		});
-		
+	
+	
+	nl2br = function(str) {   
+		return (str + '').replace(/([^>\\r\\n]?)(\\r\\n|\\n\\r|\\r|\\n)/g, '$1'+ '<br>' +'$2');
+	}
+
+	startdepeditdatabase = function() {
+		//$("#startdepeditdatabaseform :input").prop('disabled', true);
+		//checkdepeditdatabase();
+		$("#parseStatus").css('background-image', 'url("images/ajax-loader.gif")');  
+		$.ajax({
+			type: "POST",
+			url: "runDepedit.cgi",
+			data: {"project":project,"parserType":$( "#parserType" ).val(), "whoseTrees":$( "#whoseTrees" ).val(), "evaluationPercent":$( "#evaluationPercent" ).val(), "additionnalLexicon":$( "#additionnalLexicon" ).val(), "resultAnnotator":$( "#resultAnnotator" ).val()}, 
+			success: function(answer){
+					$("#parseStatus").html(answer);
+					console.log("finished!",answer);
+					//clearInterval(timer);
+				},
+			error: function(XMLHttpRequest, textStatus, errorThrown){
+				console.log("mate error",project)
+				
+				}
+			});
+	
+		timer = setInterval(checkdepeditdatabase, 5000);
+		}
+	
+	checkdepeditdatabase = function() {
+		$.ajax({
+			url : "mate/parse.log",
+			dataType: "text",
+			cache: false,
+			processData: false,
+			success : function (data) {
+				$("#parseStatus").html(nl2br(data));
+				if (data.match("^Ready"))
+					{
+						console.log("Done");
+						clearInterval(timer);
+						$("#parseStatus").css('background-image', 'none'); 
+						//$("#startdepeditdatabaseform :input").prop('disabled', false);
+					}
+				}
+			});
+			
+
+			
+		}
+	
+	
 	</script>
 
 	
@@ -111,16 +162,11 @@
 <body id="body">
 <div id="navigation" style="width:100%;margin:0px;border:0px;" class="arbortitle  ui-widget-header ui-helper-clearfix">
 	<a href='.' style='position: fixed;left:1px;top:1px'><img src="images/arboratorNano.png" border="0" title="Arborator Main Page"></a>
-	<img src="images/q.png" border="0" title="Arborator – Depedit">
+	Arborator – Depedit
 	<a style="position: fixed;right:1px;top:1px;right:5px;" id='help' title="restart the help animation"><img src="images/help.png" style="vertical-align: text-top" border="0">Help</a>
 </div>
 <div id="center" class="center" style="width:100%;float:right;top:0px;">
-	<!--<div id="trees">
-	</div>
 	
-	<div id="toggle" class="toggle" title="click here to show and hide the CoNLL input"></div>
-
-	<div id="boxx" class="boxx">-->
 	Paste and edit CoNLL file below:
 	<div id="textual" style="width:100%; display: flex; ">
 		<TEXTAREA NAME="conllin" id="conllin" title="Here you can paste and edit CoNLL files with 4, 10 or 14 columns" style="height:300;  flex: 1; background-image: url('images/conll10.png'); background-repeat: no-repeat; background-position: 98% bottom; font-size: 1em; tab-size: 12; -moz-tab-size:12;">1	Wikinews	_	NP	NP	_	2	nsubj	_	_
@@ -210,35 +256,7 @@ Result after transformation:
 	</div>
 </div>
 
-			<!--<div style='float:xxx;'>
-
-				<div ><span style='float:left;'>additional functions</span> <input type='text' id='addfuncs'  style='width:100%' title='Here you can add additional functions that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='nsubj csubj nsubjpass csubjpass dobj ccomp xcomp iobj vocative aux mark discourse auxpass expl cop neg root advmod dislocated nmod advcl nummod acl amod appos det nmod case compound mwe goeswith name foreign list parataxis remnant reparandum conj cc punct dep'></input></div>
-				
-				<div ><span style='float:left;'>additional POS tags</span> <input type='text' id='addcats'  style='width:100%;' title='Here you can add additional categories that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='ADJ ADP PUNCT ADV AUX SYM INTJ CONJ X NOUN DET PROPN NUM VERB PART PRON SCONJ _'>  </input> </div>
-				
-				<div >or paste your sentences here:
-				<TEXTAREA NAME="sentences" id="sentences"  title='Here you can provide unanalyzed textual data, one sentence per line. You can then interactively add the syntactic analysis of your sentences. This will erase all the existing trees'  style="width:100%; height:100;"></TEXTAREA>
-				</div>
-				
-			</div>
-			<input type="checkbox" id="annodoccheck"><label for="annodoccheck"><img src='images/annodoc.png' border='0' title='show annodoc graph' style='top:0px;'>  </label>-->
-
-
-
-	
-		<!--<div style='float:right;'>
-			<img  id="style" src='images/style.png' border='0' title='style' style='top:0px;'> 
-			
-		</div>-->
-<!--<div id="styledialog" title="Design your dependency tree" style="background-color: white;">
-	<div id="stylefunctions" title="functions">
-
-	</div>
-	<div style='float:right;'>
-		<input type="checkbox" id="styleconllcheck">include style information in CoNLL
-	</div>
-</div>-->
-	
+		
 	
 
 <br>
@@ -279,11 +297,7 @@ Result after transformation:
 			<h2 id="question">Are you sure?</h2>
 		</div>
 	</div>
-	<!--<div id="b" class="rbubble" style="right: 650px;top: 44px; position: absolute;display:none;">Paste a CoNLL file content here</div>
-	<div id="bb" class="rbubble" style="right: 650px;top: 533px;position: absolute;">Or paste the sentences you want to analyze here.<br/>One sentence per line.</div>
-	<div id="bbb" class="lbubble" style="left: 400px;top: 400px;position: absolute;">As soon as you click anywhere else, the graph is updated and you can modify the dependencies by dragging one word over the other.</div>
-	<div id="bbbb" class="lbubble" style="left: 400px;top: 35px;position: absolute;">You can export the graph in various formats by clicking on the green arrow.</div>-->
-	
+	{applyToDatabase}
 	
 </div>
 </body></html>
