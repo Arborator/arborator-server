@@ -395,7 +395,7 @@ a.toggler {
 .funcmenu{
 	border:thin solid silver; width:60px;height:22px;vertical-align: middle;
 	cursor: pointer;
-	color: #036;font: italic 10px Sans;
+	color: #036;font: italic 10px sans-serif;
 	position:absolute;
 }
 
