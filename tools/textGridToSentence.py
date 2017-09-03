@@ -60,7 +60,7 @@ lonelyQuote=re.compile(ur'\s*\"\s*$',re.U+re.M)
 verbose=False
 #verbose=True
 
-def textgridToSentences(filter="*", keepEndSent=False, maxlength=50, writeProblemFile=False, writeProblemBeforeSentence=True):
+def textgridToSentences(filter="*", keepEndSent=False, maxlength=50, writeProblemFile=False, writeProblemBeforeSentence=True, includeProblemSentence=False):
 	
 	
 	skipnext=False
@@ -174,8 +174,10 @@ def textgridToSentences(filter="*", keepEndSent=False, maxlength=50, writeProble
 						if writeProblemFile:
 							with codecs.open("sentences/"+simplename+".problem.txt","a","utf-8") as probfile:
 								probfile.write(u"_______________phrase très longue:\n"+simp+" \n")
-						if writeProblemBeforeSentence:
-							courtfile.write("long ! "+simp+" \n")
+						if includeProblemSentence:
+							if writeProblemBeforeSentence:
+								courtfile.write("long ! ")
+							courtfile.write(simp+" \n")
 							
 		#outfile=codecs.open(outfolder+"/"+infile.split("/")[-1],"w","utf-8")
 
@@ -240,7 +242,7 @@ if __name__ == "__main__":
 	
 	#mate(sentenceFolder="rafael")
 	
-	textgridToSentences("*", keepEndSent=True, writeProblemFile=True, maxlength=100)
+	textgridToSentences("*", keepEndSent=True, writeProblemFile=True, maxlength=100, writeProblemBeforeSentence=False)
 
 	#mate(filter="*Fum*")
 	

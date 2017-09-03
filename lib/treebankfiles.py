@@ -1474,7 +1474,9 @@ if __name__ == "__main__":
 	#readinallmates("test_mini_db","corpus/mate/",filepattern="*_Parse")
 	#readinallmates("platinum","corpus/platinum/",filepattern="*")
 	#readinallmates("Platinum","../projects/Platinum/exportcorrected/",filepattern="*",steps=10000,importAnnotatorName="gold")
-	readinallmates("lingCorpus2016","../tools/parses/",filepattern="*conll_parse",steps=10000,importAnnotatorName="parser")
+	#readinallmates("lingCorpus2016","../tools/parses/",filepattern="*conll_parse",steps=10000,importAnnotatorName="parser")
+	#readinallmates("Naija","../tools/parses/",filepattern="*_parse",steps=10000,importAnnotatorName="parser")
+	readinallmates("Uppsala","../corpus/Uppsala/",filepattern="*conllu",steps=10000,importAnnotatorName="parser")
 		
 	#readInTestResults(None,"/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")
 	#readInTestResults("canons","/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")

@@ -13,120 +13,17 @@ debug=True
 
 
 
-import traceback, copy
+import traceback, copy, sys
 from time	import mktime, time, asctime, localtime
 from copy 	import deepcopy
 sys.path.insert(0, '../lib')
 from database 	import SQL
+from goldPlatinumTransformConll import splice
 
-	
-def splice(sentencedic,nodenum,intdic,copiedfeatures=['t','token','lemma','cat']):
-		"""
-		integrates the intdic into sentencedic at position nodenum
-		an empty intdic kicks out the node in a proper manner (other dependencies are still ok)
-		
-		format of intdic:
-			indices start with 'i', for example 'i44'
-			last node that carries 'child' feature will receive the children of the former nodenum node
-			last node that has governor i0 will receive the governors of the former nodenum node
-			if no node has a 'i0' governor, the first node will receive the governors
-			
-			example:
-			{	
-				'i1':{ u'person': u'3', u'number': u'sg', u'cat': u'V', u'lemma': u'\xeatre', u'token': u'est', u'tense': u'present', u'mode': u'indicative', 'gov': {'i0':'root'}, u't': u'A'},
-				'i2':{u'cat': u'Cl', u'lemma': u'c', u'token': u'-ce', u't': u'B', 'gov': {'i1': u'sub'}, 'child':None}
-			}
-		
-		gives back new sentencedic
-		
-		"""
-		intgov,intchi=None,None
-		newsentencetree={}
-		if debug>2: 
-			print "================== integrating"
-			for i in sorted(intdic):
-				print i,intdic[i]
-			print "into ((((((((((((("
-			for i in sorted(sentencedic):
-				print i,sentencedic[i].get("t","-"),sentencedic[i]
-			print ")))))))))))))))"
-		#try:
-		l = [0]+sorted(sentencedic)[:nodenum-1]+sorted(intdic)+sorted(sentencedic)[nodenum:]
-		if debug>2: print "lllll",l
-		
-		
-		for i in sorted(intdic):
-		
-			sentencedic[i]=sentencedic[nodenum].copy()
-			for at in copiedfeatures:
-				if at in intdic[i]:
-					sentencedic[i][at]=intdic[i][at]
-			sentencedic[i]['gov']=intdic[i].get('gov',{})
-			
-			if 'i0' in intdic[i].get('gov',{}).keys(): # found the gov: the one that has a root link
-				sentencedic[i]['gov']=sentencedic[nodenum]['gov']
-				intgov=i
-			if "child" in intdic[i]: # found the child bearer
-				intchi = i
-				del intdic[i]['child']
-		if not intgov:# if no governor is indicated, i guess it's the first word
-			intgov="i1"
-			if intgov in sentencedic: sentencedic[intgov]['gov']=sentencedic[nodenum]['gov']
-		if not intchi: intchi=intgov
-		
-		# correct wrong gov links
-		for i in sorted(sentencedic):
-			if nodenum in sentencedic[i]['gov'].keys():
-				sentencedic[i]['gov'][intchi]=sentencedic[i]['gov'][nodenum]
-				del sentencedic[i]['gov'][nodenum]		
-		
-		
-		#print 'lllll',l
-		# bring all in a new list with new indeces based on l
-		newsentencedic={}
-		for newi,oldi in enumerate(l):
-			if newi:# not 0
-				newsentencedic[newi]=sentencedic[oldi]
-				govdic={}
-				for govi,dep in sentencedic[oldi]['gov'].iteritems():
-					if govi>=0 and govi in l:govdic[l.index(govi)]=dep
-				newsentencedic[newi]['gov']=govdic
-		#except Exception, err:
-			#print traceback.format_exc()
-			#print "oldoldold((((((((((((("
-			#for i in sorted(sentencedic):
-				#print i,sentencedic[i]
-			#print ")))))))))))))))"
-			#print "newnewnew((((((((((((("
-			#for i in sorted(newsentencedic):
-				#print i,newsentencedic[i]
-			#print ")))))))))))))))"
-			#print "intdic((((((((((((("
-			#for i in sorted(intdic):
-				#print i,intdic[i]
-			#print ")))))))))))))))"
-			#print nodenum
-			#print intdic
-			
-			#if logfile:
-				#f=codecs.open(logfile,"a","utf-8")
-				#f.write(traceback.format_exc()+"\n\n\n"+unicode(sentencedic)+"\n\n\n"+unicode(newsentencedic)+"\n\n\n")
-				#f.close()
-
-			#raise ShitError
-		#del sentencedic[nodenum]
-
-		if debug>2:
-			print "result:((((((((((((("
-			for i in sorted(newsentencedic):
-				print i,newsentencedic[i].get("t",""),newsentencedic[i]
-			print ")))))))))))))))"
-			
-		return newsentencedic
 
 ##################################### bulkcorrection directly in the database ####################
 		
-def complexbulkcorrectdic(dic):
+def OLDcomplexbulkcorrectdic(dic):
 	changed,newdic=False,False
 	
 	for i,node in dic.iteritems():
@@ -142,7 +39,7 @@ def complexbulkcorrectdic(dic):
 	if newdic:return newdic, changed
 	else:return dic,changed
 	
-def simplebulkcorrectdic(dic):
+def OLDsimplebulkcorrectdic(dic):
 	changed,newdic=False,False
 	
 	for i,node in dic.iteritems():
@@ -171,7 +68,7 @@ def simplebulkcorrectdic(dic):
 	
 	
 
-def correctfeatures(sentencetree, enterNr=None,enterDic=None):
+def OLDcorrectfeatures(sentencetree, enterNr=None,enterDic=None):
 	"""
 	takes a dictionary structure: node number => feature structure
 	applies changes
@@ -341,9 +238,49 @@ def correctfeatures(sentencetree, enterNr=None,enterDic=None):
 	return newsentencetree,(newsentencetree!=sentencetree or enterNr)
 
 
+	#newdic, changed = complexbulkcorrectdic(sentencetree)
+			#newdic, changed = simplebulkcorrectdic(sentencetree)
+			#newdic, changed = correctfeatures(sentencetree)
+			#newdic, changed = correctfeatures(sentencetree,4,{})
+			#newdic, changed = correctfeatures(sentencetree,4,{	
+				#'i1':{ u'person': u'3', u'number': u'sg', u'cat': u'V', u'lemma': u'\xeatre', u'token': u'est', u'tense': u'present', u'mode': u'indicative', 'gov': {'i0':'root'}, u't': u'A'},
+				#'i2':{u'cat': u'Cl', u'lemma': u'c', u'token': u'-ce', u't': u'B', 'gov': {'i1': u'sub'}, 'child':None}
+			#})
+			
+	
+			
+			#break
 
 
-def bulkcorrectDB(project, treeids=[]):
+
+def correctLowerProperNouns(tree):
+	changed={}
+	for i, node in tree.iteritems():
+		t,l,ca=node["t"],node["lemma"],node["tag"]
+		if t!=t.lower() and l==l.lower() and i>1: # some upper case
+			node["lemma"]=t
+			changed[i]=(t,l)
+			
+	
+	return tree, changed
+
+
+def NNAAMMEE(tree):
+	"""
+	NNAAMMEE -> XXX
+	"""
+	for i, node in tree.iteritems():
+		#if node["t"]=="XXX":
+			#node["t"]="YYY"
+			#node["lemma"]="YYY"
+		if node["t"]=="NNAAMMEE":
+			node["t"]="XXX"
+			node["lemma"]="XXX"
+			changed[i]="NNAAMMEE"
+	return tree, changed
+
+
+def bulkcorrectDB(project, treeids=[],commit=True):
 	"""
 	bulk correction of a whole project! very slow!
 	
@@ -359,49 +296,37 @@ def bulkcorrectDB(project, treeids=[]):
 	if treeids:	a,v=["rowid"],treeids
 	else:		a,v=[],[]
 	
-	allt=sql.getall(cursor, "trees",a,v)
-	
+	allt=list(sql.getall(cursor, "trees",a,v))
+	print "nb trees:",len(allt)
 	ti = time()
 	
 	for nr, (treeid,sid,uid,annotype,status,comment,timestamp) in enumerate(allt):
 		
-		print "_____ treeid",treeid,"nr",nr+1,"/",len(allt),"---",float(nr+1)/(time()-ti),"trees per second",float(len(allt)-nr+1)/(float(nr+1)/(time()-ti)),"seconds to go",float(len(allt)-nr+1)/(float(nr+1)/(time()-ti))/60,"minutes to go"
+		
 		
 		dic=sql.gettree(None,None,treeid, indb=db,incursor=cursor)
 		if dic:
-			sentencetree=dic["tree"]
+			tree=dic["tree"]
+			newtree, changed=correctLowerProperNouns(tree)
 			
-			#newdic, changed = complexbulkcorrectdic(sentencetree)
-			#newdic, changed = simplebulkcorrectdic(sentencetree)
-			#newdic, changed = correctfeatures(sentencetree)
-			#newdic, changed = correctfeatures(sentencetree,4,{})
-			newdic, changed = correctfeatures(sentencetree,4,{	
-				'i1':{ u'person': u'3', u'number': u'sg', u'cat': u'V', u'lemma': u'\xeatre', u'token': u'est', u'tense': u'present', u'mode': u'indicative', 'gov': {'i0':'root'}, u't': u'A'},
-				'i2':{u'cat': u'Cl', u'lemma': u'c', u'token': u'-ce', u't': u'B', 'gov': {'i1': u'sub'}, 'child':None}
-			})
-			
-	
-			
-			#break
 			if changed:
 				print "________________________________\n"
-				#for i,node in newdic.iteritems():
-					#print i, node["t"], node
-				#1/0
-				tokensChanged=True
-				ws,sentence,_ = sql.enterTree(cursor, newdic, sid, uid,tokensChanged=tokensChanged)
+				ws,sentence,_ = sql.enterTree(cursor, newtree, sid, uid,tokensChanged=True)
 				print sentence
-				print "changed"
-				db.commit()
-	#db.commit()
+				print "changed",changed
+				if not nr%100:
+					print "committing..."
+					if commit:db.commit()
+			if not nr%100:
+				print "_____ treeid",treeid,"nr",nr+1,"/",len(allt),"---",int(float(nr+1)/(time()-ti)),"trees per second",int(float(len(allt)-nr+1)/(float(nr+1)/(time()-ti))),"seconds (",round(float(len(allt)-nr+1)/(float(nr+1)/(time()-ti))/60,1),"minutes) to go"
+	if commit: db.commit()
 	db.close()
 	
-	
+		
 	
 if __name__ == "__main__":
 	print "bonjour"
-	
 	#bulkcorrectDB("Rhapsodie")
-	bulkcorrectDB("Rhapsodie", [9795])
+	bulkcorrectDB("Platinum", [], commit=False)
 	
 	

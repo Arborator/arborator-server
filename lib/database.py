@@ -81,6 +81,7 @@ class SQL:
 			self.showTreesOfValidatedTexts = self.projectconfig["configuration"]["showTreesOfValidatedTexts"]
 		self.allVisibleForNonAnnotators=int(self.projectconfig["configuration"].get("allVisibleForNonAnnotators","0"))
 		self.validatorsCanModifyTokens=int(self.projectconfig["configuration"].get("validatorsCanModifyTokens","0"))
+		self.validatorsCanConnect=int(self.projectconfig["configuration"].get("validatorsCanConnect","0"))
 		self.usersCanModifyTokens=int(self.projectconfig["configuration"].get("usersCanModifyTokens","0"))
 		self.sentencefeaturesAlways=int(self.projectconfig["configuration"].get("sentencefeaturesAlways","0"))
 		self.mate = self.projectconfig["configuration"].get("mate",None) # self.baseAnnotatorName
@@ -285,6 +286,11 @@ class SQL:
 						#if attr!=t:
 						if attr==intokenname: attr=self.tokenName # change the token name in the nodedic to the project's token name
 						self.enter(cursor, "features",["treeid","nr","attr","value"],(treeid,i,attr,val,), computeId=False)
+		if tokensChanged:
+			sent=" ".join([a for a, in cursor.execute("select value from features where attr='t' and treeid in (select trees.rowid from trees, users where trees.sentenceid =? and users.user=? and users.rowid=trees.userid) ORDER BY nr ;",(sentenceid,self.importAnnotatorName,)).fetchall()])
+
+			cursor.execute("UPDATE sentences SET sentence=? WHERE rowid=? ",(sent,sentenceid,))
+			cursor.execute("UPDATE sentencesearch SET sentence=? WHERE rowid=? ",(sent,sentenceid,))
 		return wcounter, sent.strip(), treeid
 
 
@@ -990,9 +996,9 @@ class SQL:
 			for tu in trees:
 				t = trees[tu]
 
-				comparedic[i]["cgov"][tu]=t[i]["gov"].items()
+				comparedic[i]["cgov"][tu]=t[i].get("gov",{}).items()
 				comparedic[i]["agov"]=comparedic[i].get("agov",{})
-				for g,f in t[i]["gov"].items():
+				for g,f in t[i].get("gov",{}).items():
 					comparedic[i]["agov"][str(g)+"___"+f]=comparedic[i]["agov"].get(str(g)+"___"+f,[])+[tu]
 				#cat compare
 				comparedic[i]["ccat"]=comparedic[i].get("ccat",{})
@@ -1262,7 +1268,7 @@ class SQL:
 			m = max(tree1["tree"].keys())
 			#print m
 			for i,node in tree2["tree"].iteritems():
-				node["gov"]=dict(((j+m if j else 0),f) for j,f in node["gov"].iteritems())
+				node["gov"]=dict(((j+m if j else 0),f) for j,f in node.get("gov",{}).iteritems())
 				if treeid1 not in tree1already: tree1["tree"][i+m]=node
 
 			if treeid1 not in tree1already:
@@ -1325,34 +1331,35 @@ class SQL:
 		for tid,_,uid,annotype,status,comment,timestamp in t:
 
 			tree = self.gettree(treeid=tid, indb=db,incursor=cursor)
-
-			markup1,markup2=[],tree["markupIU"].split()
+			if "markupIU" in tree:
+				markup1,markup2=[],tree["markupIU"].split()
 			s1,s2=[],[]
 
 			newtree={}
 			for i,node in sorted(tree["tree"].items()):
 				if i>toknr:
 					s2+=[node[self.tokenName]]
-					node["gov"]=dict(((j-toknr if j>toknr else 0),f) for j,f in node["gov"].iteritems())
+					node["gov"]=dict(((j-toknr if j>toknr else 0),f) for j,f in node.get("gov",{}).iteritems())
 					newtree[i-toknr]=node
 					del tree["tree"][i]
 				else:
-					node["gov"]=dict(((0 if j>toknr else j),f) for j,f in node["gov"].iteritems())
+					node["gov"]=dict(((0 if j>toknr else j),f) for j,f in node.get("gov",{}).iteritems())
 					s1+=[node[self.tokenName]]
-					while markup2:
-						if node[self.tokenName]==markup2[0]:
-							markup1+=[markup2.pop(0)]
-							#print "good",markup1
-							break
-						markup1+=[markup2.pop(0)]	
+					if "markupIU" in tree:
+						while markup2:
+							if node[self.tokenName]==markup2[0]:
+								markup1+=[markup2.pop(0)]
+								#print "good",markup1
+								break
+							markup1+=[markup2.pop(0)]	
 			
 			uidToTrees[uid]=newtree
 			
 			wcounter, sent, treeid = self.enterTree(cursor, tree["tree"], sid, uid,tokensChanged=True)
 			
-		
-		mu1= " ".join(markup1)
-		mu2= " ".join(markup2)	
+		if "markupIU" in tree:
+			mu1= " ".join(markup1)
+			mu2= " ".join(markup2)	
 			
 		se1= " ".join(s1)
 		se2= " ".join(s2)
@@ -1361,11 +1368,13 @@ class SQL:
 		cursor.execute("UPDATE sentences SET sentence=? WHERE rowid=? ",(se1,sid,))
 		cursor.execute("UPDATE sentencesearch SET sentence=? WHERE rowid=? ",(se1,sid,))
 		
-		cursor.execute("UPDATE sentencefeatures SET value=? WHERE sentenceid=? and attr=?",(mu1,sid,"markupIU",))# TODO:generalize this to any sentencefeature
+		if "markupIU" in tree:
+			cursor.execute("UPDATE sentencefeatures SET value=? WHERE sentenceid=? and attr=?",(mu1,sid,"markupIU",))# TODO:generalize this to any sentencefeature
 		
 		newsid=self.enter(cursor, "sentences",["nr","sentence","textid"],(sentencenr+1,se2,textid),computeId=True)
 		
-		self.enter(cursor, "sentencefeatures",["sentenceid","attr","value"],(newsid,"markupIU",mu2) )
+		if "markupIU" in tree:
+			self.enter(cursor, "sentencefeatures",["sentenceid","attr","value"],(newsid,"markupIU",mu2) )
 		
 		for uid,newtree in uidToTrees.iteritems():
 			wcounter, sent, treeid = self.enterTree(cursor, newtree, newsid, uid,tokensChanged=True)
@@ -1395,7 +1404,11 @@ class SQL:
 		doublegovs=False
 		renolet=re.compile("\W",re.U+re.I)
 		basefilename=renolet.sub(".",textname.strip().replace(" ","_").replace("?",""))
-		if not os.path.exists(self.exportpath.encode("utf-8")): os.makedirs(self.exportpath.encode("utf-8"))
+		if not os.path.exists(self.exportpath.encode("utf-8")): 
+			os.makedirs(self.exportpath.encode("utf-8"))
+			with codecs.open(".htaccess","w","utf-8") as htfile:
+				htfile.write("Options Indexes\n")
+
 		#importannoname=self.importAnnotatorName
 		parserid=self.getUniqueId(cursor, "users", ["user"],[self.importAnnotatorName])
 
@@ -1616,7 +1629,7 @@ class SQL:
 		for word in query.split():
 			if ":" in word:
 				both=word.split(":")
-				featuresearch+=[ ( both[0],both[1]) ]
+				featuresearch+=[ ( both[0],":".join(both[1:])) ]
 			else:
 				words+=[word]
 		

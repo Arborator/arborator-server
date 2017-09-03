@@ -7,7 +7,7 @@ from database import SQL
 
 #cgitb.enable()
 #project = form.getvalue('project',"").decode("utf-8")
-project="depexo"
+project="linguistiqueCorpus-Exo"
 #form = cgi.FieldStorage()
 #uid = form.getvalue('uid',None)
 uid = 1 # admin
@@ -17,7 +17,7 @@ sql=SQL(project)
 	
 #print project.encode('utf-8'),"uuuuuuuuuuuuuuuuuuuuu",uid
 
-tid=4
+tid=13
 
 uids=[uid for uid, in sql.uidForText(tid)]
 print uids

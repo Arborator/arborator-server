@@ -191,6 +191,13 @@ def parsing(infile, lemodel="LemModel", tagmodel="TagModel", parsemodel="ParseMo
 			p1 = subprocess.Popen([parsecommand],shell=True,  stdout=subprocess.PIPE)
 			print  p1.stdout.read()
 			if verbose: print "\n\n========== parsed"
+			#java -Xmx40G -cp mate/mate_components/anna-3.3.jar is2.parser.Parser -model ParseModel -test annotatedCorpora.corr.conll_tag -out naija_parse
+						#anna = ""
+				#lemclass = "is2.lemmatizer.Lemmatizer"
+				#tagclass = "is2.tag.Tagger"
+
+				#if lang=="graph":
+					#parseclass = ""
 
 	if checkIntegrity(outfile+'_parse') == False:
 		print "*********ERROR IN FILE", outfile+"_parse", "Please Try again*********"
@@ -332,7 +339,7 @@ def splitForTraining(infilename="Rhapsodie.micro_simple.conll.oldnum"):
 				testfile.write("\n")
 				emptyfile.write("\n")
 
-def trainingEvaluationParsing(project=u"OrfeoGold2016", parserType="graph", whoseTrees="validator", evaluationPercent=10, additionnalLexicon=None, resultAnnotator="mate", getFromFolder=False, parseDB=False, memory="40G"):
+def trainingEvaluationParsing(project=u"OrfeoGold2016", parserType="graph", whoseTrees="validator", evaluationPercent=10, additionnalLexicon=None, resultAnnotator="mate", getFromFolder=False, parseDB=False, memory="40G", stopOnError=False):
 	"""
 	if additionnalLexicon is given, it is joined to the training file for lemmatization and tagging.
 	change memory here!
@@ -374,18 +381,26 @@ def trainingEvaluationParsing(project=u"OrfeoGold2016", parserType="graph", whos
 	#####
 	
 	if getFromFolder: # getFromFolder contains folder name containing only conll files
+		error=False
 		goldtrees=[]
 		for infile in glob.glob(os.path.join(getFromFolder, '*')):
-			gtrees=conll.conllFile2trees(infile)
-			for tree in gtrees:
-				for i in tree:
-					for gi in tree[i]["gov"]:
-						if not 0<=gi<=len(tree):
-							print infile
-							print tree
-							print "has a problematic governor:",gi
-							sys.exit()
-			goldtrees+=gtrees
+			if os.path.isfile(infile):
+				print "reading",infile
+				gtrees=conll.conllFile2trees(infile)
+				for tree in gtrees:
+					problemkeys=[]
+					for i in tree:
+						for gi in tree[i]["gov"]:
+							if not 0<=gi<=len(tree):
+								print infile
+								print tree
+								print "has a problematic governor:",gi
+								error=True
+								problemkeys+=[i]
+					for problemk in problemkeys:
+						del tree[problemk]
+				goldtrees+=gtrees
+		if error and stopOnError: sys.exit()
 	else:
 		goldtrees = trees2train.getValidatedTrees(project, basepath, whoseTrees)
 	mateLogs( u"{nrtrees} validated trees extracted".format(nrtrees=len(goldtrees)) ) 
@@ -475,7 +490,7 @@ def trainingEvaluationParsing(project=u"OrfeoGold2016", parserType="graph", whos
 if __name__ == "__main__":
 	""" 
 	example usage:
-	python mate.py Platinum --getFromFolder projects/Platinum/export/
+	python mate.py Platinum --getFromFolder ../projects/Platinum/export/
 	python mate.py Platinum -f projects/Platinum/punc/
 	python mate.py Platinum -a mate/VRB.conll14 -f projects/Platinum/punc/
 	python mate.py Platinum -a mate/fr/lex.conll14 -f projects/Platinum/punc/
@@ -486,7 +501,8 @@ if __name__ == "__main__":
 	python mate.py HKUD -f mate/testEvalMate/training/HongKongTVMandarin.UD_ZH%.conll14
 	python mate.py HKUD -f mate/testEvalMate/training/alltrees/
 
-	
+	python mate.py Platinum -f enpetit/
+	python mate.py Platinum -f en/
 	"""	
 	parser = argparse.ArgumentParser(description='Trains Mate, evaluates, and parses the complete project')
 	parser.add_argument('project', type=lambda s: unicode(s, 'utf8'), help='project name')

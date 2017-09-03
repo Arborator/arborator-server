@@ -53,9 +53,11 @@ def readinContent(config,projectName, tmp=""):
 		if li.strip(): 
 			if li[0]=='\ufeff':li=li[1:] # TODO: find out why this anti BOM shit is needed...
 			par=li.strip().split("\t")
+			if par[0][0]=="#":continue
 			atts={}
 			if len(par)==2: 
-				try:atts=json.loads(par[1])
+				a=par[1].strip().split(" #")[0] # not ideal: only removes comments that are preceded by space (to avoid confusion with hex values for colors)
+				try:atts=json.loads(a)
 				except:pass
 			config.funcDic[par[0]]=atts
 			config.functions+=[par[0]]
@@ -79,9 +81,11 @@ def readinContent(config,projectName, tmp=""):
 		if li.strip(): 
 			if li.strip()[0]==u'\ufeff':li=li[1:] # TODO: find out why this anti BOM shit is needed...
 			par=li.strip().split("\t")
+			if par[0][0]=="#":continue
 			atts={}
-			if len(par)==2: 
-				atts=json.loads(par[1])
+			if len(par)==2:
+				a=par[1].strip().split(" #")[0]
+				atts=json.loads(a)
 			#if len(par)==2: atts=par[1]
 			config.catDic[par[0]]=atts
 			config.categories+=[par[0]]

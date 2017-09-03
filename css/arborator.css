@@ -10,7 +10,7 @@ height: 120px;
 padding: 5px;
 background: #654b6d;
 -webkit-border-radius: 10px;
--moz-border-radius: 10px;
+border-radius: 10px;
 border-radius: 10px;
 z-index: 1111;
 
@@ -42,7 +42,7 @@ height: 120px;
 padding: 5px;
 background: #654b6d;
 -webkit-border-radius: 10px;
--moz-border-radius: 10px;
+border-radius: 10px;
 border-radius: 10px;
 }
 
@@ -309,7 +309,8 @@ a.toggler {
 	cursor:pointer; 
 	position: relative; 
 	text-align: center; 
-	zoom: 1; 
+	transform: scale(1)
+/* 	zoom: 1;  */
    }
 
 /* .ui-state-default, .ui-widget-content .ui-state-default { */

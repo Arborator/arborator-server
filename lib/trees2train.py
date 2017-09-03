@@ -2,7 +2,7 @@
 #! coding: utf-8
 
 import conll, datetime, codecs, time, sys, os, glob
-from database 	import SQL
+from database import SQL
 from pprint import pprint
 
 """
@@ -13,6 +13,36 @@ TODO :
 
 #ti = time.time()-86400
 
+
+
+
+def exportUniqueSentences(project, mode="lasttree",pattern=False):
+	"""
+	exports one tree per sentences: the first time the sentence is found, the newest tree
+	"""
+	sql = SQL(project)
+	db,cursor=sql.open()
+	sentences={} # toks -> tree
+	outdir=os.path.join("..","projects",project,"export")
+	try: os.mkdir(outdir)	
+	except OSError: pass
+	outfile=os.path.join(outdir,"allSentences.conll")
+	if pattern:
+		command="""select trees.rowid,userid,max(timestamp) from trees, sentences, texts where texts.rowid=sentences.textid and sentences.rowid=trees.sentenceid 
+		and textname like "{pattern}"
+		group by sentenceid order by trees.rowid;""".format(pattern=pattern)
+	else:
+		command="""select trees.rowid,userid,max(timestamp) from trees, sentences, texts where texts.rowid=sentences.textid and sentences.rowid=trees.sentenceid 
+		group by sentenceid order by trees.rowid;"""
+	for i,(treeid,userid,timestamp,) in enumerate(cursor.execute(command).fetchall()):
+		tree=sql.gettree(treeid=treeid, indb=db, incursor=cursor)["tree"]
+		toks=tuple(tree[i]["t"] for i in tree)
+		print "___",i, "\r",
+		if toks not in sentences:
+			sentences[toks]=tree
+	print "writing file with",len(sentences),"sentences..."
+	conll.trees2conllFile([sentences[toks] for toks in sorted(sentences)], outfile=outfile, columns=10)
+	return outfile
 
 
 def exportGoodTexts(project, lastHuman=False, onlyValidated=True, pattern=False):
@@ -29,9 +59,13 @@ def exportGoodTexts(project, lastHuman=False, onlyValidated=True, pattern=False)
 	else: onlyValidated=""
 	# take all texts where a validator has validated
 	if pattern: command="select distinct * from texts, todos, users where texts.rowid=todos.textid and users.rowid=todos.userid and texts.textname {pattern};".format(pattern=pattern) # like 'UD_ZH%'
-	else: command="select distinct * from texts, todos, users where texts.rowid=todos.textid and todos.type=1 {onlyValidated} and users.rowid=todos.userid;".format(onlyValidated=onlyValidated)
+	else: 
+		command="select distinct * from texts, todos, users where texts.rowid=todos.textid and todos.type=1 {onlyValidated} and users.rowid=todos.userid;".format(onlyValidated=onlyValidated)
+		
 	for row in cursor.execute(command): 
 		textname, nrtokens, userid, textid, validator, status, comment, user, realname = row
+
+			
 		goodTexts[textid]=(textname, userid, user)
 		print "i'll take",textname,"validated by",user,"with", nrtokens, "tokens"
 	sentenceValidationInValidatedText(cursor, sql, db)
@@ -82,7 +116,79 @@ def exportGoodTexts(project, lastHuman=False, onlyValidated=True, pattern=False)
 		conll.trees2conllFile(trees, outfile, columns=10)
 	return outfiles
 
+def getTreesForSents(sents, trees, annotators, parserid, cursor, db, sql):
+	"""
+	for each entry in sents,
+	adds new trees to trees and annotators
+	"""
+	for i,(sid,nr,sentence,teid) in enumerate(sents):
+		print "\r",i,
+		if parserid>=0:
+			tr=list(cursor.execute("select trees.rowid,* from trees, users where sentenceid=? and userid<>? and userid=users.rowid order by timestamp DESC limit 1;",(sid,parserid)).fetchall())
+		else:
+			tr=list(cursor.execute("select trees.rowid,* from trees, users where sentenceid=? and userid=users.rowid order by timestamp DESC limit 1;",(sid,)).fetchall())
+		#print trees
+		if len(tr):
+			treeid, sidd, usid, annotype, status, comment, ts, user, realname=tr[0]
+			tree=sql.gettree(treeid=treeid, indb=db, incursor=cursor)["tree"]
+			#print tree
+			trees+=[tree]
+			annotators[user]=annotators.get(user,0)+1
+		#print sentence,trees
 
+
+def lastTreeForAllSamples(project, onlyHuman=True, combine=False):
+	outdir=os.path.join("..","projects",project,"export")
+	try: os.mkdir(outdir)	
+	except OSError: pass
+	sql = SQL(project)
+	db,cursor=sql.open()
+	if onlyHuman:
+		parserid=0
+		for pid, in cursor.execute("select rowid from users where user='parser';"): parserid=pid
+	else:
+		parserid=-1
+	sents=list(cursor.execute("select rowid, * from sentences;").fetchall())
+	print "todo:",len(sents),"sentences"
+	
+	annotators={}
+		
+	if combine:
+		trees=[]
+		getTreesForSents(sents, trees, annotators, parserid, cursor, db, sql)
+		outfile=os.path.join(outdir,project+".lastHumanTreeForAllSamples.conll")	
+		conll.trees2conllFile(trees, outfile=outfile, columns=10)
+		print "wrote",outfile
+		
+	else:
+		for tid,textname,nrtokens in list(cursor.execute("select rowid, * from texts;")):
+			print tid, textname, nrtokens
+			sents=list(cursor.execute("select rowid, * from sentences where textid=?;",(tid,)).fetchall())
+			trees=[]
+			getTreesForSents(sents, trees, annotators, parserid, cursor, db, sql)
+			if textname.endswith(".conll_parse"): textname=textname[:len(".conll_parse")]
+			outfile=os.path.join(outdir,textname+".lastHumanTrees.conll")	
+			conll.trees2conllFile(trees, outfile=outfile, columns=10)
+			print "wrote",outfile
+	print annotators
+
+
+def getSpecificTrees(db, cursor, nrutids, annotatorIds):
+	trees=[]
+	for nr in sorted(nrutids): # for each sentence
+		tree=None
+		for aid in annotatorIds: # for each interesting annotator id
+			if aid in nrutids[nr]:
+				tree=sql.gettree(treeid=nrutids[nr][aid], indb=db, incursor=cursor)["tree"]
+				trees+=[tree]
+				#print "atree:",tree
+				break
+		if not tree:
+			print "problem: no tree for nr",nr,"type",type(nr)
+			print "annotatorIds",annotatorIds				
+			return []
+			#raise Exception('no tree', nr)
+	return trees
 
 
 def exportConllByAnnotators(project, annotators=["prof","Sy","parser"]):
@@ -99,8 +205,10 @@ def exportConllByAnnotators(project, annotators=["prof","Sy","parser"]):
 	outdir=os.path.join("..","projects",project,"export")
 	try: os.mkdir(outdir)	
 	except OSError: pass
-	
-	annotatorIds=tuple(a for (a,) in [list(cursor.execute("select rowid from users where user =?;",(annotator,) ))[0] for annotator in annotators])
+	try:	annotatorIds=tuple(a for (a,) in [list(cursor.execute("select rowid from users where user =?;",(annotator,) ))[0] for annotator in annotators])
+	except:
+		print "some required annotator IDs are not in the database"
+		return
 	#print annotators, annotatorIds
 	
 	for textid, textname, nrtokens in list(cursor.execute("select rowid, * from texts;" )):  # for each text
@@ -109,25 +217,15 @@ def exportConllByAnnotators(project, annotators=["prof","Sy","parser"]):
 		for nr,userid,treeid in list(cursor.execute("select nr,userid,trees.rowid as treeid from trees, sentences where sentenceid=sentences.rowid and userid in {annotatorIds} and  textid = ? order by nr;".format(annotatorIds=annotatorIds),(textid,))):
 			nrutids[nr]=nrutids.get(nr,{})
 			nrutids[nr][userid]=treeid
-		trees=[]
-		for nr in sorted(nrutids): # for each sentence
-			tree=None
-			for aid in annotatorIds: # for each interesting annotator id
-				if aid in nrutids[nr]:
-					tree=sql.gettree(treeid=nrutids[nr][aid], indb=db, incursor=cursor)["tree"]
-					trees+=[tree]
-					#print "atree:",tree
-					break
-			if not tree:
-				print "problem: no tree for nr",nr,"type",type(nr)
-				print "annotatorIds",annotatorIds				
-				raise Exception('no tree', nr)
-		
-		if textname.endswith(".conll"): textname=textname[:-len(".conll")]
-		outfile=os.path.join(outdir,textname)
-		conll.trees2conllFile(trees, outfile=outfile, columns=10)
-		print len(trees),"trees"
-		outfiles+=[outfile]
+		trees=getSpecificTrees(db, cursor, nrutids, annotatorIds)
+		if trees:
+			if textname.endswith(".conll"): textname=textname[:-len(".conll")]
+			outfile=os.path.join(outdir,textname)
+			conll.trees2conllFile(trees, outfile=outfile, columns=10)
+			print len(trees),"trees"
+			outfiles+=[outfile]
+		else:
+			print "skipped",textname
 	return outfiles
 
 lemmacorrection=dict( [(a.split(":")[0],a.split(":")[1]) for a in u"""
@@ -269,6 +367,7 @@ def fusionForgottenTrees(project="Platinum",fusdir="../projects/OrfeoGold2016/pl
 	return outfiles
 
 def createNonExistingFolders(path):
+	print "createNonExistingFolders",path
 	head, tail = os.path.split(path)
 	if head=="":
 		if tail and not os.path.exists(tail): os.makedirs(tail)
@@ -279,14 +378,15 @@ def createNonExistingFolders(path):
 def addArbitraryPuncs(infolder,outfolder):
 	createNonExistingFolders(outfolder)
 	for conllinfile in glob.glob(os.path.join(infolder, '*')):
-		print conllinfile
-		trees=conll.conllFile2trees(conllinfile)
-		for i,tree in enumerate(trees):
-			m=max(tree)
-			splitcode=".,!?;:()"
-			p=splitcode[i%len(splitcode)]
-			tree[m+1]={u'tag': u'PUNC', u'lemma': p, u't': p, 'gov': {0: u'punc'}}
-		conll.trees2conllFile(trees, os.path.join(outfolder,os.path.basename(conllinfile)), columns=14)
+		if os.path.isfile(conllinfile):
+			print conllinfile
+			trees=conll.conllFile2trees(conllinfile)
+			for i,tree in enumerate(trees):
+				m=max(tree)
+				splitcode=".,!?;:()"
+				p=splitcode[i%len(splitcode)]
+				tree[m+1]={u'tag': u'PUNC', u'lemma': p, u't': p, 'gov': {0: u'punc'}}
+			conll.trees2conllFile(trees, os.path.join(outfolder,os.path.basename(conllinfile)), columns=14)
 
 def splitSentenceFile(infile,splitcode="abc"):
 	"""
@@ -478,17 +578,24 @@ if __name__ == "__main__":
 	#pprint(trees2copy)
 	#exportGoodTexts("OrfeoGold2016")
 	
-	#exportGoodTexts("Platinum", lastHuman=True, onlyValidated=False)
 	#exportGoodTexts("OrfeoGold2016", lastHuman=True, onlyValidated=False)
-	addArbitraryPuncs("../projects/Platinum/exportcorrected/","../projects/Platinum/punc/")
+	#addArbitraryPuncs("../projects/Platinum/exportcorrected/","../projects/Platinum/punc/")
 	#splitSentenceFile("exo1sents.txt")
 
 	#exportGoodTexts("HongKongTVMandarin", lastHuman=True, onlyValidated=False, pattern="UD_ZH%")
 	#print exportConllByAnnotators("SyntaxeAlOuest", annotators=["prof","Sy"])
 	#print exportConllByAnnotators("OrfeoGold2016", annotators=["Sy","Marion","parser"])
-	#print exportConllByAnnotators("Platinum", annotators=["admin","gold"])
 	
 	#split("../projects/OrfeoGold2016/platinum/Rhaps.gold",1000)
 	#print len(conll.conllFile2trees("../projects/Platinum/exportcool/Rhaps"))
 	#fusionForgottenTrees()
 	
+	#exportGoodTexts("Platinum", lastHuman=True, onlyValidated=False)
+	#addArbitraryPuncs("../projects/Platinum/export","../projects/Platinum/punc/")
+	#print exportConllByAnnotators("Platinum", annotators=["Sy","admin","gold","parser"])
+	#exportUniqueSentences("Platinum", pattern="ftb%")
+	#exportUniqueSentences("Platinum", pattern="ftb-3-vadvv%")
+	#exportUniqueSentences("templingCorpus2016")
+	#lastHumanTreeForAllSamples("Platinum")
+	#lastTreeForAllSamples("templingCorpus2016", onlyHuman=False, combine=True)
+	lastTreeForAllSamples("Platinum", onlyHuman=False, combine=False)

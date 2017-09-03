@@ -245,7 +245,7 @@ print """
 """
 
 print """<div class='center'>
-	<div class="ui-widget ui-widget-content ui-corner-all" style="font-size=23px;margin-top:37px;padding:10px">
+	<div class="ui-widget ui-widget-content ui-corner-all" style="font-size:23px;margin-top:37px;padding:10px">
 	
 	<div style="text-align:center;">
 		<object height="300" width="500" data="images/arborator.svg" type="image/svg+xml"></object>

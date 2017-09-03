@@ -623,8 +623,9 @@ def fixOutname(name):
 	if name.startswith("validated."): 
 		name=name.split(".")[1]
 		#name=name[len("validated."):]
-	if name.endswith("lastHuman.conll"): name=name[:-len(".lastHuman.conll")]
-	if name.endswith(".conll"): name=name[:-len(".conll")]
+	if name.endswith(".lastHumanTrees.conll"): name=name[:-len(".lastHumanTrees.conll")]
+	elif name.endswith("lastHuman.conll"): name=name[:-len(".lastHuman.conll")]
+	elif name.endswith(".conll"): name=name[:-len(".conll")]
 	return name
 
 def createNonExistingFolders(path):
@@ -706,5 +707,8 @@ def transform(infolder,outfolder,mixOldNew=True, filepattern="*.conll"):
 	
 		
 
-transform("../projects/Platinum/exportcool/","../projects/Platinum/pyrite/",mixOldNew=False, filepattern="*")		 
+#transform("../projects/Platinum/eric/","../projects/Platinum/pyrite/",mixOldNew=False, filepattern="*")		 
+transform("../projects/Platinum/export/","../projects/Platinum/pyrite/",mixOldNew=False, filepattern="*")		 
+#transform("export/","exportpyrite/",mixOldNew=False, filepattern="*")		 
+#transform("LAST_VERSION/eric_platinum_final/","LAST_VERSION/eric_platinum_final_pyrite/",mixOldNew=False, filepattern="*")		 
 #searches()

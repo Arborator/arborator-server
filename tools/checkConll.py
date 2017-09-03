@@ -1,31 +1,34 @@
 #! usr/bin/python
 #! coding: utf-8
 
-import datetime, codecs, time, sys, os, glob, copy
+import datetime, codecs, time, sys, os, glob, copy, re
+from goldPlatinumTransformConll import splice
 sys.path.insert(0, '../lib')
 import conll
 
 
 
-		
-def lireToutLex():
+def lireToutLex(returnLex=False):
 	"""
 	fonction qui lit le lexique en mémoire
 	pour des testes de consistence de la lemmatisation et de l'équitetage
 	"""
 	
-	#allLex={}
-	allLem={}
+	allLex={} # tag -> { t->[lem1, lem2, ..], ... }
+	allLem={} # lem -> tag
 	
 	for lexfile in glob.glob('../../../../Orfeo/lexique/*.sfplm'):
 		
 		# Lecture des fichiers .sfplm		
 		
-		#dic=allLex.get(lexfile[:3],{})
-		
+		catt = os.path.basename(lexfile)[:3]
+		print "je lis",lexfile,catt
+		#print "allLex",allLex
+		dic=allLex.get(catt,{})
+		#print dic
 		# Ouverture d'un fichier de lexique
 		with codecs.open(lexfile, "r", "utf8") as f:
-			print "je lis",lexfile
+			
 			for ligne in f:
 				if len(ligne) and "\t" in ligne:
 					# correct errors:
@@ -52,27 +55,109 @@ def lireToutLex():
 						
 						#if (not onlyLetters.match(t)):
 							#if lexfile[:3]!="PCT" or len(t)>1: # virer qqs poncutation seule
-					#dic[t]=lem
-					allLem[lem]=allLem.get(lem,[])+[os.path.basename(lexfile)[:3]]
-	for li in u"""
-	du de+le PRE
-	aux à+le PRE
-	au à+le PRE
-	j~ j~ CLS
-	c~ c~ CLS
-	""".strip().split("\n"):
-		cols=li.strip().split()
-		allLem[cols[1]] = allLem.get(cols[1],[])+[cols[2]]  
+					
+					#if t in dic:
+						#print "oh",ligne
+						#print t,dic[t]
+						#print t,lem
+					if deco not in ["S"]:	
+						dic[t]=dic.get(t,[])+[(deco,lem)]
+					#print t,lem
+					allLem[lem]=allLem.get(lem,[])+[cat]
+		allLex[catt]=dic
+		#print "MWE","MWE" in allLex,catt in allLex,catt=="MWE"
+		#print len(dic),"entries"
+		
+		
+	#for li in u"""
+	#du de+le PRE
+	#aux à+le PRE
+	#au à+le PRE
+	#j~ j~ CLS
+	#c~ c~ CLS
+	#""".strip().split("\n"):
+		#cols=li.strip().split()
+		#allLem[cols[1]] = allLem.get(cols[1],[])+[cols[2]]  
 	
 	
-		#allLex[lexfile[:3]]=dic
+		#
 		#print lexfile[:3],"a",len(allLex[lexfile[:3]]),u"entrées"
 		
-	#allLex["ADV"][u"-même"]=u"même"
+	allLex["ADV"][u"-même"]=[("A",u"même")]
+	#print "MWE","MWE" in allLex
+	if returnLex: 	return allLex
+	else:		return allLem
+
+
 	
-	return allLem
+def lireLexiqueCorr(infile="lexiqueCorr.txt", allLex={}):
+	"""
+	
+	"""
+	instructs=["L","LS","T","R","TM","M","LM","?","TT"]
 
-
+	renum=re.compile(ur"\s\d+\s")
+	treebankinstr=[]
+	
+	with codecs.open(infile, "r", "utf8") as f:
+		for line in f:
+			line=line.strip()
+			if line and line[0]!="#":
+				print line
+				instr, rest = renum.split(line)
+				ins = instr.strip().split()[0]
+				entries,lexcat = rest.split("lexique: ")
+				try:t,l,c=entries.split()
+				except:t,l,c=entries.split("\t")
+				c=c.strip()
+				if ins=="L":
+					print "j'ajoute au dict:",t,l,c
+					allLex[c][t]=allLex[c].get(t,[])+[("A",l)]
+				elif ins=="LM":
+					newlem=" ".join(instr.strip().split()[1:])
+					print "j'ajoute au dict:",t,"newlem:",newlem,c
+					allLex[c][t]=allLex[c].get(t,[])+[("A",newlem)]
+				elif ins=="LS":
+					print "j'ajoute au dict:",t,l,c
+					allLex[c][t]=allLex[c].get(t,[])+[("A",l)]
+					print "je supprime du dict:",t,l,lexcat
+					try:
+						del allLex[lexcat][t]
+					except:
+						print "----- no entry to delete",t,l,lexcat
+					if len(lexcat.split())>1:qsdf
+					print "trebank: tous les",t,l,lexcat,u"doivent être de cat",c 
+					treebankinstr+=["\t".join(["LS trebank: tous les",t,l,lexcat,u"doivent être de cat",c ])]
+				elif ins=="T":
+					newcat=" ".join(instr.strip().split()[1:]).strip()
+					if not newcat:	qsdf
+					print "j'ajoute au dict:",t,l,"newcat:",newcat
+					allLex[newcat][t]=allLex[newcat].get(t,[])+[("A",l)]
+					print "trebank: tous les",t,l,c,u"doivent être de cat",newcat 
+					treebankinstr+=["\t".join(["T trebank: tous les",t,l,c,u"doivent être de cat",newcat ])]
+				elif ins=="TM":
+					newlem=" ".join(instr.strip().split()[1:])
+					print "trebank: tous les:",t,l,c,u"doivent obtenir newlem:",newlem
+					treebankinstr+=["\t".join(["TM trebank: tous les:",t,l,c,"doivent obtenir newlem:",newlem ])]
+				elif ins=="TT":	
+					newlem,newcat=" ".join(instr.strip().split()[1:]).split()
+					print "trebank: tous les:",t,"doivent obtenir newlem:",newlem,newcat
+					treebankinstr+=["\t".join(["TT trebank: tous les:",t,"doivent obtenir newlem:",newlem,newcat])]
+	#print "\n"*11
+	with codecs.open('corrinst.txt', "w", "utf8") as f:
+		f.write( "\n".join(treebankinstr) )
+	
+	if False: # write new lexique
+	#if True: # write new lexique
+		for cat in allLex:
+			print "___________",cat
+			with codecs.open('../../../../Orfeo/lexique/lexiqueCorr/'+cat+".sfplm", "w", "utf8") as f:
+				for t in sorted(allLex[cat]):
+					for deco,l in sorted(set(allLex[cat][t])):
+						f.write( "\t".join([t,l,deco])+"\n" )
+						#if len(sorted(set(allLex[cat][t])))>1:
+							#print sorted(set(allLex[cat][t]))
+					
 			
 def funcsearch(infolder):
 	errors={}
@@ -150,39 +235,76 @@ def createNonExistingFolders(path):
 	if head and not os.path.exists(head): os.makedirs(head)
 
 
-def correct(tree):
+def correct(tree,corrinst=[]):
 	for i, node in tree.iteritems():
-		if node["t"]=="aujourd' hui":
+		t,l,ca=node["t"],node["lemma"],node["tag"]
+		if t=="aujourd' hui":
 			node["t"]="aujourd'hui"
 			node["lemma"]="aujourd'hui"
-		if node["t"]=="quelqu' un":
+		if t=="quelqu' un":
 			node["t"]="quelqu'un"
 			node["lemma"]="quelqu'un"	
-		if node["t"]==u"c' est-à-dire":
+		if t==u"c' est-à-dire":
 			node["t"]=u"c'est-à-dire"
 			node["lemma"]=u"c'est-à-dire"	
-		if node["t"]==u"c' est-à-dire que":
+		if t==u"c' est-à-dire que":
 			node["t"]=u"c'est-à-dire que"
 			node["lemma"]=u"c'est-à-dire que"	
-		if node["t"]==u"n' importe quoi":
+		if t==u"n' importe quoi":
 			node["t"]=u"n'importe quoi"
 			node["lemma"]=u"n'importe quoi"	
-		if node["lemma"]=="La":node["lemma"]="le"
-		if node["lemma"]=="Le":node["lemma"]="le"
-		if node["lemma"]=="Les":node["lemma"]="le"
-		if node["lemma"]=="L'":node["lemma"]="le"
-		if node["lemma"]=="Aujourd'hui":node["lemma"]="aujourd'hui"
+		if l=="La":node["lemma"]="le"
+		if l=="Le":node["lemma"]="le"
+		if l=="Les":node["lemma"]="le"
+		if l=="L'":node["lemma"]="le"
+		if l=="Aujourd'hui":node["lemma"]="aujourd'hui"
 		
-		if node["lemma"]=="il":node["tag"]="CLS"
-		if node["lemma"]=="se":node["tag"]="CLI"
-		if node["lemma"]=="de+le":node["tag"]="PRE" # des et du
+		if l=="il":node["tag"]="CLS"
+		if l=="se":node["tag"]="CLI"
+		
+		for ty,a,b,c,d in corrinst:
+			if ty=="TLS" and t==a and l==b and c==ca:
+				print t,l,ca,"correcting",ty,a,b,c,d,"into",d
+				node["tag"]=d
+			elif ty=="TM" and t==a and l==b and c==ca:
+				print t,l,ca,"correcting",ty,a,b,c,d,"into",d
+				node["lemma"]=d
+			elif ty=="TT" and t==a:
+				if l!=b or c!=ca:
+					print t,l,ca,"correcting",ty,a,b,c,d,"into",b,c
+					node["lemma"]=b
+					node["tag"]=c
+				
+		if l=="accord" and i-1 in tree and tree[i-1]["lemma"]=="de": # TODO: repair! doesn't redirect dependents of d'accord!!!
+			#print node
+			tree[i-1]["t"]=tree[i-1]["t"][0]+u"'accord"
+			tree[i-1]["lemma"]=u"d'accord"	
+			tree[i-1]["tag"]=u"INT"
+			tree=splice(tree,i,{})
+			tree=correct(tree)
+			return tree
 		
 	return tree
 
+def compil(infile):
+	instr=[]
+	with codecs.open(infile, "r", "utf8") as f:
+		for li in f:
+			col=li.strip().split("\t")
+			
+			if li.split()[0] in ["T","LS"]:
+				instr+=[("TLS",col[1],col[2],col[3],col[5])]
+			elif li.split()[0] in ["TM"]:
+				instr+=[("TM",col[1],col[2],col[3],col[5])]
+			elif li.split()[0] in ["TT"]:
+				instr+=[("TT",col[1],col[3],col[4],"_")]
+	return instr
+
 def transform(infolder,outfolder,mixOldNew=False):
 	createNonExistingFolders(outfolder)
-	spaceToks={}
-	#for infile in sorted(glob.glob(os.path.join(infolder,"test.conll"))):
+	
+	corrinst=compil('corrinst.txt')
+	print len(corrinst),"rules"
 	for infile in sorted(glob.glob(os.path.join(infolder,"*"))):
 		if not os.path.isfile(infile): continue
 		basename=os.path.basename(infile)
@@ -192,7 +314,7 @@ def transform(infolder,outfolder,mixOldNew=False):
 		for tree in trees:
 			if mixOldNew: newtrees+=[tree]
 			newtree=copy.deepcopy(tree)
-			newtree=correct(newtree)
+			newtree=correct(newtree,corrinst)
 			newtrees+=[newtree]
 			
 			
@@ -203,9 +325,11 @@ def searches():
 	
 	#search("../projects/Platinum/export/")
 	
-	#transform("../projects/Platinum/export/","../projects/Platinum/exportcorrected/")
+	transform("../projects/Platinum/export/","../projects/Platinum/exportcorrected/")
 	#search("../projects/Platinum/exportcorrected/")
-	funcsearch("../projects/Platinum/exportcorrected/")
+	#funcsearch("../projects/Platinum/exportcorrected/")
 
 if __name__ == "__main__":
 	searches()
+	#lireLexiqueCorr(allLex=lireToutLex(returnLex=True))
+	#

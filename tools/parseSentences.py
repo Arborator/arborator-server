@@ -115,7 +115,7 @@ def simpletokenize(text, returnMatchInfo=False):
 			#nntoks+=[(text,done)]
 		#else:
 	text=reponct.sub(r" \1 ",text).replace(" '","'") # spaces around punctuation, but not before hyphen (french specific!)
-	text=renogroupponct.sub(r" \1 ",text) # spaces around no group punctuation
+	text=renogroupponct.sub(r" \1 ",text).replace(" ~","~") # spaces around no group punctuation
 	#nntoks += [(t,1) for t in text.split()] #
 	#print "nntoks",nntoks
 	return text.split()
@@ -248,7 +248,7 @@ if __name__ == "__main__":
 	#parseSentenceFile("cantonese_sample_for_dict.txt", modelfolder="mate/hkud.2016-11-02_04:04/models/", lemodel="", tagmodel="TagModel", parsemodel="ParseModel", outfolder=".", memory="4G", removePunct=False, useTokDic=False)
 	#parseSentenceFile("cantonese_sample_for_dict.txt", modelfolder="mate/hkud.2016-11-02_11:03/models/", lemodel="", tagmodel="TagModel", parsemodel="ParseModel", outfolder=".", memory="4G", removePunct=False, useTokDic=False)
 	#parseSentenceFile("cantonese_sample_for_dict.txt.fakeMand", modelfolder="mate/hkud.2016-11-02_11:03/models/", lemodel="", tagmodel="TagModel", parsemodel="ParseModel", outfolder=".", memory="4G", removePunct=False, useTokDic=False)
-	for sentfile in glob.glob("sentences2/*"):
+	for sentfile in glob.glob("sentences/*"):
 		parseSentenceFile(sentfile, modelfolder="mate/platinum.2016-11-29_00:22/models/", lemodel="LemModel", tagmodel="TagModel", parsemodel="ParseModel", outfolder="parses", memory="47G", removePunct=True, specialCharWords=specialCharWords, degrade=False)
 
 	

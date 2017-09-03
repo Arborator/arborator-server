@@ -96,7 +96,11 @@ def cls(tree):
 			
 	return False
 
-lemmacorrection=dict( [(a.split(":")[0],a.split(":")[1]) for a in u"""
+	
+
+def lemmaContains(tree, char="-"):
+	
+	lemmacorrection=dict( [(a.split(":")[0],a.split(":")[1]) for a in u"""
 c' est-à-dire que:c'est-à-dire que
 est-ce-que:est-ce que
 quelques-un:quelques-uns
@@ -134,9 +138,9 @@ passe-moi:passer
 appelez-le:appeler
 
 """.strip().split("\n")])
-print lemmacorrection
-
-def lemmaContains(tree, char="-"):
+	print lemmacorrection
+	
+	
 	motstraits=u"""
 anti-littérature
 pré-fait

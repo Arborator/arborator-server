@@ -23,7 +23,7 @@
 
 conlls = {	10: 	{"id": 0, "t":1, "lemma": 2, "cat": 3, "xpos":4, "morph":5, "gov":6, "func":7, "xgov":8, "gloss":9}, 
 // 		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":8, "func":10}, 
-		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":8, "func":11}, 
+		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":9, "func":11}, 
 		4: 	{"t":0, "lemma": 0, "cat": 1, "gov":2, "func":3} 
 	}
 el=10;
@@ -59,7 +59,15 @@ $(function() {
 	settings();
 
 	if (window.opener) 	// this window was opened by another window i.e. by depedit
-		conllarea=window.opener.$(window.name); // use the name that depedit gave me to connect to the right conll area
+		try {
+			conllarea=window.opener.$(window.name); // use the name that depedit gave me to connect to the right conll area
+			}
+		catch(err) {
+			console.log("problem with window.opener.$(window.name)");
+			conllarea=$("#conll");
+			$("#toggleAndBoxx").show();
+		}
+		
 		
 	else 			// this window is independent
 		{
@@ -476,7 +484,7 @@ function conllNodesToTree(treeline)
 			}
 			var elements = nodeline.split('\t');
 			el=elements.length;
-			//console.log('###',nodeline,el);
+			// console.log(el,'###',nodeline,"***",elements);
 
 			if (!(el in conlls) && el>10) el=10;
 			if (el > 4) id=elements[conlls[el]["id"]];

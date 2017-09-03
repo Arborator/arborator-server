@@ -339,8 +339,8 @@ def main():
 		if todo>=0:status=sql.gettreestatus(sid,userid)
 		status="<span id='status{nr}' class='status' onClick='nexttreestatus({sid},{nr})'>{status}</span>".format(status=status,sid=sid, nr=snr)
 		connectRight=""
-		if adminLevel:
-			connectRight='''<img class="connectRight" src="images/chain.png" border="0" align="bottom" id='connectRight{nr}' nr='{nr}' title="connect with next tree"> '''.format(nr=snr)
+		if adminLevel or (sql.validatorsCanConnect and validator):
+			connectRight='''<img class="connectRight" src="images/chain.png" border="0" align="bottom" id='connectRight{nr}' nr='{nr}' title="connect with next tree (+ctrl: split at selcted word)"> '''.format(nr=snr)
 		exo=""
 		if exotype>1: # 0: no exercise, 1: no feedback
 			exo='''<img class="check" src="images/check.png" border="0" align="bottom" id='check{nr}' nr='{nr}' title="check annotation" graphical={graphical}> '''.format(nr=snr, graphical=graphical)

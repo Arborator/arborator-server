@@ -31,7 +31,9 @@ checks whether the proposed modification of the configuration is syntactically a
 
 """
 
-import cgi, sys, cgitb, codecs, config, os
+import cgi, sys, cgitb, codecs, os
+from lib import config
+
 sys.path.append('modules')
 from logintools import isloggedin
 

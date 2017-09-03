@@ -12,7 +12,7 @@ if not test:sys.exit()
 admin = int(test[0]["admin"])
 method = environ.get( 'REQUEST_METHOD' )
 
-if method == "POST" and admin: #or True
+if method == "POST": # and admin: #or True
 	data = cgi.FieldStorage()
 	
 	project = data.getvalue("project",None).decode("utf-8")
