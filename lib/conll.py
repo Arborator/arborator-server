@@ -20,8 +20,8 @@
 # from http://www.gnu.org/licenses/agpl-3.0.html 
 ####
 
-import sys, codecs, copy, collections, re, os, glob
-debug=False
+import codecs, collections, re
+#debug=False
 debug=True
 
 
@@ -29,8 +29,9 @@ class Tree(dict):
 	"""
 	just a dictionary that maps nodenumber->{"t":"qsdf", ...}
 	moreover: 
-	sentencefeatures is a dictionary with sentence wide information, eg "comments":"comment line content"
-	words is not necessarily a list of tokens: it contains the actual correctly spelled words, ie. the hyphen (1-2) lines
+		sentencefeatures is a dictionary with sentence wide information, eg "comments":"comment line content"
+			there is a special key: _comments used for comments that are not of the form x = yyy, they are stored as such
+		words is not necessarily a list of tokens: it contains the actual correctly spelled words, ie. the hyphen (1-2) lines
 	"""
 	def __init__(self, *args, **kwargs):
 		self.update(*args, **kwargs)
@@ -62,17 +63,31 @@ class Tree(dict):
 		return u" ".join(self.words)
 	
 	def conllu(self):
-		treestring = self.sentencefeatures.get("comments","")
+		treestring = ""
+		for stftkey in sorted(self.sentencefeatures):
+			if stftkey=="_comments":
+				treestring+="# "+self.sentencefeatures[stftkey]
+			else:
+				treestring+="# "+stftkey+" = "+self.sentencefeatures[stftkey]+"\n"	
 		for i in sorted(self.keys()):
 			node = self[i]                        
-			
 			govs=node.get("gov",{})
 			govk = sorted(govs.keys())
 			if govk:
 				gk,gv = str(govk[0]),govs.get(govk[0],"_")
 			else:
 				gk,gv = "_","_"
-			treestring+="\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("xpos","_"), "|".join( [ a+":"+v for a,v in node.get("features",{}).iteritems() ]), gk,gv, "|".join( [ str(g)+":"+govs.get(g,"_") for g in govk[1:] ]),"_"])+"\n"
+			treestring+="\t".join([
+				str(i), 
+				node.get("t","_"), 
+				node.get("lemma",""), 
+				node.get("tag","_"), 
+				node.get("xpos","_"), 
+				"|".join( [ a+"="+v for a,v in node.iteritems() if a not in ["t","lemma","tag","tag2","xpos","egov","misc","id","index","gov"]])  or "_", 
+				gk,
+				gv,
+				"|".join( [ str(g)+":"+govs.get(g,"_") for g in govk[1:] ]) or "_", 
+				node.get("misc","_")]) + "\n"
 		return treestring
 
 def update(d, u):
@@ -96,7 +111,10 @@ def conll2tree(conllstring):
 		#print line
 		if line.strip():
 			if line.strip()[0]=="#": # comment of conllu
-				tree.sentencefeatures["comments"]=tree.sentencefeatures.get("comments","")+line
+				if "=" in line:
+					tree.sentencefeatures[line.split("=")[0].strip()[1:].strip()]="=".join(line.split("=")[1:]).strip()
+				else:
+					tree.sentencefeatures["_comments"]=tree.sentencefeatures.get("_comments","")+line.strip()[1:]+"\n"
 				continue
 			
 			cells = line.split('\t')
@@ -109,7 +127,7 @@ def conll2tree(conllstring):
 					if head=="_": head=-1
 					else:head = int(head)
 					newf={'id':nr,'t': t, 'tag': tag,'gov':{head: rel}}
-					tree[nr]=update(tree.get(nr,{}),newf )
+					tree[nr]=update(tree.get(nr,{}), newf)
 					nr+=1
 
 				elif nrCells == 10: # standard conll 10 or conllu
@@ -134,7 +152,7 @@ def conll2tree(conllstring):
 						mf=dict([(av.split("=")[0],av.split("=")[-1]) for av in features.split("|")])
 						newf=update(mf,newf)
 					
-					tree[nr]=update(tree.get(nr,{}),newf )
+					tree[nr]=update(tree.get(nr,{}), newf)
 					if nr>skipuntil: tree.words+=[t]
 					
 				elif nrCells == 14:
@@ -153,8 +171,8 @@ def conll2tree(conllstring):
 						rel=rel2
 						head=head2
 					newf={'id':nr,'t': t,'lemma': lemma,'lemma2': lemma2, 'tag': tag, 'xpos': xpos, 'morph': morph, 'morph2': morph2, 'gov':{head: rel}, 'egov':{head2: rel2} }
-					tree[nr]=update(tree.get(nr,{}),newf )				
-			
+					tree[nr]=update(tree.get(nr,{}), newf)
+					
 			elif debug:
 				print "strange conll:",nrCells,"columns!",line
 	
@@ -163,9 +181,10 @@ def conll2tree(conllstring):
 
 def conllFile2trees(path, encoding="utf-8"):
 	"""
-	important function!
+	file with path -> list of trees
 	
-	called from enterConll and uploadConll in treebankfiles.cgi
+	important function!	
+	called from enterConll, treebankfiles, and uploadConll in treebankfiles.cgi
 	
 	"""
 	trees=[]
@@ -186,7 +205,7 @@ def conllFile2trees(path, encoding="utf-8"):
 		return trees
 
 
-def trees2conllFile(trees, outfile, columns=10):
+def trees2conllFile(trees, outfile, columns="u"): # changed default from 10 to u!
 	"""
 	exports a list of treedics into outfile
 	used after tree transformations...
@@ -194,27 +213,23 @@ def trees2conllFile(trees, outfile, columns=10):
 	"""
         with codecs.open(outfile,"w","utf-8") as f:
 		for tree in trees:
-			treestring = tree.sentencefeatures.get("comments","")
-			for i in sorted(tree.keys()):
-				node = tree[i]                        
-				if columns=="u": # conllu format
-					
-					govs=node.get("gov",{})
-					govk = sorted(govs.keys())
-					if govk:
-						gk,gv = str(govk[0]),govs.get(govk[0],"_")
-					else:
-						gk,gv = "_","_"
-					treestring+="\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("xpos","_"), "|".join( [ a+":"+v for a,v in node.get("features",{}).iteritems() ]), gk,gv, "|".join( [ str(g)+":"+govs.get(g,"_") for g in govk[1:] ]),"_"])+"\n"
+			if columns=="u": # conllu format
+				treestring = tree.conllu()
+			else:
 				
-				else:
+				treestring = ""
+				for stftkey in sorted(tree.sentencefeatures):
+					if stftkey=="_comments":
+						treestring+=tree.sentencefeatures[stftkey]
+					else:
+						treestring+=stftkey+" = "+tree.sentencefeatures[stftkey]				
+				for i in sorted(tree.keys()):					
+					node = tree[i] 
 					gov = node.get("gov",{}).items()
 					govid = -1
 					func = "_"
 					if gov:
 						for govid,func in gov:
-							#if govid==-1:
-							#else:
 							if columns==10:
 								treestring+="\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("xpos","_"), "_", str(govid),func,"_","_"])+"\n"
 							elif columns==14:
@@ -253,39 +268,31 @@ def sentences2emptyConllFile(infile, outfile):
 
 
 def textFiles2emptyConllFiles(infolder, outfolder):
-	#rebalise=re.compile("<.*?>",re.U)
-	#retokenize=re.compile("([\.\;\!\?\,\(\]\"\'])",re.U+re.I)
+	import glob, os
 	sentenceSplit=re.compile(ur"(\s*\n+\s*|(?<!\s[A-ZÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÄËÏÖÜÃÑÕÆÅÐÇØ])[\?\!？\!\.。！……]+\s+|\s+\|\s+|[？。！……]+)(?!\d)", re.M+re.U)
 	resentence=re.compile(ur"[\?\!？\!\.。！……]+", re.M+re.U)
 	retokenize=re.compile("(\W)",re.U+re.I)
 	redoublespace=re.compile("(\s+)",re.U+re.I)
 	renumber=re.compile("(\d) \. (\d)",re.U+re.I)
 	rewhite=re.compile("\w",re.U+re.I)
-	#repostspace=re.compile("(\]\))",re.U+re.I)
 	try:os.mkdir(outfolder)
 	except:print "folder exists"
 	for infile in glob.glob(os.path.join(infolder, '*.*')):
 		print  infile
 		outfile=codecs.open(outfolder+"/"+infile.split("/")[-1],"w","utf-8")
 		for line in codecs.open(infile,"r","utf-8"):
-			#if line and line[0]=='\ufeff':line=line[1:] # TODO: find out why this anti BOM shit is needed...
 			line=line.strip()
-			#print "line",line
 			for s in sentenceSplit.split(line):
 				s=s.strip()
-				#print "s",s
 				if resentence.match(s):
-					#print "match"
 					outfile.write(str(count)+"\t"+s+"\n")
 					outfile.write("\n")
 				else:
-					#print "no"
 					count=1
 					s = retokenize.sub(r" \1 ",s)
 					s = redoublespace.sub(r" ",s)
 					s = renumber.sub(r"\1.\2",s)
 					for token in s.split():
-						#print "---"+token+"---",[token]
 						if token.strip()==u'\ufeff':continue # TODO: find out why this anti BOM shit is needed...
 						outfile.write(str(count)+"\t"+token+"\n")
 						count +=1
@@ -295,7 +302,6 @@ def textFiles2emptyConllFiles(infolder, outfolder):
 
 if __name__ == "__main__":
 	pass
-	
 	ts = conllFile2trees("test.conll")
 	print len(ts)
 	print ts[0]

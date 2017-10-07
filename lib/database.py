@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ####
-# Copyright (C) 2009-2015 Kim Gerdes
+# Copyright (C) 2009-2017 Kim Gerdes
 # kim AT gerdes. fr
 # http://arborator.ilpga.fr/
 #
@@ -33,6 +33,7 @@ from configobj import ConfigObj
 import codecs
 import config
 import rhapsoxml
+from conll import Tree
 
 debug=False
 #debug=True
@@ -1406,6 +1407,7 @@ class SQL:
 		basefilename=renolet.sub(".",textname.strip().replace(" ","_").replace("?",""))
 		if not os.path.exists(self.exportpath.encode("utf-8")): 
 			os.makedirs(self.exportpath.encode("utf-8"))
+			os.chmod(self.exportpath.encode("utf-8"),0777)
 			with codecs.open(".htaccess","w","utf-8") as htfile:
 				htfile.write("Options Indexes\n")
 
@@ -1547,37 +1549,25 @@ class SQL:
 					fcounter+=1
 
 		return fcounter,users,scounter,doublegovs
-
-
-	def conllSentenceExport(self, sid, cursor,treeid,outf):
+	
+	def conllSentenceExport(self, sid, cursor, treeid, outf):
 		"""
 		called for each sentence in the conll export procss
 
 		"""
-		doublegovs=False
-
-		d={}
+		tree=Tree()
 		for nr,at,va, in cursor.execute("""select features.nr, features.attr, features.value
 					from trees, features
-					where trees.rowid=features.treeid and trees.rowid=?;""",(treeid,)).fetchall():
-			d[nr]=d.get(nr,{})
-			d[nr][at]=va
-		for nr in sorted(d):
-		#for tokid, nr, tok, sid in self.getall(cursor, "tokens", ["sentenceid"], [sid]): # for each token:
-			#f = self.getall(cursor, "features", ["treeid", "tokenid"], [treeid, tokid])
-			#d = dict([(attr, val) for _,_,_,attr,val in f])
-			g = self.getall(cursor, "links", ["treeid", "depid"], [treeid, nr])
-			gd = dict([(govid,function) for _,trid,depid,govid,function in g if govid>=0]) #trid==treeid and
-			tok=d[nr].get(self.tokenName,d[nr].get("token",d[nr].get("t","_")))
-			cat=d[nr].get(self.catName,d[nr].get("tag",d[nr].get("tag1","_")))
-			#print d[nr],tok, d[nr].get("lemma","_"), cat
-			for gg in gd:
-				line = "\t".join([str(nr),		tok, d[nr].get("lemma","_"), cat, d[nr].get("tag2","_"), "_",	str(gg),gd[gg],	"_","_"])
-				outf.write(line+"\n")
-			if not gd: outf.write("\t".join([str(nr),	tok, d[nr].get("lemma","_"), cat, d[nr].get("tag2","_"), "_",	"_","_",	"_","_"])+"\n")
-			elif len(gd)>1:doublegovs=True
-		outf.write("\n")
-		return doublegovs
+					where trees.rowid=features.treeid and trees.rowid=?;""",
+					(treeid,)).fetchall():
+			tree[nr]=tree.get(nr,{})
+			tree[nr][at]=va
+		for at,va, in cursor.execute("""select sentencefeatures.attr, sentencefeatures.value
+						from trees, sentences,sentencefeatures
+						where sentencefeatures.sentenceid=sentences.rowid and trees.sentenceid=sentences.rowid and trees.rowid=?;""",(treeid,)).fetchall():
+			tree.sentencefeatures[at]=va
+		outf.write(tree.conllu()+"\n")
+		return False
 
 
 	def xmlSentenceAdd(self, sid, cursor,treeid,doc,tokens, lexemes,  dependencies):
@@ -1818,12 +1808,12 @@ if __name__ == "__main__":
 	#sql=SQL("Rhapsodie")
 	#sql=SQL("lingCorpus")
 	#sql=SQL("HongKongTVMandarin")
-	sql=SQL("OrfeoGold2016")
+	sql=SQL("Mbya")
 	#sql.exportAnnotations(14, "UD-mandarinParsed.0", "allconll")
 	#sql.exportAnnotations(6, "Rhaps.gold", "lastconll")
 	
-	
-	print sql.snippetSearch("func:disflink")
+	sql.exportAnnotations(1, "x", "lastconll")
+	#print sql.snippetSearch("func:disflink")
 	#sql.exportAll("lastconll")
 	#print sql.gettree(treeid=3947)
 	

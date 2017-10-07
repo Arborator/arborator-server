@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ####
-# Copyright (C) 2009-2012 Kim Gerdes
+# Copyright (C) 2009-2017 Kim Gerdes
 # kim AT gerdes. fr
 # http://arborator.ilpga.fr/
 #
@@ -25,16 +25,16 @@
 #     USA
 ####
 
+# this is the export script called from the editor or the viewer for exporting _individual_ trees
+
 from sys      import exit
 from xml.dom import minidom
 import sys,cgi,cgitb,json
-from lib import rhapsoxml
+from lib import conll, rhapsoxml
 cgitb.enable()
 
-# this is the export script called from the editor or the viewer for exporting _individual_ trees
-# as well as for the direct transformation of dirty trees into conll (used for the quick editor) (if trees are sent)
-	
-def jswords2nodedic(words):
+
+def jswords2nodedic(treefromjson):
 	nodedic={}
 	for i in words:
 		nodedic[int(i)]={}
@@ -46,92 +46,45 @@ def jswords2nodedic(words):
 				nodedic[int(i)][k]=words[i][k]
 	return nodedic
 
+def json2tree(jsonsource):
 	
-	
+	treefromjson=json.loads(jsonsource)
+	nodedic={}
+	tree = conll.Tree()
+	for i in treefromjson["tree"]:
+		nodedic[int(i)]={}
+		for k in treefromjson["tree"][i]:
+			if k=="features":
+				for a in treefromjson["tree"][i][k]:
+					nodedic[int(i)][a]=treefromjson["tree"][i][k][a]
+			else:
+				nodedic[int(i)][k]=treefromjson["tree"][i][k]
+	tree.sentencefeatures=treefromjson["sentencefeatures"]
+	conll.update(tree, nodedic)
+	return tree
+
+
 def exportxml(nodedic):
-	
-	print 'Content-type: text/xml\n'
+	print 'Content-type: text/xml;charset=utf-8\n'
 	alltext="\n"
 	doc,tokens,lexemes, dependencies, text = rhapsoxml.baseXml()
-	
 	te=rhapsoxml.addFeat2doc(nodedic,doc,"t","lemma",tokens,lexemes, dependencies)
-	
-	#for i in nodedic: te+= "\n"+str( i)+ str( nodedic[i])+"\n"
-	
-	
 	text.appendChild(doc.createTextNode(te))
 	xmltext= doc.toprettyxml(indent="     ",encoding="utf-8")
 	print xmltext
 	
-
-def printconll(nodedic,cat):
-	
-	for i in sorted(nodedic.keys()):
-		node = nodedic[i]
-		gov = node.get("gov",{}).items()
-		govid = -1
-		func = "_"
-		if gov:
-			for govid,func in gov: # must be treated differently: idiosyncratic conll format: double line for double governors!
-				if govid!=-1:
-					print ("\t".join([str(i),node.get("t","_"), node.get("lemma",""), node.get(cat,"_"), node.get("tag2","_"),"_", str(govid),func,"_","_"])).encode("utf-8")
-		else:
-			print ("\t".join([str(i),node.get("t","_"),node.get("lemma",""),node.get(cat,"_"),node.get("tag2","_"),"_",str(govid),func,"_","_"])).encode("utf-8")
-		##                        nr, t, lemma , tag, tag2, _, head, rel, _, _ = cells
-	
-
-	
-
-def consolidateconll(trees, filename, exptype):
-	from conll import conllFile2trees
-	from json import loads
-	trees=loads(trees)
-	#print "iiiiiiiiiiiiiii",conllFile2trees(filename)
-	for i,tree in enumerate(conllFile2trees(filename)):
-		#print "******",i,tree
-		if str(i) in trees:
-			nodedic={}
-			for nr in trees[str(i)]:
-				nodedic[int(nr)]=trees[str(i)][nr]
-				if "features" in trees[str(i)][nr]:
-					for a,v in trees[str(i)][nr]["features"].iteritems():
-						nodedic[int(nr)][a]=v
-						
-					
-			#print 'uuuuuuuu',nodedic
-			#print "\n\n\n"
-			printconll(nodedic,"tag")
-		else:
-			#print 'rrrrrrr'
-			printconll(tree,"tag")
-		print 
-	
 	
 if __name__ == "__main__":
-	#print 'Content-type: text/plain\n\nxxxxxxxxxxxxxxxxxxxx'
 	form = cgi.FieldStorage()
-	
+	jsonsource = form.getvalue('source',None)
 	exptype = form.getvalue('type',None)
-	tree = form.getvalue('source',None)
-	trees = form.getvalue('trees',None)
-	filename = form.getvalue('filename',None)
-	cat = form.getvalue('cat',None)
-	#print tree
-	#print "uuuuuuuuu",filename
-	
-	#print nodedic
-	
-	if trees and filename:
+	if exptype=="conll":
 		print 'Content-type: text/plain;charset=utf-8\n\n'
-		consolidateconll(trees, filename, exptype)
-	elif exptype=="conll":
-		nodedic=jswords2nodedic(json.loads(tree))
-		print 'Content-type: text/plain;charset=utf-8\n\n\n\n'
-		printconll(nodedic,cat)
+		#print str(json2tree(jsonsource))
+		print json2tree(jsonsource).conllu().encode("utf-8")
 	elif exptype=="xml":
-		nodedic=jswords2nodedic(json.loads(tree))
+		nodedic=jswords2nodedic(json.loads(jsonsource))
 		exportxml(nodedic)
 	else:
-		print 'Content-type: text/plain;charset=utf-8\n\nxxxxxxxxxxxxxxxxxxxx'
+		print 'Content-type: text/plain;charset=utf-8\n\nNo data was sent!'
 	
-

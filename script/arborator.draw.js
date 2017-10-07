@@ -20,6 +20,8 @@
 attrdirty = {"value":"save all modified trees",'disabled':false,"cursor":"pointer"};
 attrclean = {"value":"all trees are saved",'disabled':true,"cursor":"default"};
 
+noshowtokens = {'misc':{"SpaceAfter=No":"_"}}
+
 ///////////////////////// node object and functions //////////////// 
 ////////////////////////////////////////////////////////////////////
 
@@ -88,7 +90,10 @@ function Pnode(index,token)
 			}
 			else // normal mode
 			{
-				var t = paper.text(currentx, currenty, token[f]);
+				if (f in noshowtokens && token[f] in noshowtokens[f])
+					{tokenf=noshowtokens[f][token[f]];  }
+				else 	{tokenf=token[f];}
+				var t = paper.text(currentx, currenty, tokenf);
 				t.attr(defaultattris);
 				if (f in token) t.attr(attris[f]);				
 			}
@@ -264,7 +269,7 @@ clickOpenFunctionMenu = function(funcnode)  // funcnode=svg text node of the dep
 	{
 // 		console.log("clickOpenFunctionMenu",funcnode,$(currentsvg).position())
 // 		svgpos=$(currentsvg).position();
-		console.log("jjjj",$(currentsvg),currentsvg.id);
+// 		console.log("jjjj",$(currentsvg),currentsvg.id);
 		svgpos=$(currentsvg).offset()
 		openFunctionMenu(funcnode.index, funcnode.govind, funcnode.attr("text"), svgpos.left+funcnode.attr("x")-20, svgpos.top+funcnode.attr("y")-7 );   // TODO: make the position of the function menu parametrizable	
 	}
@@ -273,7 +278,7 @@ clickOpenFunctionMenu = function(funcnode)  // funcnode=svg text node of the dep
 openFunctionMenu = function(ind,govind,func,x,y)  // called from clickOpenFunctionMenu and from changeDrag, changeFunc closes the menu
 	{
 // 		currentnr = $(currentsvg).parent().attr("nr");
-		console.log("kkkk",$(currentsvg),currentsvg.id);
+// 		console.log("kkkk",$(currentsvg),currentsvg.id);
 		var ff=$('#funcform');
 		var os=$("#funchoice")[0].options;
 		funcnum=functions.indexOf(func);
@@ -928,6 +933,7 @@ makewords = function()
 		
 		return words;
 	};
+
 
 
 start = function (holder, nr) {

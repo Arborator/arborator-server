@@ -48,7 +48,7 @@ if method == "POST" : #or True
 	tree = data.getvalue("tree",None)
 	
 	if tree:
-		snode=json.loads(tree)
+		snode=json.loads(tree)["tree"] # TODO: add modify and save sentence features
 		
 		sentenceid = int(data.getvalue("sentenceid",0))
 		sentencenr = int(data.getvalue("sentencenr",0))

@@ -275,7 +275,7 @@ def search(infolder,fun):
 
 def searches():			
 	#search("projects/OrfeoGold2016/platinum/", hasVerbalDm)		
-	#search("projects/OrfeoGold2016/platinum/", isNonProjective)
+	search("projects/OrfeoGold2016/platinum/", isNonProjective)
 	#search("projects/OrfeoGold2016/platinum/", hasEmptyNode)
 	#search("projects/OrfeoGold2016/platinum/", cls)
 	#search("projects/OrfeoGold2016/platinum/", hasAux)
@@ -287,7 +287,7 @@ def searches():
 	#search("projects/OrfeoGold2016/platinum/", hasVerbalPeriph)
 	#search("projects/OrfeoGold2016/platinum/", hasMorph)
 	#search("../projects/Platinum/exportcool/", lemmaContains)
-	search("../projects/Platinum/export/", lemmaContains)
+	#search("../projects/Platinum/export/", lemmaContains)
 
 if __name__ == "__main__":
 	searches()

@@ -33,10 +33,10 @@ tokenname="t"
 
 
 # central functions:
-# rhapsodie2Sentences: reads in rhapsodie file format into nodedic internal representation
-# correctRhapsodie: corrects a nodedic list following correction dictionaries
-# checkSentence: corrects an individual nodedic
-# enterSentences: puts a nodedic list into the database
+# rhapsodie2Sentences: reads in rhapsodie file format into tree internal representation
+# correctRhapsodie: corrects a tree list following correction dictionaries
+# checkSentence: corrects an individual tree
+# enterSentences: puts a tree list into the database
 
 
 
@@ -165,22 +165,22 @@ def enterSentences(sql, cursor, sentences, filename, textid, annotatorName, eras
 		#for snode in sentences:
 			#print snode
 
-		for i,nodedic in enumerate(sentences): # for every sentence
-			#print "ooooooooooooooooo",len(nodedic)
+		for i,tree in enumerate(sentences): # for every sentence
+			#print "ooooooooooooooooo",len(tree)
 			
-			if len(nodedic)<maxlength:
+			if len(tree)<maxlength:
 				scounter+=1
 				
-				sentence=" ".join([nodedic[j].get(tokname,"") for j in sorted(nodedic)])
+				sentence=" ".join([tree[j].get(tokname,"") for j in sorted(tree)])
 				sentenceid = sql.enter(cursor, "sentences",["nr","sentence","textid"],(scounter,sentence,textid,))
 				sql.enter(cursor, "sentencesearch",["nr","sentence","textid"],(scounter,sentence,textid,))
 				#print sentencefeatures
-				if sentencefeatures:
-					for a,v in sentencefeatures[i].iteritems():
+				if tree.sentencefeatures:
+					for a,v in tree.sentencefeatures.iteritems():
 						sql.enter(cursor, "sentencefeatures",["sentenceid","attr","value"],(sentenceid,a,v,))
 				
 				# enter first tree for sentencewcounter, sent, treeid
-				ws, sent, treeid = sql.enterTree(cursor, nodedic, sentenceid, userid, notenter=notenter, intokenname=tokname)
+				ws, sent, treeid = sql.enterTree(cursor, tree, sentenceid, userid, notenter=notenter, intokenname=tokname)
 				wcounter+=ws
 				
 				if debug:print "----",scounter,"of",len(sentences),sent.encode("utf-8")," - it took",time()-ti,"seconds up to now for",wcounter, "words - ", float(wcounter)/(time()-ti),'words per second.'
@@ -189,11 +189,11 @@ def enterSentences(sql, cursor, sentences, filename, textid, annotatorName, eras
 				print "ooooooh"
 				if logfile:
 					f=codecs.open("toolong.txt","a","utf-8")
-					f.write("\t".join([filename, str(len(nodes)),unicode(nodedic)])+"\n")
+					f.write("\t".join([filename, str(len(nodes)),unicode(tree)])+"\n")
 					f.close()
 				
 					f=codecs.open(logfile,"a","utf-8")
-					f.write("tooooooooooooooooolong: \n"+ filename+"\n"+unicode(nodedic)+"\n\n\n")
+					f.write("tooooooooooooooooolong: \n"+ filename+"\n"+unicode(tree)+"\n\n\n")
 					f.close()
 
 	else: # not erasing, adding
@@ -203,31 +203,31 @@ def enterSentences(sql, cursor, sentences, filename, textid, annotatorName, eras
 
 		mini=0
 		
-		for nodedic in sentences: # for every sentence
-			if len(nodedic)<maxlength:
+		for tree in sentences: # for every sentence
+			if len(tree)<maxlength:
 				
 				
-				#print nodedic
+				#print tree
 				
 				distas=[]
 				
 				scounter+=1
-				inssentence=" ".join([nodedic[j].get(tokname,"") for j in sorted(nodedic)])
+				inssentence=" ".join([tree[j].get(tokname,"") for j in sorted(tree)])
 				entered=False
 				for sentenceid,nr,sentence,textid in r[mini:]: 
 					#print "found:",sentence
 					#print "looking for:",inssentence
-					#print len(nodedic),len(sentence.split()),len(nodedic)==len(sentence.split())
+					#print len(tree),len(sentence.split()),len(tree)==len(sentence.split())
 					if sentence==inssentence:
 						mini=nr
 						origdic=getorigdic(sql,cursor,sentenceid,defaultAnnotatorName)
 						#origdic=sql.gettree(sid=sentenceid,username=defaultAnnotatorName)["tree"]
-						if len(origdic)==len(nodedic):
+						if len(origdic)==len(tree):
 							if debug: print "standard entry",inssentence
-							ws, sent, treeid = sql.enterTree(cursor, nodedic, sentenceid, userid, notenter=notenter, intokenname=tokname)
+							ws, sent, treeid = sql.enterTree(cursor, tree, sentenceid, userid, notenter=notenter, intokenname=tokname)
 						else:
 							if debug: print "try fuzzy entry",inssentence
-							ws, sent, treeid = fuzzyEnterSentence(nodedic,origdic,sql, cursor, filename, textid, annotatorName, scounter,sentence, sentenceid, inssentence, userid, notenter=notenter)
+							ws, sent, treeid = fuzzyEnterSentence(tree,origdic,sql, cursor, filename, textid, annotatorName, scounter,sentence, sentenceid, inssentence, userid, notenter=notenter)
 						wcounter+=ws
 						if debug :
 							if sent:print "---",sent.encode("utf-8"),"sentence"
@@ -236,21 +236,21 @@ def enterSentences(sql, cursor, sentences, filename, textid, annotatorName, eras
 								if logfile:
 									
 									f=codecs.open(logfile,"a","utf-8")
-									f.write("no sentence: \n"+ filename+"\n"+unicode(nodedic)+"\n\n\n")
+									f.write("no sentence: \n"+ filename+"\n"+unicode(tree)+"\n\n\n")
 									f.close()
 								
 						entered=True
 						break
 					else: 
-						distas+=[(jellyfish.levenshtein_distance(unicode(sentence).encode("utf-8"), unicode(inssentence).encode("utf-8")), (nodedic, sentenceid, sentence))]
+						distas+=[(jellyfish.levenshtein_distance(unicode(sentence).encode("utf-8"), unicode(inssentence).encode("utf-8")), (tree, sentenceid, sentence))]
 					
 				if not entered: 
 					print "couldn't find '"+inssentence+"' in", shortname,"! Haven't yet entered the annotation"
 					if distas:
-						nodedic, sentenceid, sentence = sorted(distas)[0][1] # get best sentence
+						tree, sentenceid, sentence = sorted(distas)[0][1] # get best sentence
 						print "will try to enter instead\n",inssentence,"\ninto\n",sentence
 						origdic=getorigdic(sql,cursor,sentenceid,defaultAnnotatorName)
-						ws, sent, treeid = fuzzyEnterSentence(nodedic,origdic,sql, cursor, filename, textid, annotatorName, scounter,sentence, sentenceid, inssentence, userid, notenter=notenter)
+						ws, sent, treeid = fuzzyEnterSentence(tree,origdic,sql, cursor, filename, textid, annotatorName, scounter,sentence, sentenceid, inssentence, userid, notenter=notenter)
 						wcounter+=ws
 					else:
 						print "no data under that name:",shortname
@@ -262,11 +262,11 @@ def enterSentences(sql, cursor, sentences, filename, textid, annotatorName, eras
 				print "ooooooh"
 				if logfile:
 					f=codecs.open("toolong.txt","a","utf-8")
-					f.write("\t".join([filename, str(len(nodes)),unicode(nodedic)])+"\n")
+					f.write("\t".join([filename, str(len(nodes)),unicode(tree)])+"\n")
 					f.close()
 				
 					f=codecs.open(logfile,"a","utf-8")
-					f.write("tooooooooooooooooolong: \n"+ filename+"\n"+unicode(nodedic)+"\n\n\n")
+					f.write("tooooooooooooooooolong: \n"+ filename+"\n"+unicode(tree)+"\n\n\n")
 					f.close()
 			
 			
@@ -280,93 +280,93 @@ def getorigdic(sql,cursor,sentenceid,defaultAnnotatorName):
 						from trees, features, users
 						where trees.rowid=features.treeid and trees.userid=users.rowid and users.user=? and trees.sentenceid=?;""",(defaultAnnotatorName, sentenceid,))
 	
-	nodedic={}
+	tree={}
 	for nr,treeid,sid,attr,value, in dbexe.fetchall():
 		#print nr,treeid,sid,attr,value
-		nodedic[nr]=nodedic.get(nr,{})
+		tree[nr]=tree.get(nr,{})
 			
 		if attr==sqltokenname:
-			nodedic[nr][tokenname]=value
+			tree[nr][tokenname]=value
 		else:
-			nodedic[nr][attr]=value
+			tree[nr][attr]=value
 		govdic={}
 		for _,_,_,govid,function in sql.getall(cursor, "links", ["treeid", "depid"], [treeid, nr]):
 			govdic[govid]=function
-		nodedic[nr]["gov"]=govdic
-	#print "888888888888888888",nodedic
+		tree[nr]["gov"]=govdic
+	#print "888888888888888888",tree
 	#dic={}
 	#for _,sid,a,v in self.getall(cursor, "sentencefeatures", ["sentenceid"], [sid]):
 		#dic[a]=v
-	#dic["tree"]=nodedic ## maybe test whether "tree" is already an attribute?
+	#dic["tree"]=tree ## maybe test whether "tree" is already an attribute?
 	
 	
 	#origdic=sql.gettree(sid=sentenceid,username=defaultAnnotatorName)["tree"]
 	#for i in origdic:
 		#origdic[i][tokenname]=origdic[i][sqltokenname]
 		#del origdic[i][sqltokenname]
-	return nodedic
+	return tree
 	
-def fuzzyEnterSentence(nodedic,origdic, sql, cursor, filename, textid, annotatorName, scounter,sentence, sentenceid, inssentence, userid, notenter):
+def fuzzyEnterSentence(tree,origdic, sql, cursor, filename, textid, annotatorName, scounter,sentence, sentenceid, inssentence, userid, notenter):
 	ws, sent, treeid =0,None,None
 	# t=sql.projectconfig["shown features"]["0"]
-	resnodedic = correcttokens(copy.deepcopy(nodedic),origdic)
+	restree = correcttokens(copy.deepcopy(tree),origdic)
 	print "end strict stuff"
-	if not resnodedic: 
+	if not restree: 
 		print "\n\nthis didn't work out. we try again, less strict"
-		resnodedic = correcttokens(copy.deepcopy(nodedic),origdic, strict=False)
-	if not resnodedic:
+		restree = correcttokens(copy.deepcopy(tree),origdic, strict=False)
+	if not restree:
 		print "ooooooh"
 		if logfile:
 			f=codecs.open(logfile,"a","utf-8")
 			f.write("\t".join([filename,str(textid), annotatorName, str(scounter),sentence])+"\n\n\n")
 			f.close()
 		
-	if len(origdic)==len(resnodedic):
+	if len(origdic)==len(restree):
 		print "will really enter ",inssentence,"into",sentence,"!!!!\n"
 		#if sentence.startswith("alors j' emprunte la rue de Strasbourg"):
-			#for i,d in  resnodedic.iteritems():print i,d 
+			#for i,d in  restree.iteritems():print i,d 
 			#for i,d in  origdic.iteritems():print i,d 
 			#print sentence
 			#1/0
 			
-		ws, sent, treeid = sql.enterTree(cursor, resnodedic, sentenceid, userid, newTokens=False, notenter=notenter, intokenname=tokenname)
+		ws, sent, treeid = sql.enterTree(cursor, restree, sentenceid, userid, newTokens=False, notenter=notenter, intokenname=tokenname)
 	else: 
 		print "could not enter!!!!!"
 	return ws, sent, treeid 
 
 	
-def correcttokens(nodedic, origdic, strict=True):
+def correcttokens(tree, origdic, strict=True):
 	"""
-	nodedic is checked
+	tree is checked
 	origdic is the parser's annotation whose tokens are relevant
 	strict: first trying to match exactly the parser's tokens
 	"""
 	if debug: 
-		print "\n=================== start correcttokens nodedic"
+		print "\n=================== start correcttokens tree"
 		if strict:print "strict!!!"
 		else: print "not strict!!!!"
-		for i,d in  nodedic.iteritems():print i,d[tokenname],d 
+		for i,d in  tree.iteritems():print i,d[tokenname],d 
 		print "with origdic"
 		for i,d in  origdic.iteritems():print i,d[tokenname],d 
 	
-	newnodedic={}
+	newtree={}
 	try:
 		for nr in sorted(origdic):
 			#print origdic[nr]
-			#print nr, origdic.get(nr,{tokenname:"___________verystrange"})[tokenname],nodedic.get(nr,{tokenname:"___________verystrange"})[tokenname]
+			#print nr, origdic.get(nr,{tokenname:"___________verystrange"})[tokenname],tree.get(nr,{tokenname:"___________verystrange"})[tokenname]
 			
-			if nr in nodedic and nodedic[nr][tokenname]==origdic[nr][tokenname]: # found perfect matching token, copying everything to the new node
+			if nr in tree and tree[nr][tokenname]==origdic[nr][tokenname]: # found perfect matching token, copying everything to the new node
 				#print "ok"
-				newnodedic[nr]=nodedic[nr]
+				newtree[nr]=tree[nr]
 			else:
 				#print "___problem"
 				i=0
 				intdic,normal2ins={},{}
 				
-				smalltoks=nodedic[nr][tokenname].encode("utf-8").split()
+				smalltoks=tree[nr][tokenname].encode("utf-8").split()
 				if strict:
 					
-					while nodedic[nr][tokenname].startswith(" ".join([origdic[ii][tokenname] for ii in range(nr,nr+i+1)])): # making the insertion dict if words fit on one another:
+					while tree[nr][tokenname].startswith(" ".join([origdic[ii][tokenname] for ii in range(nr,nr+i+1)])): # making the insertion dict if words fit on one another:
 						intdic["i"+str(i+1)]=origdic[nr+i]
 						normal2ins[nr+i]="i"+str(i+1)
 						i+=1
@@ -386,13 +386,13 @@ def correcttokens(nodedic, origdic, strict=True):
 					intdic["i1"]["gov"]={"i0":"root"} 
 					intdic["i"+str(i)]["child"]=True
 					#print intdic
-					newnodedic=integrate(nodedic,nr,intdic)
-					return correcttokens(newnodedic, origdic, strict) # start over because indeces changed
+					newtree=integrate(tree,nr,intdic)
+					return correcttokens(newtree, origdic, strict) # start over because indeces changed
 					
 				else: # just wrong token for example ce != c'
-					#print "changed token from",nodedic[nr][t],"to",origdic[nr][t]
-					newnodedic[nr]=nodedic[nr]
-					newnodedic[nr][tokenname]=origdic[nr][tokenname]
+					#print "changed token from",tree[nr][t],"to",origdic[nr][t]
+					newtree[nr]=tree[nr]
+					newtree[nr][tokenname]=origdic[nr][tokenname]
 	except Exception, err:
 		if debug:print traceback.format_exc()
 		if logfile:
@@ -401,7 +401,7 @@ def correcttokens(nodedic, origdic, strict=True):
 			f.close()
 		#1/0
 		return {}
-	return newnodedic	
+	return newtree	
 	
 	
 def enterConll(dbname,filename,annotatorName=None, eraseAllAnnos=False, dbtextname=None, corrdic={"tag":"cat","t":"orthotext"}): 
@@ -459,7 +459,7 @@ def uploadConll(sql, filename, annotatorName=None, eraseAllAnnos=True):
 	textid = sql.enter(cursor, "texts",["textname"],(dbtextname,))
 	
 			
-	enterSentences(sql,cursor,sentences,filename, textid,annotatorName,eraseAllAnnos, tokname="t" )
+	enterSentences(sql, cursor, sentences, filename, textid, annotatorName, eraseAllAnnos, tokname="t" )
 	db.commit()
 	db.close()
 	return len(sentences)

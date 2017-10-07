@@ -146,7 +146,6 @@ def printexport():
 	print """
 	<form method="post" action="convert_svg.cgi?project={project}" name="ex" id="ex" style=" position:fixed;top:6px;right:30px;display:none;" >
 		<input type="hidden" id="source" name="source" value="">
-		<input type="hidden" id="cat" name="cat" value="">
 		<select id="exptype" name="type" class="ui-button ui-state-default ui-corner-all" style="height:16px;font: italic 10px Times,Serif;border:thin solid silver;" >
 			<option>pdf</option>
 			<option>ps</option>
