@@ -288,7 +288,7 @@ else:
 	print '<div style="clear: both;"></div>'
 
 
-print "</div><div class='ui-state-highlight ui-corner-all' style='padding: 1em; margin: 20px;clear: both;'><a href='http://rhapsodie.ilpga.fr/wiki/Arborator'>Short usage guide (wiki page)</a></div>"
+print "</div><div class='ui-state-highlight ui-corner-all' style='padding: 1em; margin: 20px;clear: both;'><a href='https://github.com/kimgerdes/arborator/wiki'>Short usage guide (wiki page)</a></div>"
 
 
 #print """<br/><br/>

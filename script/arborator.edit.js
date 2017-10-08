@@ -369,8 +369,7 @@ startTree = function (nr, data) {
 	{
 		if (!(["tree","goodtree","teacher"].includes(a)))
 		{
-			currentsvg.sentencefeatures[a]=redata[a] // add a to svg's sentencefeatures
-			if (a in shownsentencefeatures)
+			if (shownsentencefeatures.includes(a))
 			{
 				$('#holder'+nr).append('<p>'+redata[a]+'</p>');
 			}
