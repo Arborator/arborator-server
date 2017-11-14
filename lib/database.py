@@ -1550,24 +1550,35 @@ class SQL:
 
 		return fcounter,users,scounter,doublegovs
 	
-	def conllSentenceExport(self, sid, cursor, treeid, outf):
+	
+
+
+	def conllSentenceExport(self, sid, cursor,treeid,outf):
 		"""
 		called for each sentence in the conll export procss
-
 		"""
+		doublegovs=False
+
 		tree=Tree()
 		for nr,at,va, in cursor.execute("""select features.nr, features.attr, features.value
 					from trees, features
-					where trees.rowid=features.treeid and trees.rowid=?;""",
-					(treeid,)).fetchall():
+					where trees.rowid=features.treeid and trees.rowid=?;""",(treeid,)).fetchall():
 			tree[nr]=tree.get(nr,{})
 			tree[nr][at]=va
+		for nr in sorted(tree): # for each token:
+			g = self.getall(cursor, "links", ["treeid", "depid"], [treeid, nr])
+			gd = dict([(govid,function) for _,trid,depid,govid,function in g if govid>=0]) #trid==treeid and
+			tree[nr]["gov"]=gd
+			if len(gd)>1:doublegovs=True
 		for at,va, in cursor.execute("""select sentencefeatures.attr, sentencefeatures.value
 						from trees, sentences,sentencefeatures
 						where sentencefeatures.sentenceid=sentences.rowid and trees.sentenceid=sentences.rowid and trees.rowid=?;""",(treeid,)).fetchall():
 			tree.sentencefeatures[at]=va
+		
 		outf.write(tree.conllu()+"\n")
-		return False
+		
+		return doublegovs
+
 
 
 	def xmlSentenceAdd(self, sid, cursor,treeid,doc,tokens, lexemes,  dependencies):
@@ -1802,23 +1813,45 @@ class SQL:
 		db.commit()	
 		db.close()
 	
+	def removeStudentTrees(self):
+		
+		db,cursor=self.open()
+		q="""select trees.rowid as treeid, sentences.nr as sentencenr, users.user as username 
+			from trees, sentences, users 
+			where users.rowid = trees.userid and trees.sentenceid=sentences.rowid;"""
+		rc=cursor.execute(q)
+		for treeid, sentencenr, username in rc:
+			print treeid, sentencenr, username
+			if username not in ["prof","admin"]:
+				self.eraseTree(treeid, sentencenr, username, 5)
+				print "erased"
+		
+		q="""delete from users where users.user != 'admin' and users.user != 'prof';"""
+		rc=cursor.execute(q)
+		
+		db.commit()	
+		db.close()
+		
+	
 if __name__ == "__main__":
 	print "bonjour"
+	sql=SQL("SyntaxeAlOuest")
+	sql.removeStudentTrees()
 	
 	#sql=SQL("Rhapsodie")
 	#sql=SQL("lingCorpus")
 	#sql=SQL("HongKongTVMandarin")
-	sql=SQL("Mbya")
+	
 	#sql.exportAnnotations(14, "UD-mandarinParsed.0", "allconll")
 	#sql.exportAnnotations(6, "Rhaps.gold", "lastconll")
 	
-	sql.exportAnnotations(1, "x", "lastconll")
+	#sql.exportAnnotations(1, "x", "lastconll")
 	#print sql.snippetSearch("func:disflink")
 	#sql.exportAll("lastconll")
 	#print sql.gettree(treeid=3947)
 	
 	#sql.correctSentenceLength()
-	#sql.cleanDatabase()
+	sql.cleanDatabase()
 	
 	#sentenceid=41
 	#userid=5

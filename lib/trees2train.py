@@ -173,13 +173,14 @@ def lastTreeForAllSamples(project, onlyHuman=True, combine=False):
 	print annotators
 
 
-def getSpecificTrees(db, cursor, nrutids, annotatorIds):
+def getSpecificTrees(sql, db, cursor, nrutids, annotatorIds):
 	trees=[]
 	for nr in sorted(nrutids): # for each sentence
 		tree=None
 		for aid in annotatorIds: # for each interesting annotator id
 			if aid in nrutids[nr]:
-				tree=sql.gettree(treeid=nrutids[nr][aid], indb=db, incursor=cursor)["tree"]
+				#tree=)
+				tree=conll.Tree(sql.gettree(treeid=nrutids[nr][aid], indb=db, incursor=cursor)["tree"])
 				trees+=[tree]
 				#print "atree:",tree
 				break
@@ -191,7 +192,7 @@ def getSpecificTrees(db, cursor, nrutids, annotatorIds):
 	return trees
 
 
-def exportConllByAnnotators(project, annotators=["prof","Sy","parser"]):
+def exportConllByAnnotators(project, annotators=["prof","Sy","parser"], fileExtension=".conllu"):
 	"""
 	exports complete project
 	for every sentence, trees of annotators in given order.
@@ -209,18 +210,19 @@ def exportConllByAnnotators(project, annotators=["prof","Sy","parser"]):
 	except:
 		print "some required annotator IDs are not in the database"
 		return
-	#print annotators, annotatorIds
+	print annotators, annotatorIds
 	
 	for textid, textname, nrtokens in list(cursor.execute("select rowid, * from texts;" )):  # for each text
 		print "doing",textname,"with", nrtokens, "tokens"
 		nrutids={}
-		for nr,userid,treeid in list(cursor.execute("select nr,userid,trees.rowid as treeid from trees, sentences where sentenceid=sentences.rowid and userid in {annotatorIds} and  textid = ? order by nr;".format(annotatorIds=annotatorIds),(textid,))):
+		for nr,userid,treeid in list(cursor.execute("select nr,userid,trees.rowid as treeid from trees, sentences where sentenceid=sentences.rowid and userid in {annotatorIds} and  textid = ? order by nr;".format(annotatorIds=annotatorIds if len(annotatorIds)>1 else '('+str(annotatorIds[0])+')'),(textid,))):
 			nrutids[nr]=nrutids.get(nr,{})
 			nrutids[nr][userid]=treeid
-		trees=getSpecificTrees(db, cursor, nrutids, annotatorIds)
+		trees=getSpecificTrees(sql, db, cursor, nrutids, annotatorIds)
 		if trees:
 			if textname.endswith(".conll"): textname=textname[:-len(".conll")]
-			outfile=os.path.join(outdir,textname)
+			if textname.endswith(".conllu"): textname=textname[:-len(".conllu")]
+			outfile=os.path.join(outdir,textname+fileExtension)
 			conll.trees2conllFile(trees, outfile=outfile, columns=10)
 			print len(trees),"trees"
 			outfiles+=[outfile]
@@ -583,7 +585,8 @@ if __name__ == "__main__":
 	#splitSentenceFile("exo1sents.txt")
 
 	#exportGoodTexts("HongKongTVMandarin", lastHuman=True, onlyValidated=False, pattern="UD_ZH%")
-	#print exportConllByAnnotators("SyntaxeAlOuest", annotators=["prof","Sy"])
+	#print exportConllByAnnotators("SyntaxeAlOuest2016", annotators=["prof"])
+	print exportConllByAnnotators("linguistiqueCorpus-Exo", annotators=["prof"])
 	#print exportConllByAnnotators("OrfeoGold2016", annotators=["Sy","Marion","parser"])
 	
 	#split("../projects/OrfeoGold2016/platinum/Rhaps.gold",1000)
@@ -598,4 +601,4 @@ if __name__ == "__main__":
 	#exportUniqueSentences("templingCorpus2016")
 	#lastHumanTreeForAllSamples("Platinum")
 	#lastTreeForAllSamples("templingCorpus2016", onlyHuman=False, combine=True)
-	lastTreeForAllSamples("Platinum", onlyHuman=False, combine=False)
+	#lastTreeForAllSamples("Platinum", onlyHuman=False, combine=False)
