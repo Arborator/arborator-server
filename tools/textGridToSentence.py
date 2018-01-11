@@ -25,31 +25,21 @@
 #     USA
 ####
 
-import sys, json, codecs, copy, collections, re, hashlib, os, glob, subprocess
+import sys, json, codecs, copy, collections, re, hashlib, os, glob, subprocess, fnmatch
+from datetime import datetime
 #import config, xmlsqlite, traceback
-
+from parseSentences import textToSentences
 debug=True
 
 #print codecs.open("textgrids/Chloe Guyard_23953_assignsubmission_file_guyard2411.TextGrid","r","utf-16").read()
 
 
-reponct=re.compile(ur'(\s*[.;:,!\(\)§"]+)')
-rehyph=re.compile(ur'(\s*[\/\']+)') # \- pas de segmentation des traits d'union
-revirer=re.compile(ur'[`]+')
 
-def tokenize(text):
-	text=text.replace(u"’","'")
-	text=revirer.sub(r" ",text)
-	text=reponct.sub(r" \1 ",text)
-	text=rehyph.sub(r"\1 ",text)
-	return text
+
 
 
 requotes=re.compile(ur'\"(.*)\"$',re.U)
-redoublespace=re.compile(ur'\s+',re.U)
-reparenth=re.compile(ur'\([ \w]*\)',re.U)
-endsent=re.compile('([!?.])',re.U)
-reinvers=re.compile('(-je|-tu|-t-il|-il|-elle|-t-elle|-nous|-vous|-t-ils|-ils)',re.U)
+#reinvers=re.compile('(-je|-tu|-t-il|-il|-elle|-t-elle|-nous|-vous|-t-ils|-ils)',re.U)
 
 incompleteTextLine=re.compile(ur'^ *text \= \"\s*\r?\n?',re.U+re.M)
 lonelyQuote=re.compile(ur'\s*\"\s*$',re.U+re.M)
@@ -58,128 +48,106 @@ lonelyQuote=re.compile(ur'\s*\"\s*$',re.U+re.M)
 
 
 verbose=False
-#verbose=True
+verbose=True
 
-def textgridToSentences(filter="*", keepEndSent=False, maxlength=50, writeProblemFile=False, writeProblemBeforeSentence=True, includeProblemSentence=False):
+def textgridToSentences(filter="*", keepEndSent=True, maxlength=100, writeProblemBeforeSentence=False, skipBefore=None):
 	
 	
 	skipnext=False
 	skiptier=False
-	for infilename in glob.glob(os.path.join("textgrids", filter)):
-		print  "\n\n",infilename
-		simplename = infilename.split("/")[1].split("_")[0].replace(" ","_") 
-		print "-->",simplename
-		
-		problem=True
-		for enc in ["utf-8","utf-16","iso-8859-1"]:
-			try:
-				alltext=codecs.open(infilename,"r",enc).read()
-				print enc
-				problem=False
-				break
-			except:
-				pass
-		
-		if problem:
-			print "can't decode",infilename
-			break
-		else:
-			nbtiers=alltext.count('class = "IntervalTier"')
-			if nbtiers!=1:
-				print "the file",infilename,"has",nbtiers,"tiers!"
-		with codecs.open(infilename,"r",enc) as infile, codecs.open("longsentences/"+simplename,"w","utf-8") as longfile, codecs.open("sentences/"+simplename,"w","utf-8") as courtfile:
-			#c=infile.read()
-			#print c
-			#continue
-			first=infile.readline().strip()
-			if first and ord(first[0])==65279: first=first[1:] # fucking boms!
-			text=""
-			if first.startswith("File type") or '"IntervalTier"' in alltext:
-				print "textgrid",infilename
-				
-				intext=infile.read()
-				
-				intext = incompleteTextLine.sub('  text = "', intext) # remove new line after incompleteTextLine
-				intext = lonelyQuote.sub('"', intext) # move lonelyQuote to previous line
-				
-				
-				#print intext
-				for line in intext.split("\n"):
-					line=line.strip()
-					if skipnext:
-						if line==u'"phonèmes"' or line==u'"Fonctions"':
-							skiptier=line
-						skipnext=False
-						continue
-					
-					if line=='"IntervalTier"' or line=='"TextTier"':
-						skipnext=True
-						skiptier=False
-						continue
-					else: skipnext= False
-					
-					if skiptier:
-						continue
-					if line.startswith("class =") or line.startswith("File type =") or line.startswith("Object class =") or line.startswith("name ="): continue
-					
-					m = requotes.search(line)
-					if m:
-						text+=m.group(1)+" "
-						if verbose:print m.group(1)
-					else:
-						pass
-						if verbose:print "no",line
-					
-			else:
-				print "textfile",infilename
-				text+=first
-				for line in infile:
-					line=line.strip()
-					line=line.replace('"',' ')
-					text+=line+" "
-			text=text.replace("...",".")
-			if verbose:
-				print "___",text,"___"
+	#for infilename in glob.glob(os.path.join("textgrids", filter)):
+	for root, dirnames, filenames in os.walk('textgrids'):
+		for filename in fnmatch.filter(filenames, filter):
+			infilename=os.path.join(root, filename)
 			
-			#for sent in text.split("."):
-			#if keepEndSent: 	sents = endsent.sub(ur"\1\n",u"ça va ? comment ! qsdf. oh!").split("\n")
-			#else: 		sents = endsent.sub(ur"\n",u"ça va ? comment ! qsdf. oh!").split("\n")
-			if keepEndSent: 	sents = endsent.sub(ur"\1\n",text).split("\n")
-			else: 			sents = endsent.sub(ur"\n",text).split("\n")
-			#print sents
-			#qsdf
-			for sent in sents:
-				sent=tokenize(sent)
-				sent=redoublespace.sub(" ",sent)
-				sent=reparenth.sub(" ",sent).strip()
+			
+			#print datetime.fromtimestamp(os.path.getmtime(infilename)) 
+			if skipBefore and str( datetime.fromtimestamp(os.path.getmtime(infilename))) < skipBefore: 
+				print infilename,"too old"
+				continue
+			
+			print  "\n\n",infilename,root, dirnames, filenames
+			simplename = infilename.split("/")[1].split("_")[0].replace(" ","_") 
+			print "-->",simplename
+			
+			problem=True
+			for enc in ["utf-8","utf-16","iso-8859-1"]:
+				try:
+					alltext=codecs.open(infilename,"r",enc).read()
+					#print enc
+					problem=False
+					break
+				except Exception,e: 
+					pass
+					#print str(e)
+			
+			if problem:
+				print "can't decode",infilename
+				break
+			else:
+				nbtiers=alltext.count('class = "IntervalTier"')
+				if nbtiers!=1:
+					print "the file",infilename,"has",nbtiers,"tiers!"
+			with codecs.open(infilename,"r",enc) as infile:
+				#c=infile.read()
+				#print c
+				#continue
+				first=infile.readline().strip()
+				if first and ord(first[0])==65279: first=first[1:] # fucking boms!
+				text=""
+				if first.startswith("File type") or '"IntervalTier"' in alltext:
+					print "reading textgrid",infilename
+					
+					intext=infile.read()
+					
+					intext = incompleteTextLine.sub('  text = "', intext) # remove new line after incompleteTextLine
+					intext = lonelyQuote.sub('"', intext) # move lonelyQuote to previous line
+					
+					
+					#print intext
+					for line in intext.split("\n"):
+						line=line.strip()
+						if skipnext:
+							if line==u'"phonèmes"' or line==u'"Fonctions"':
+								skiptier=line
+							skipnext=False
+							continue
+						
+						if line=='"IntervalTier"' or line=='"TextTier"':
+							skipnext=True
+							skiptier=False
+							continue
+						else: skipnext= False
+						
+						if skiptier:
+							continue
+						if line.startswith("class =") or line.startswith("File type =") or line.startswith("Object class =") or line.startswith("name ="): continue
+						
+						m = requotes.search(line)
+						if m:
+							text+=m.group(1)+" "
+							if verbose:print m.group(1)
+						else:
+							pass
+							if verbose:print "no",line
+						
+				else:
+					print "textfile",infilename
+					text+=first
+					for line in infile:
+						line=line.strip()
+						line=line.replace('"',' ')
+						text+=line+" "
+				text=text.replace("...",".")
+				text=text.replace("/","~")
+				if verbose:
+					print "___",text,"___"
 				
-				sent=sent.replace("aujourd' hui","aujourd'hui")
-				sent=sent.replace("quelqu' un","quelqu'un")
-				#sent=sent.replace("parce qu","parce_qu")
-				#sent=reinvers.sub(ur" \1",sent)
+			textToSentences(text, outname="sentences/"+simplename, problemout="longsentences/"+simplename, keepEndSent=keepEndSent, maxlength=maxlength, writeProblemBeforeSentence=writeProblemBeforeSentence)	
 				
-				
-				if sent:
-					longfile.write(sent+"\n") # +" .\n"
-					if keepEndSent: simp = sent
-					else:		simp=reponct.sub(" ",sent)
-					simp=redoublespace.sub(" ",simp).strip()
-					if len(simp.split())<maxlength:
-						courtfile.write(simp+" \n")
-					else:
-						#pass
-						#courtfile.write(u"_______________phrase très longue:\n")
-						print "_______________phrase très longue:"
-						print simp
-						if writeProblemFile:
-							with codecs.open("sentences/"+simplename+".problem.txt","a","utf-8") as probfile:
-								probfile.write(u"_______________phrase très longue:\n"+simp+" \n")
-						if includeProblemSentence:
-							if writeProblemBeforeSentence:
-								courtfile.write("long ! ")
-							courtfile.write(simp+" \n")
-							
-		#outfile=codecs.open(outfolder+"/"+infile.split("/")[-1],"w","utf-8")
+			#outfile=codecs.open(outfolder+"/"+infile.split("/")[-1],"w","utf-8")
+
+
 
 
 def mate(outfolder="parses", lang="fr", memory="12G", sentenceFolder=u"sentences", filter="*",depparse=True):
@@ -242,8 +210,8 @@ if __name__ == "__main__":
 	
 	#mate(sentenceFolder="rafael")
 	
-	textgridToSentences("*", keepEndSent=True, writeProblemFile=True, maxlength=100, writeProblemBeforeSentence=False)
-
+	#textgridToSentences("*")
+	textgridToSentences("*", keepEndSent=True, maxlength=100, writeProblemBeforeSentence=False, skipBefore="2017-11-16")
 	#mate(filter="*Fum*")
 	
 	#for fil in glob.glob(os.path.join(u"sentences", '*')):

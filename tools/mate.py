@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python
 
-import os,subprocess,sys,glob,datetime, random, time, unicodedata, re, shutil, codecs, argparse
+import os, subprocess, sys, glob, datetime, random, time, unicodedata, re, shutil, codecs, argparse
+
 sys.path.insert(0, '../lib')
+sys.path.insert(0, 'lib')
 
 import conll, trees2train, updateTrees, getTextsForParsing
 #from database import SQL
@@ -67,7 +69,9 @@ def getClasses(lang="graph"):
 	returns the names of the classes to be used for parsing
 	mind that the parseclass used for parsing and for evaluation are different
 	"""
-	anna = "mate/mate_components/anna-3.3.jar"
+	#anna = "mate/mate_components/anna-3.3.jar" # in case the file is called from some other cwd:
+	anna = os.path.abspath(os.path.join(os.path.dirname(__file__), 'mate/mate_components/anna-3.3.jar'))
+	
 	lemclass = "is2.lemmatizer.Lemmatizer"
 	tagclass = "is2.tag.Tagger"
 
@@ -154,20 +158,38 @@ def parsing(infile, lemodel="LemModel", tagmodel="TagModel", parsemodel="ParseMo
 	parsing function
 	TODO: parserType is ignored
 	"""
+	
+	print "parsing now i'm at os.getcwd()",os.getcwd(),os.path.dirname(__file__),__file__
+	
 	if outfolder[-1]!="/": outfolder=outfolder+"/"
 	outfile = outfolder+os.path.basename(infile)
 
-	anna, lemclass, tagclass, parseclass=getClasses("graph")
+	anna, lemclass, tagclass, parseclass = getClasses("graph")
 	
+	#anna = ".:./mate/mate_components/anna-3.3.jar"
+	#anna = os.path.join(os.path.dirname(__file__), 'mate/mate_components/anna-3.3.jar')
+	#print anna
+	#print "/home/kim/Dropbox/programmation/arborator/trunk/tools/mate/mate_components/anna-3.3.jar"
+	#assert anna=="/home/kim/Dropbox/programmation/arborator/trunk/tools/mate/mate_components/anna-3.3.jar"
+	#print anna
+	#anna = "anna-3.3.jar"
+	#anna =        "/home/kim/Dropbox/programmation/arborator/trunk/tools/mate/mate_components/anna-3.3.jar"
+	#print anna
+	#lemodel="../platinum.2017-03-26_03:10/models/LemModel"
+	#print lemodel
+	#print "/home/kim/Dropbox/programmation/arborator/trunk/tools/mate/platinum.2016-11-29_00:22/models/LemModel"
+	#assert lemodel=="/home/kim/Dropbox/programmation/arborator/trunk/tools/mate/platinum.2016-11-29_00:22/models/LemModel"
+	#lemodel="/home/kim/Dropbox/programmation/arborator/trunk/tools/mate/platinum.2016-11-29_00:22/models/LemModel"
+	#infile="/home/kim/Dropbox/programmation/arborator/trunk/tools/parses/upload.fr.txt.sents.conll"
 	
 	lemcommand="java -Xmx{memory} -cp {anna} {lemclass} -model {lemodel} -test {infile} -out {outfile}_lem".format(memory=memory, anna=anna, lemclass=lemclass, infile=infile, lemodel=lemodel, outfile=outfile)
 	tagcommand="java -Xmx{memory} -cp {anna} {tagclass} -model {tagmodel} -test {outfile}_lem -out {outfile}_tag".format(memory=memory, anna=anna, tagclass=tagclass, tagmodel=tagmodel, outfile=outfile)
-
 	parsecommand="java -Xmx{memory} -cp {anna} {parseclass} -model {parsemodel} -test {outfile}_tag -out {outfile}_parse".format(memory=memory, anna=anna, parseclass=parseclass, parsemodel=parsemodel, outfile=outfile)
 	
 	if lemodel and lemodel[-1]!="/":
 		if verbose:print "\n\n========== lemmatizing...", lemcommand
-		p1 = subprocess.Popen([lemcommand],shell=True, stdout=subprocess.PIPE)
+		p1 = subprocess.Popen([lemcommand], shell=True, stdout=subprocess.PIPE, 
+			cwd='/home/kim/Dropbox/programmation/arborator/trunk/tools/mate/mate_components')
 		out, err = p1.communicate()
 		if verbose:
 			print out, err

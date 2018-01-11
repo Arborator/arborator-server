@@ -74,15 +74,17 @@ if logfile:
 #def simpleEnterFolder(sql, annotatorName):
 	#for filename in glob(os.path.join(conlldirpath, filepattern)):
 	
-def simpleEnterSentences(sql, trees, dbtextname, annotatorName, eraseAllAnnos, sentencefeatures={}):
+def simpleEnterSentences(sql, trees, dbtextname, annotatorName, eraseAllAnnos, sentencefeatures={}, preserveSampleWithSameName=False):
 	"""
 	takes a list of trees (nodedics)
 	puts them into the database
-	
+	if preserveSampleWithSameName: add _ to names to create new name of sample
 	"""
 	ti = time()
 	db,cursor=sql.open()
-	#sql=database.SQL(project)
+	if preserveSampleWithSameName:
+		while sql.getUniqueId(cursor, "texts", ["textname"],[dbtextname])!=None:
+			dbtextname+="_"
 	textid = sql.enter(cursor, "texts",["textname"],(dbtextname,))
 	print "textid",textid
 	if eraseAllAnnos: 
@@ -95,7 +97,6 @@ def simpleEnterSentences(sql, trees, dbtextname, annotatorName, eraseAllAnnos, s
 		print "found",len(trees),"trees to enter"
 		print "entering an annotation by",annotatorName, "into annotations of textid",textid
 			
-	#db,cursor=sql.open()
 	userid = sql.enter(cursor, "users",["user"],(annotatorName,))
 	sql.realname(annotatorName, cursor)
 	if not userid:
@@ -103,7 +104,6 @@ def simpleEnterSentences(sql, trees, dbtextname, annotatorName, eraseAllAnnos, s
 		return
 	
 	scounter,wcounter=0,0
-	
 
 	for i,tree in enumerate(trees): # for every sentence
 		scounter+=1
@@ -1212,7 +1212,7 @@ def readinsinglerhapsodie(projectname,rhapsodiexmlfile,eraseAllAnnos=False,repai
 		
 		
 
-def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseAllAnnos=True, steps=1000, importAnnotatorName=None):
+def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseAllAnnos=True, steps=1000, importAnnotatorName=None, preserveSampleWithSameName=False):
 	
 	
 	sql = database.SQL(projectname)
@@ -1248,7 +1248,7 @@ def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseA
 			#textid = sql.enter(cursor, "texts",["textname"],(dbtextname,))
 			
 			#enterSentences(sql,cursor,sentences,filename, textid,annotatorName,eraseAllAnnos, tokname="t" )
-			simpleEnterSentences(sql, sentences, dbtextname, annotatorName, eraseAllAnnos=True, sentencefeatures={})
+			simpleEnterSentences(sql, sentences, dbtextname, annotatorName, eraseAllAnnos=True, sentencefeatures={}, preserveSampleWithSameName=preserveSampleWithSameName)
 			
 	#db.commit()
 	#db.close()
@@ -1467,7 +1467,7 @@ if __name__ == "__main__":
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Triv*")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Pett*")
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Fum*")
-	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/parses/",filepattern="*")
+	readinallmates("linguistiqueCorpus-Echantillons-2017","/home/gerdes/arborator/corpus/coursLingCorpus/2017parses3/",filepattern="*", preserveSampleWithSameName=True)
 	#readinallmates("decoda","/home/gerdes/arborator/corpus/decoda/",filepattern="decoda.test*")
 	
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/2015lingCorpus/",filepattern="*")
@@ -1476,7 +1476,7 @@ if __name__ == "__main__":
 	#readinallmates("Platinum","../projects/Platinum/exportcorrected/",filepattern="*",steps=10000,importAnnotatorName="gold")
 	#readinallmates("lingCorpus2016","../tools/parses/",filepattern="*conll_parse",steps=10000,importAnnotatorName="parser")
 	#readinallmates("Naija","../tools/parses/",filepattern="*_parse",steps=10000,importAnnotatorName="parser")
-	readinallmates("Uppsala","../corpus/Uppsala/",filepattern="*conllu",steps=10000,importAnnotatorName="parser")
+	#readinallmates("Uppsala","../corpus/Uppsala/",filepattern="*conllu",steps=10000,importAnnotatorName="parser")
 		
 	#readInTestResults(None,"/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")
 	#readInTestResults("canons","/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")
@@ -1500,3 +1500,4 @@ if __name__ == "__main__":
 	
 	
 	
+ 

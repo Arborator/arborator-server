@@ -29,9 +29,9 @@ import cgi, os, shutil, codecs, re, sys, cgitb
 
 from lib import config
 
-print "Content-Type: application/json\n"
+#print "Content-Type: application/json\n"
 cgitb.enable()
-#print "Content-Type: text/html\r\n\r\nxxxxxxxx"
+print "Content-Type: text/html\r\n\r\nxxxxxxxx"
 method = os.environ.get( 'REQUEST_METHOD' )
 if method == "POST":
 	form = cgi.FieldStorage()
@@ -118,7 +118,19 @@ if method == "POST":
 						ns+=1	
 					nb=1
 					nix=True
+		
+		elif analyze=='french':
+			from tools import parseSentences
+			temp=open("corpus/upload.fr.txt","wb")
+			temp.write(filecontent)
+			temp.close()
 			
+			parsedfile = parseSentences.textToParseAll(os.path.abspath("corpus/upload.fr.txt"))
+			
+			os.rename(parsedfile, foutname)
+			
+			
+		
 		
 		elif analyze=='no':
 			renl=re.compile("\n+",re.U+re.M)

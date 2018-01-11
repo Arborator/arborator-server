@@ -151,6 +151,7 @@ print """	<tr>
 			<label class="standardtext"><input name="analyze" type="radio" value="no" class="standardtext">Don't analyze</label>
 			<label class="standardtext"><input name="analyze" type="radio" value="english" class="standardtext">Analyze English</label>
 			<label class="standardtext"><input name="analyze" type="radio" value="chinese" class="standardtext">Analyze Chinese</label>
+			<label class="standardtext"><input name="analyze" type="radio" value="french" class="standardtext">Analyze French</label>
 		</form>
 	</div>	
 </tr>
