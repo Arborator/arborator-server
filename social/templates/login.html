@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block body %}
+{% if result.user %}
+        <h1>Hi {{ result.user.name }}</h1>
+        <h2>Your id is: {{ result.user.id }}</h2>
+        <h2>Your username is: {{ result.user.username }}</h2>
+        <h2>Your email is: {{ result.user.email }}</h2>
+    {% endif %}
+{% if result.user.credentials %}
+{% if result.provider.name == 'tw' %}
+            Your are logged in with Twitter.<br />
+            {% set url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=5' %}
+            {% set response = result.provider.access(url) %}
+            {% if response.status == 200 %}
+                {% if response.data.errors %}
+                    Damn that error: {{ response.data.errors }}!
+                {% endif %}
+                {% if response.data %}
+                    Your 5 most recent tweets:<br />
+                {% if response.data %}
+                    Your 5 most recent tweets:<br />
+                    
+                    {% for tweet in response.data %}
+                        <h3>{{ tweet.text }}</h3>
+                        Posted on: {{ tweet.created_at }}
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+            {% endif %}
+        {% endif %}{# result.provider.name == 'tw' #}
+{% endif %}{# rddesult.user.credentials #}
+{% endblock body %}

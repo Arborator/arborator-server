@@ -1,0 +1,52 @@
+ <head><title>arborator Project Login Page</title>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link href="{{asset}}/css/arborator.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="{{asset}}/css/jquery-ui-1.8.18.custom.css" media="screen" />
+<script type="text/javascript" src="{{asset}}/script/jquery.js"></script>
+
+</head>
+
+<body>
+
+
+<br>
+<br>
+
+<div class="ui-widget-overlay" style=" z-index: 1001;"></div>
+<div class="center" style="width: 420px; ">
+<div style="display: block;  overflow: hidden; z-index: 1002; outline: 0px none; height: auto; width: 420px; " class="ui-dialog ui-widget ui-widget-content ui-corner-all " tabindex="-1" role="dialog" aria-labelledby="ui-dialog-title-dialog"><div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix" unselectable="on" style="-moz-user-select: none;"><a href='.' ><span class="ui-dialog-title" id="ui-dialog-title-dialog" unselectable="on" style="-moz-user-select: none;">Login</span><img src="{{asset}}/images/arboratorNano.png" border="0"></a></div><div id="dialog" class="ui-dialog-content ui-widget-content">
+
+<br>
+
+
+<div id="loginform"> 
+    <form action="" method="post">
+        <table summary="Form to get login details." border="0" style="width:100%">
+            <tr><td class="login" >Login Name:</td><td class="login" ><input name="username" type="text"></td></tr>
+            <tr><td class="login" >Password:</td><td class="login" ><input name="pass" type="password">
+            <input type="hidden" name="login" value="loginnojs">
+            <input id="project" type="hidden" name="project" value="{{project}}">
+            <!-- **action** -->
+            </td></tr>
+            <tr><td class="login"  colspan=2><input type="submit" value="Login" class="fg-button ui-state-default ui-corner-all"></td></tr>
+            
+        </table>
+    </form>
+</div>
+
+
+<!-- <strong>There is a guest login. Username <em>guest</em> and password <em>pass1</em>.</strong> -->
+<p>Alternatively <a href="/app/newlogin/{{project}}/" style="color:#DD137B;">click on this link</a> to create a new login.</p>
+<p> Or </p>
+<p><table>
+	<tr><td><!--Links to the login handler-->
+    			Login with <a href="{{ url_for('slogin', project=project, provider='gg') }}">Google</a>.<br /></tr>
+            <tr><td>
+    			Login with <a href="{{ url_for('slogin', project=project, provider='fb') }}">Facebook</a>.<br /></tr>
+            <tr><td>
+    			Login with <a href="{{ url_for('slogin', project=project, provider='tw') }}">Twitter</a>.<br /></td></tr>
+        </table>
+
+
+
+</div>

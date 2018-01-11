@@ -204,7 +204,7 @@ def reaction(project,projectconfig,sql,userid,form,query):
 		textid = form.getvalue("textid",None)
 		exotoknum = form.getvalue("exotoknum",None)
 		
-		print "changing exostatus of text id",textid,"to",exochoice
+		print "changing exostatus",textid,exochoice
 		sql.setExo(textid, exochoice, exotoknum)
 		
 	

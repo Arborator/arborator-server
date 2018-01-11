@@ -35,7 +35,7 @@ import config
 import rhapsoxml
 from conll import Tree
 
-debug=False
+debug=True
 #debug=True
 
 if debug:import traceback
@@ -116,8 +116,8 @@ class SQL:
 		general function to add data into the database
 		"""
 		#open("logger.txt","a").write("enter "+str(columns)+"\n")
-		#print "INSERT OR IGNORE INTO "+table+" (" + ",".join(columns)+ ") VALUES (" + ",".join(len(values)*"?")+ ") ;"
-		#print values
+		print "INSERT OR IGNORE INTO "+table+" (" + ",".join(columns)+ ") VALUES (" + ",".join(len(values)*"?")+ ") ;"
+		print values
 		cursor.execute("INSERT OR IGNORE INTO "+table+" (" + ",".join(columns)+ ") VALUES (" + ",".join(len(values)*"?")+ ") ;", values)
 		if computeId:
 			cursor.execute("select rowid from "+table+"  where "+ " and ".join( [c+"=?" for c in  columns ] ) + ";",values)
@@ -728,7 +728,7 @@ class SQL:
 		if len(goodlist)>1:
 			objs="{"+",".join(['''"{u}":"{treeid}"'''.format(treeid=treeid,u=u) for (u,(treeid,uid,realname,timestamp)) in goodlist])+"}"
 			colors=json.dumps(config.list2colors([u for (u,(treeid,uid,realname,timestamp)) in goodlist]))
-			html+="""<img class="compare" src="images/compare.png" border="0" align="bottom" onclick='compare({o},{snr},{colors})' id="compa{snr}"  nr='{snr}'>""".format(o=objs, snr=snr, colors=colors[:-1]+',"ok":"cccccc"}')
+			html+="""<img class="compare" src="/static/images/compare.png" border="0" align="bottom" onclick='compare({o},{snr},{colors})' id="compa{snr}"  nr='{snr}'>""".format(o=objs, snr=snr, colors=colors[:-1]+',"ok":"cccccc"}')
 		try:firsttreeid=goodlist[0][1][0]
 		except:firsttreeid=0
 		
@@ -915,6 +915,22 @@ class SQL:
 		db.close()
 		return uid
 
+	def findUser(self, username, crsr=None):
+		if crsr:
+			cursor=crsr
+		else:
+			database,cursor=self.open()
+		cursor.execute('select rowid,* from ausers where user=?', (username,))
+		 
+		rn=cursor.fetchone()
+		return rn
+
+	def createUser(self, columns, values):
+		database,cursor=self.open()
+		user_id = self.enter(cursor, 'ausers', columns, values, computeId=True)
+		database.commit()
+		database.close()
+		return user_id
 
 	def realname(self,user,crsr=None):
 		if crsr:
@@ -1550,35 +1566,24 @@ class SQL:
 
 		return fcounter,users,scounter,doublegovs
 	
-	
-
-
-	def conllSentenceExport(self, sid, cursor,treeid,outf):
+	def conllSentenceExport(self, sid, cursor, treeid, outf):
 		"""
 		called for each sentence in the conll export procss
-		"""
-		doublegovs=False
 
+		"""
 		tree=Tree()
 		for nr,at,va, in cursor.execute("""select features.nr, features.attr, features.value
 					from trees, features
-					where trees.rowid=features.treeid and trees.rowid=?;""",(treeid,)).fetchall():
+					where trees.rowid=features.treeid and trees.rowid=?;""",
+					(treeid,)).fetchall():
 			tree[nr]=tree.get(nr,{})
 			tree[nr][at]=va
-		for nr in sorted(tree): # for each token:
-			g = self.getall(cursor, "links", ["treeid", "depid"], [treeid, nr])
-			gd = dict([(govid,function) for _,trid,depid,govid,function in g if govid>=0]) #trid==treeid and
-			tree[nr]["gov"]=gd
-			if len(gd)>1:doublegovs=True
 		for at,va, in cursor.execute("""select sentencefeatures.attr, sentencefeatures.value
 						from trees, sentences,sentencefeatures
 						where sentencefeatures.sentenceid=sentences.rowid and trees.sentenceid=sentences.rowid and trees.rowid=?;""",(treeid,)).fetchall():
 			tree.sentencefeatures[at]=va
-		
 		outf.write(tree.conllu()+"\n")
-		
-		return doublegovs
-
+		return False
 
 
 	def xmlSentenceAdd(self, sid, cursor,treeid,doc,tokens, lexemes,  dependencies):
@@ -1813,45 +1818,23 @@ class SQL:
 		db.commit()	
 		db.close()
 	
-	def removeStudentTrees(self):
-		
-		db,cursor=self.open()
-		q="""select trees.rowid as treeid, sentences.nr as sentencenr, users.user as username 
-			from trees, sentences, users 
-			where users.rowid = trees.userid and trees.sentenceid=sentences.rowid;"""
-		rc=cursor.execute(q)
-		for treeid, sentencenr, username in rc:
-			print treeid, sentencenr, username
-			if username not in ["prof","admin"]:
-				self.eraseTree(treeid, sentencenr, username, 5)
-				print "erased"
-		
-		q="""delete from users where users.user != 'admin' and users.user != 'prof';"""
-		rc=cursor.execute(q)
-		
-		db.commit()	
-		db.close()
-		
-	
 if __name__ == "__main__":
 	print "bonjour"
-	sql=SQL("SyntaxeAlOuest")
-	sql.removeStudentTrees()
 	
 	#sql=SQL("Rhapsodie")
 	#sql=SQL("lingCorpus")
 	#sql=SQL("HongKongTVMandarin")
-	
+	sql=SQL("Mbya")
 	#sql.exportAnnotations(14, "UD-mandarinParsed.0", "allconll")
 	#sql.exportAnnotations(6, "Rhaps.gold", "lastconll")
 	
-	#sql.exportAnnotations(1, "x", "lastconll")
+	sql.exportAnnotations(1, "x", "lastconll")
 	#print sql.snippetSearch("func:disflink")
 	#sql.exportAll("lastconll")
 	#print sql.gettree(treeid=3947)
 	
 	#sql.correctSentenceLength()
-	sql.cleanDatabase()
+	#sql.cleanDatabase()
 	
 	#sentenceid=41
 	#userid=5

@@ -253,7 +253,7 @@ print """<div class='center'>
 	
 """
 
-print """<p style="text-align:center;">collaboratively annotating dependency corpora</p>
+print """<p style="text-align:center;">The Arborator software is aimed at collaboratively annotating dependency corpora.</p>
 	<div class='ui-state-highlight ui-corner-all' style='padding: 1em; margin: 20px;clear: both;'><a href='q.cgi'><img src="images/q.png" border="0"><br/>Quick access without login:<br/>Simple graphical editor of CoNLL files</a></div>
 
 	<div class="ui-state-highlight ui-corner-all" style="padding-bottom: 1em; margin: 20px;">"""
@@ -273,7 +273,7 @@ if project or len(config.projects)==1:
 		print "</form>"
 		if len(config.projects)>1: print "<p><small><a href='.?project='>For access to other annotation projects on this site click here</a></small></p>"
 else:
-	print '<div>or choose your annotation project:</div>'
+	print '<div>Please choose your annotation project:</div>'
 	for project in sorted(config.projects):
 		if os.path.exists(("projects/"+project+"/"+project+".png").encode("utf-8")):img=u"<img class='project_logo' src='projects/"+project+"/"+project+u".png' align='top'>"
 		else: img=""

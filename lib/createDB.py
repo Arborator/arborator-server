@@ -36,6 +36,10 @@ def makeDataBase(dbpath):
 	(textname TEXT UNIQUE, nrtokens INTEGER)''')
 	cursor.execute('''create table IF NOT EXISTS users
 	(user TEXT UNIQUE, realname TEXT)''')
+	cursor.execute('''create table IF NOT EXISTS ausers
+	(user VARCHAR(100) UNIQUE, first_name VARCHAR(100), last_name VARCHAR(100), 
+	email VARCHAR(255), last_login VARCHAR(100),image_path VARCHAR(450), password VARCHAR(200), 
+	admin_level INTEGER, logout_by_admin TINYINT)''')
 	
 	cursor.execute('''create table IF NOT EXISTS sentences
 	(nr INTEGER, sentence TEXT, textid INTEGER)''')
