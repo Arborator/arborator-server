@@ -191,6 +191,28 @@ def jsDefPrinter(config):
 	print '</script>'
 	#return fcolors,ccolors
 
+def jsDef(config):
+	
+	txt += """
+	<script type="text/javascript">"""
+	
+	txt += ("shownfeatures = ['" + "','".join( config.shownfeatures ) +"'];").encode("utf-8")
+	txt += ("shownsentencefeatures = ['" + "','".join( config.shownsentencefeatures ) +"'];").encode("utf-8")
+	txt += ("functions = "+json.dumps(config.functions+[config["configuration"]["erase"]] ) +";").encode("utf-8")
+	txt += ("funcDic = "+json.dumps(config.funcDic)+";").encode("utf-8")	
+	
+	txt += ("defaultcategory = '"+config["configuration"]["defaultcategory"]+"';").encode("utf-8")
+	txt += "categoryindex = '"+config["configuration"]["categoryindex"]+"';"
+	txt += ("erase = '"+config["configuration"]["erase"]+"';").encode("utf-8")
+	txt += ("defaultfunction = '"+config["configuration"]["defaultfunction"]+"';").encode("utf-8")
+	txt += ("root = '"+config["configuration"]["root"]+"';").encode("utf-8")
+
+	txt += "categories = ",json.dumps(config.categories),";"
+	txt += "catDic = ",json.dumps(config.catDic),";"
+	txt += '</script>'
+
+	return txt
+
 def oldlist2colors(lis):
 	
 	if len(lis)>0:

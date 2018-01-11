@@ -1,0 +1,228 @@
+<html>
+			<head>
+			<title>Arborator - {{project}} Project</title>
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+	<script type="text/javascript" src="{{asset}}/script/jquery.js"></script>
+	<script type="text/javascript" src="{{asset}}/script/jquery-ui-1.8.18.custom.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="{{asset}}/css/jquery-ui-1.8.18.custom.css" media="screen"/>
+	<link href="{{asset}}/css/arborator.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript">	
+	project="{{project}}";
+	userid="{{current_user.id}}";
+	username="{{current_user.username}}";
+	
+
+	$('html').click(function() {
+		$("#exportdiv").css({ display: 'none' } );	
+		$("#userform").css({ display: 'none' } );	
+		$("#exoform").css({ display: 'none' } );	
+		});
+
+	
+	removeSample = function(textid, text) {
+		$("#eraseNumber").attr("value",textid);
+		$("#question").html("Are you sure that you want to erase the text "+text+" from the database?")
+		$('#dialog').dialog('open');
+		}
+	exportAnnos = function(textid, text, offset) {
+		$("#exportNumber").attr("value",textid);
+		$("#textname").attr("value",text);
+		offset.left=offset.left-280;
+		$("#exportdiv").offset(offset).css({ display: 'inline' } );
+		}	
+	exportGo = function(type) {
+		$("#exportType").attr("value",type);
+		console.log($("#export"))
+		$("#export").submit();
+		$("#dialog").html("<img src='images/loading.gif'>");
+		$("#dialog").dialog({
+			height: 230,
+ 			width:150,
+			modal: true,
+			title:"Please wait!!!<br>This can be long.",
+			buttons: {}
+			});
+		$('#dialog').dialog('open');
+	}
+	adduser = function(textid, text, offset) {
+		$("#utextid").attr("value",textid);
+		$("#uremove").attr("value",0);
+		$("#userform").css({ display: 'block',top: offset.top, left: offset.left } );
+		}
+		
+	userchoice = function(v) {
+		$("#validator").attr("value",v);
+		$("#uremove").attr("value",0);
+				
+		$("#useraddremove").submit();	
+		}
+	
+	userremove = function(tid,uid) {	
+		$("#utextid").attr("value",tid);
+		$("#uremove").attr("value",uid);
+		$("#useraddremove").submit();
+		}
+	nextstatus = function(tid) {
+		//console.log("nextstatus",tid)	
+	
+		$.ajax({
+			type: "POST",
+			url: "statusChange.cgi",
+			data: {"project":project,"userid":userid,"username":username,"textid":tid}, 
+			success: function(answer){
+					$("#textStatus"+tid).html(answer.status);
+					//console.log("changed!",answer);
+					
+				},
+			error: function(XMLHttpRequest, textStatus, errorThrown){
+				console.log("error",project,erasetreeid)
+				
+				}
+			});
+	
+		}	
+	
+	
+	
+	nl2br = function(str) {   
+		return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ '<br>' +'$2');
+	}
+
+	startmate = function() {
+		//$("#startmateform :input").prop('disabled', true);
+		//checkMate();
+		$("#parseStatus").css('background-image', 'url("images/ajax-loader.gif")');  
+		$.ajax({
+			type: "POST",
+			url: "mate.cgi",
+			data: {"project":project,"parserType":$( "#parserType" ).val(), "whoseTrees":$( "#whoseTrees" ).val(), "evaluationPercent":$( "#evaluationPercent" ).val(), "additionnalLexicon":$( "#additionnalLexicon" ).val(), "resultAnnotator":$( "#resultAnnotator" ).val()}, 
+			success: function(answer){
+					$("#parseStatus").html(answer);
+					console.log("finished!",answer);
+					//clearInterval(timer);
+				},
+			error: function(XMLHttpRequest, textStatus, errorThrown){
+				console.log("mate error",project)
+				
+				}
+			});
+	
+		timer = setInterval(checkMate, 5000);
+		}
+	
+	checkMate = function() {
+		$.ajax({
+			url : "mate/parse.log",
+			dataType: "text",
+			cache: false,
+			processData: false,
+			success : function (data) {
+				$("#parseStatus").html(nl2br(data));
+				if (data.match("^Ready"))
+					{
+						console.log("Done");
+						clearInterval(timer);
+						$("#parseStatus").css('background-image', 'none'); 
+						//$("#startmateform :input").prop('disabled', false);
+					}
+				}
+			});
+			
+
+			
+		}
+	
+	
+	$(function () {
+		$("#dialog").dialog({
+			bgiframe: true,
+			autoOpen: false,
+			height: 350,
+ 			width:400,
+			modal: true,
+			buttons: {
+				
+				Cancel: function() {
+					$(this).dialog('close');
+				},
+				"OK": function() {
+					$(this).dialog('close');					
+					$("#erase").submit();
+				}
+				}
+			});
+			
+		$('#exochoice').change(function ()
+			{
+				$('#exochange').submit();
+			});	
+			
+		
+
+	})
+	
+
+	getEvaluation = function(project,uid) {
+		$("#evalubutton"+uid).replaceWith("<img id='evalubutton"+uid+"' src='images/ajax-loader.gif'>");
+		$.ajax({
+			type: "GET",
+			url: "getEvaluation.cgi",
+			data: {"project":project,"uid":uid}, 
+			success: function(answer){
+					$("#evalubutton"+uid).replaceWith(answer);
+					//console.log("got!"+answer);
+			
+				},
+			error: function(XMLHttpRequest, textStatus, errorThrown){
+				console.log("error",project)
+				alert("error erasing"+XMLHttpRequest+ '\n'+textStatus+ "\n"+errorThrown);
+				}
+			});
+		
+	}
+	
+	</script>
+	
+	</head>
+	
+<body id="body">
+			<div id="center" class="center" style="width:100%">
+				<div id="navigation" style="width:100%;margin:0px;border:0px;" class="arbortitle  ui-widget-header ui-helper-clearfix">
+				<a href='.' style='position: fixed;left:1px;top:1px'><img src="{{asset}}/images/arboratorNano.png" border="0"></a>
+				<a href="{{ url_for('project', project=project) }}" style='position: fixed;left:120px;top:5px;color:white;' title="project overview"> {{project}} Annotation Project</a>
+				<div style='margin:5 auto;' id='sentinfo'>Project Overview</div>
+					<form method="get" action="project.cgi"  id="searchform"  style='position: fixed;right:1px;top:1px'>
+						<input type="text" id="searchtext" name="searchtext" value=""/>
+						<input type="hidden" id="project" name="project" value="{{project}}">
+						<span title="search" onClick="$('#searchform').submit();" style="cursor:pointer;" class="ui-button-icon-primary ui-icon ui-icon-search"></span>
+					</form>
+				</div>
+	{{myassignments|safe}}
+
+	{{alltext|safe}}
+
+	{% if current_user.adminLevel or True %}
+		{{userassignments|safe}}
+
+		{{mate|safe}}
+
+	{% endif %}
+		
+	{{menus|safe}}
+{% if current_user.is_authenticated %}
+<div class="arborfoot fg-toolbar ui-widget-header ui-helper-clearfix">
+{% if current_user.username == 'guest' %}
+logged in as guest
+
+
+{% else %}
+		logged in as {{current_user.username}}
+		&nbsp;&nbsp;&nbsp;<a href="goto/editaccount">edit the account {{current_user.username}}</a>
+	{% if current_user.adminLevel > 1 %}&nbsp;&nbsp;&nbsp;<a href="goto?login=admin">User Administration</a> 
+	&nbsp;&nbsp;&nbsp;<a href="admin.cgi">Corpus Administration</a>
+	{% endif %}
+{% endif %}
+&nbsp;&nbsp;&nbsp;<a href="{{url_for('logout')}}">logout</a>
+</div>
+{% endif %}
+</body></html>

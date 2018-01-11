@@ -1,0 +1,71 @@
+{% if start %}{{start}} {% endif %}
+<html><head>
+		<title>Arborator - Editor - {{textname}}</title>
+		<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+
+		<script type="text/javascript" src="{{asset}}/script/jquery.js"></script>
+		<script type="text/javascript" src="{{asset}}/script/raphael.js"></script>
+		<script type="text/javascript" src="{{asset}}/script/jquery-ui-1.8.18.custom.min.js"></script>
+
+		<script type="text/javascript" src="{{asset}}/script/arborator.draw.js"></script>
+		<script type="text/javascript" src="{{asset}}/script/jsundoable.js"></script>
+		<script type="text/javascript" src="{{asset}}/script/arborator.edit.js"></script>
+		<script type="text/javascript" src="{{asset}}/script/raphael.export.js"></script>
+		
+		<link rel="stylesheet" type="text/css" href="{{asset}}/css/jquery-ui-1.8.18.custom.css" media="screen" />
+		<link href="{{asset}}/css/arborator.css" rel="stylesheet" type="text/css">
+
+{{jsDef|safe}}
+
+{{htmlheader|safe}}
+{{headline|safe}}
+		
+
+	<form method="post" action="/convert_svg.cgi?project={{project}}" name="ex" id="ex" style=" position:fixed;top:6px;right:30px;display:none;" >
+		<input type="hidden" id="source" name="source" value="">
+		<select id="exptype" name="type" class="ui-button ui-state-default ui-corner-all" style="height:16px;font: italic 10px Times,Serif;border:thin solid silver;" >
+			<option>pdf</option>
+			<option>ps</option>
+			<option>odg</option>
+			<option>jpg</option>
+			<option>png</option>
+			<option value="tif">tiff</option>
+			<option>svg</option>
+			<option>conll</option>
+			<option>xml</option>
+		</select>
+		<input type="button" title="export" value="export" class="ui-button ui-state-default ui-corner-all" onClick="exportTree();"  style="padding: 0.0em 0.0em;" >
+	</form>
+	{{main|safe}}
+	{{menus|safe}}		
+
+	<div id="dialog" title="Confirmation" style="display: none;" >
+		<div class="ui-state-error ui-corner-all" style="margin: 40px;padding: 10pt 0.7em; font-weight:100;">
+			<h2 id="question">Are you sure?</h2>
+		</div>
+	</div>
+	
+	<div id="fdialog" title="Features">
+		<form method="post" action="" id="featureform">
+			
+			<input type="hidden" id="eusername" name="username" value="">
+			<input type="hidden" id="esentenceid" name="sentenceid" value="">
+			<table id="featab" class="ui-widget ui-widget-content" style="width:100%;">
+				<thead>
+					<tr class="ui-widget-header ">
+						<th>Attribute</th>
+						<th>Value</th>
+					</tr>
+				</thead>
+				<tbody  id="featabody"></tbody>
+			</table>
+		</form>
+	
+	</div>
+	
+<div class="arborfoot fg-toolbar ui-widget-header ui-helper-clearfix">logged in as admin&nbsp;&nbsp;&nbsp;
+	<a href="/logout">logout</a>
+&nbsp;&nbsp;&nbsp;<a href="/cgi/editor.cgi?login=editaccount&project=Rhapsodie">edit the account admin</a>
+&nbsp;&nbsp;&nbsp;<a href="/cgi/editor.cgi?login=admin&project=Rhapsodie">User Administration</a>
+</div>
+</body></html>
