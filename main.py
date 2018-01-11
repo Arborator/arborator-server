@@ -31,6 +31,7 @@ cgitb.enable()
 
 
 app = Flask(__name__)
+app.secret_key = 'sfdfewefwe@@$ASFSDF@#@#'
 
 # Instantiate Authomatic.
 authomatic = Authomatic(CONFIG, 'your secret string', report_errors=False)
@@ -332,4 +333,4 @@ def logout():
 # Run the app.
 if __name__ == '__main__':
     app.secret_key = 'sfdfewefwe@@$ASFSDF@#@#'
-    app.run(host="0.0.0.0",debug=True, port=2830) 
+    app.run() 
