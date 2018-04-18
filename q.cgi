@@ -218,7 +218,7 @@ def printforms():
 	print """
 	<div style='float:xxx;'>
 	
-		<div ><span style='float:left;'>additional functions</span> <input type='text' id='addfuncs'  style='width:100%' title='Here you can add additional functions that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='nsubj csubj nsubjpass csubjpass dobj ccomp xcomp iobj vocative aux mark discourse auxpass expl cop neg root advmod dislocated nmod advcl nummod acl amod appos det nmod case compound mwe goeswith name foreign list parataxis remnant reparandum conj cc punct dep'></input></div>
+		<div ><span style='float:left;'>additional functions</span> <input type='text' id='addfuncs'  style='width:100%' title='Here you can add additional functions that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='nsubj obj iobj csubj ccomp xcomp obl vocative expl dislocated advcl advmod discourse aux cop mark nmod appos nummod acl amod det clf case conj cc fixed flat compound list parataxis orphan goeswith reparandum punct root dep'></input></div>
 		
 		<div ><span style='float:left;'>additional POS tags</span> <input type='text' id='addcats'  style='width:100%;' title='Here you can add additional categories that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='ADJ ADP PUNCT ADV AUX SYM INTJ CONJ X NOUN DET PROPN NUM VERB PART PRON SCONJ _'>  </input> </div>
 		

@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2010-2016, Kim Gerdes
+ * Copyright 2010-2018, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -33,6 +33,7 @@ var dirty=[]; // list of dirty svgs
 var lastSelected;
 var keyediting=false;
 var nokeys=false;
+var numbersent=0;
 
 function Pnode(index,token)
 	{
@@ -498,7 +499,7 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 onkey = function () {
 	$(document).keypress(function(e) {
 		if (nokeys) return true;
-			     
+		e.stopImmediatePropagation();
 		var code = (e.keyCode ? e.keyCode : e.which);
 		
 		switch(code)
@@ -581,15 +582,13 @@ nextword = function (forward) {
 	
 	if (!currentsvg) return;
 	$('#funcform').hide();
-	$('#catform').hide();
-	
+	$('#catform').hide();	
 	if (forward) lastSelected++;
 	else  lastSelected--;
 	if (lastSelected > Object.keys(currentsvg.words).length) lastSelected=1;
 	else if (lastSelected<=0) lastSelected=Object.keys(currentsvg.words).length;
 	gov=0; // in case a node has no governor
 	for (gov in currentsvg.words[lastSelected].gov) break; // get first (any) gov
-
 	keyConnection(gov);
 
 }

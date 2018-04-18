@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ####
-# Copyright (C) 2009-2016 Kim Gerdes
+# Copyright (C) 2009-2018 Kim Gerdes
 # kim AT gerdes. fr
 #
 # This program is free software; you can redistribute it and/or

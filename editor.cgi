@@ -167,7 +167,7 @@ def printmenues():
 	print """	
 	<div id="funcform" style="display:none;position:absolute;">
 		<form  method="post" id="func" name="func" >
-			<select id="funchoice" class='funcmenu' onClick="changeFunc(event);"  size=""" +str( len(projectconfig.functions))+""" style="height:"""+str( len(projectconfig.functions)*13.5)+"""px; width:80px;"  >"""
+			<select id="funchoice" class='funcmenu' onClick="changeFunc(event);"  size=""" +str( len(projectconfig.functions))+""" style="height:"""+str( len(projectconfig.functions)*13.5)+"""px; width:110px;"  >"""
 	for f in projectconfig.functions:
 		#print "___",f.encode("utf-8")
 		print "<option style='color: "+projectconfig.funcDic[f]["stroke"].encode("utf-8")+";'>"+f.encode("utf-8")+"</option>"	

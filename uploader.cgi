@@ -176,7 +176,7 @@ for infile in sorted(glob.glob(os.path.join("corpus/conll/", '*.*'))): #  os.pat
 				#print n,li.encode("utf-8"),"<br>"
 				if n==4:	conll=4
 				if n==10:	conll=10
-				elif n==13:	conll=10 # orfeo file format: conll10 + begin, end, speaker
+				elif n==12:	conll=10 # naija file format: conll10 + begin, end
 				elif n==14:	conll=14
 		if not li.strip():ns-=1 # if last line empty, we counted one too much
 	except:

@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2014-2016, Kim Gerdes
+ * Copyright 2014-2018, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -18,7 +18,6 @@
 
 // needs arborator.draw.js
 // does not need arborator.edit.js
-
 
 
 conlls = {	10: 	{"id": 0, "t":1, "lemma": 2, "cat": 3, "xpos":4, "morph":5, "gov":6, "func":7, "xgov":8, "gloss":9}, 
@@ -74,7 +73,9 @@ $(function() {
 			conllarea=$("#conll");
 			$("#toggleAndBoxx").show();
 		}
-
+	var conll = $.urlParam('conll');
+	if (conll!=null) conllarea.val(decodeURIComponent(conll));
+	
 	readConll();
 	setupStyleDialog()
 	drawTrees();
@@ -131,6 +132,13 @@ $(function() {
 		$( "#styledialog" ).dialog( "open" );
 	});
 	
+	$("#share").click(function()	{
+		history.pushState('URL with conll', 'URL with conll', location.href.split("?")[0]+"?conll="+encodeURIComponent(conllarea.val()));
+	});
+	$("#share").dblclick(function(e)	{
+		e.preventDefault && e.preventDefault();
+		history.pushState('URL with conll', 'URL with conll', location.href.split("?")[0]);
+	});
 	$( "#styledialog" ).dialog({
 			bgiframe: true,
 			autoOpen: false,
@@ -219,6 +227,16 @@ function drawTrees() {
 	$(".cut").css("top",dependencyspace-line)
 	inDrawTrees=false;
 	final();
+}
+
+$.urlParam = function(name){
+	var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+	if (results==null){
+		return null;
+	}
+	else{
+		return decodeURI(results[1]) || 0;
+	}
 }
 
 

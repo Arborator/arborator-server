@@ -115,7 +115,10 @@ def simpleEnterSentences(sql, trees, dbtextname, annotatorName, eraseAllAnnos, s
 			sentenceid = sql.enter(cursor, "sentences",["nr","sentence","textid"],(scounter,sentence,textid,))
 			#print "made sentenceid",sentenceid
 		sql.enter(cursor, "sentencesearch",["nr","sentence","textid"],(scounter,sentence,textid,))
-		if sentencefeatures:
+		if sentencefeatures == True:
+			for a,v in tree.sentencefeatures.iteritems():
+				sql.enter(cursor, "sentencefeatures",["sentenceid","attr","value"],(sentenceid,a,v,))
+		elif sentencefeatures:	
 			for a,v in sentencefeatures[i].iteritems():
 				sql.enter(cursor, "sentencefeatures",["sentenceid","attr","value"],(sentenceid,a,v,))
 		#print tree
@@ -1230,7 +1233,7 @@ def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseA
 			if importAnnotatorName:	annotatorName=importAnnotatorName
 			else: annotatorName=sql.importAnnotatorName
 			
-			dbtextname = filename.split("/")[-1].decode("utf-8")
+			dbtextname = filename.split("/")[-1].decode("utf-8").replace("'","")
 			if dbtextname.endswith(".conll07") or dbtextname.endswith(".conll10") or dbtextname.endswith(".conll14") or  dbtextname.endswith(".malt") or dbtextname.endswith(".tab") or dbtextname.endswith(".orfeo") or dbtextname.endswith(".conll_parse"):
 				dbtextname=".".join(dbtextname.split(".")[:-1])
 			if dbtextname.endswith(".trees"):
@@ -1248,7 +1251,7 @@ def readinallmates(projectname,conlldirpath,filepattern="*.trees.conll14",eraseA
 			#textid = sql.enter(cursor, "texts",["textname"],(dbtextname,))
 			
 			#enterSentences(sql,cursor,sentences,filename, textid,annotatorName,eraseAllAnnos, tokname="t" )
-			simpleEnterSentences(sql, sentences, dbtextname, annotatorName, eraseAllAnnos=True, sentencefeatures={}, preserveSampleWithSameName=preserveSampleWithSameName)
+			simpleEnterSentences(sql, sentences, dbtextname, annotatorName, eraseAllAnnos=True, sentencefeatures=True, preserveSampleWithSameName=preserveSampleWithSameName)
 			
 	#db.commit()
 	#db.close()
@@ -1411,25 +1414,71 @@ def readInTestResults(projectname,conllfilename,gold="gold",parser="parser"):
 		print "n° tokens:",length,"n° sentences:",len(sentences)
 		#print computeDifference(sentences[1])
 		print sentences[1]
+		
+def corrigerNumerotation(arbre):
+	indexcorrection = {0:0} # ancien indice --> nouvel indice
+	problem = False
+	for compteur, ind in enumerate(sorted(arbre.keys())):
+		indexcorrection[ind]=compteur+1
+		if compteur+1 != ind:
+			problem = True
+	if problem:
+		arbrecorrige = conll.Tree()
+		for i, node in arbre.iteritems():
+			#print"before", node["gov"]
+			node["id"]=indexcorrection[i]
+			newgov={}
+			for gi,f in node["gov"].iteritems():
+				newgov[indexcorrection[gi]]=f
+			node["gov"]=newgov
+			#print "after",node["gov"]
+			arbrecorrige[indexcorrection[i]]=node
+		return arbrecorrige
+	return arbre
 	
 	
+def unclutter(conllfilename):
+	"""
+	separate trees that cross branches or join the same conll package
+	"""
+	trees=conll.conllFile2trees(conllfilename)
+	print len(trees),"sentences read"
+	newtrees = []
+	for tree in trees:
+		rootindices = [i for i in tree if tree[i].get('gov',{}).keys()[0] not in tree]
+		if len(rootindices)>1:
+			ptrees={}
+			ordreptrees=[]
+			for i in tree:
+				root=i
+				while tree[root].get('gov',{}).keys()[0] in tree:
+					root = tree[root].get('gov',{}).keys()[0]
+				if root not in ordreptrees: ordreptrees+=[root]
+				ptrees[root]=ptrees.get(root,[]) + [i]
+			for r in ordreptrees:
+				ptree=conll.Tree()
+				for nr,jj in enumerate(ptrees[r]):
+					ptree[jj]=tree[jj].copy()
+				ptree = corrigerNumerotation(ptree)
+				newtrees+=[tree]
+		
+		else:
+			newtrees+=[tree]
 	
+		
+	conll.trees2conllFile(newtrees, conllfilename+".uncluttered")
+	print "written",len(newtrees),"sentences into",conllfilename+".uncluttered"
 
+					
 	
-	
+#readAlignColumns("WAZK_11_M_Chiagozie's-Life-Story_TRANS.eaf.csv")
 
 if __name__ == "__main__":
 	print "bonjour"
+	#unclutter("../projects/Naija/export/IBA_07_D.conllu")
+	#unclutter("27_JD_CP_100226.lastHumanTrees.conll")
+	#unclutter("test-split-root")
 	
-	#readinsingleconll("Jiaotong-1","/home/kim/cloem/cloem-kim/site/cloems/wireless.txt-bea1a133308f0775a5913cb57844fd4a/chunks.txt-dependanaly.corrected.txt",useFileInfo=False,eraseAllAnnos=True,checkExtension=False)
-	#readinsingleconll("orfeo","corpus/conll/crfp_PUB-BES-1_extrait.disf.parsed.conll",useFileInfo=False,eraseAllAnnos=True,checkExtension=False)
-	#readinsingleconll("orfeo","corpus/conll/tcof_Ag_ael_08_extrait.disf.parsed.conll",useFileInfo=False,eraseAllAnnos=True,checkExtension=False)
-
-	# /Documents
-	#readinallrhapsodie("Rhapsodie","/home/kim/Dropbox/Rhapsodie/syntaxe-julie/xmls_newname/",repair="/home/kim/Dropbox/Rhapsodie/syntaxe-julie/settings/corrConll.txt")
-	#readinallrhapsodie("Rhapsodie","/home/kim/Dropbox/Rhapsodie/rhapsodie-kimsPostcomputing/cool/",repair=None, pattern='*absolutely*.xml')
-	
-	#readinsinglerhapsodie("Rhapsodie","/home/kim/Dropbox/Rhapsodie/syntaxe-julie/xmls_newname/Rhap-D2009-Synt.xml",repair="/home/kim/Dropbox/Rhapsodie/syntaxe-julie/settings/corrConll.txt")
 	
 	#readinsinglerhapsodie("Rhapsodie","/home/kim/Dropbox/Rhapsodie/rhapsodie-kimsPostcomputing/cool/D0001.absolutely.cool.xml")
 	
@@ -1444,7 +1493,6 @@ if __name__ == "__main__":
 	
 	#readinallconll("xinying","corpus/conll/conll/")
 	
-	#readinallconll("Rhapsodie","/home/kim/Dropbox/programmation/arborator/trunk/projects/Rhapsodie/export/")
 	#readinsingleconll("Occitan","corpus/occitanConll/Boece.conll10",useFileInfo=False,eraseAllAnnos=True)
 	#sql.correctRhapsodie("corpus/xml/M201.XML","spacelemmas5.txt")
 	#enterConll("Rhapsodie","corpus/conll/M016.XML.Sy.trees.conll10")
@@ -1463,11 +1511,9 @@ if __name__ == "__main__":
 	#readinsingleconll("lingCorpus","/home/kim/Documents/newmate/testimportdeps/Shi_Yu-dependanaly.txt",useFileInfo=False,eraseAllAnnos=True,checkExtension=False)
 	
 	
-	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/")
-	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Triv*")
-	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Pett*")
+	
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/coursLingCorpus/newparses/",filepattern="*Fum*")
-	readinallmates("linguistiqueCorpus-Echantillons-2017","/home/gerdes/arborator/corpus/coursLingCorpus/2017parses3/",filepattern="*", preserveSampleWithSameName=True)
+	#readinallmates("linguistiqueCorpus-Echantillons-2017","/home/gerdes/arborator/corpus/coursLingCorpus/2017parses3/",filepattern="*", preserveSampleWithSameName=True)
 	#readinallmates("decoda","/home/gerdes/arborator/corpus/decoda/",filepattern="decoda.test*")
 	
 	#readinallmates("lingCorpus","/home/gerdes/arborator/corpus/2015lingCorpus/",filepattern="*")
@@ -1476,7 +1522,9 @@ if __name__ == "__main__":
 	#readinallmates("Platinum","../projects/Platinum/exportcorrected/",filepattern="*",steps=10000,importAnnotatorName="gold")
 	#readinallmates("lingCorpus2016","../tools/parses/",filepattern="*conll_parse",steps=10000,importAnnotatorName="parser")
 	#readinallmates("Naija","../tools/parses/",filepattern="*_parse",steps=10000,importAnnotatorName="parser")
+	#readinallmates("ExoNaija","../corpus/conll/",filepattern="Exercice*conllu",steps=10000)
 	#readinallmates("Uppsala","../corpus/Uppsala/",filepattern="*conllu",steps=10000,importAnnotatorName="parser")
+	readinallmates("NaijaSUD","../corpus/",filepattern="WAZK_11_M_Chiagozie's-Life-Story_TRANS.eaf.csv",steps=10000,importAnnotatorName="parser")
 		
 	#readInTestResults(None,"/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")
 	#readInTestResults("canons","/home/kim/Documents/newmate/canons/result-chin-canon-S2a-40-0.25-0.1-2-2-ht4-hm4-kk0-1")
@@ -1485,17 +1533,11 @@ if __name__ == "__main__":
 	
 	
 	#enterDegraded("linguistiqueCorpus-Exo","/home/kim/Dropbox/programmation/arborator/trunk/projects/SyntaxeAlOuest/export/1a.orig")
-	#enterDegraded("linguistiqueCorpus-Exo","/home/kim/Dropbox/programmation/arborator/trunk/projects/SyntaxeAlOuest/export/1b.orig")
-	#enterDegraded("linguistiqueCorpus-Exo","/home/kim/Dropbox/programmation/arborator/trunk/projects/SyntaxeAlOuest/export/1c.orig")
-	#enterDegraded("linguistiqueCorpus-Exo","/home/kim/Dropbox/programmation/arborator/trunk/projects/SyntaxeAlOuest/export/2a.orig")
-	#enterDegraded("linguistiqueCorpus-Exo","/home/kim/Dropbox/programmation/arborator/trunk/projects/SyntaxeAlOuest/export/2b.orig")
-	#enterDegraded("linguistiqueCorpus-Exo","/home/kim/Dropbox/programmation/arborator/trunk/projects/SyntaxeAlOuest/export/2c.orig")
-	#enterDegraded("SyntaxeAlOuest","corpus/conll/2b.txt.conll_parse.orig","corpus/conll/2b.txt.conll_parse.deg")
 	#enterDegraded("SyntaxeAlOuest","corpus/conll/2c.txt.conll_parse.orig","corpus/conll/2c.txt.conll_parse.deg")
 	
 	#from database import SQL
 	#trees=conll.conllFile2trees("../tools/annotatedCorpora.conllu")
-	#simpleEnterSentences(SQL("Naija"), trees, "Naija1", "parser", eraseAllAnnos=True)
+	#simpleEnterSentences(SQL("Naija"), trees, "Naija1", "prof", eraseAllAnnos=True)
 	#print "ok"
 	
 	

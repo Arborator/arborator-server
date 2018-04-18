@@ -17,7 +17,7 @@
 # See the GNU General Public License (www.gnu.org) for more details.
 #
 # You can retrieve a copy of of version 3 of the GNU Affero General Public License
-# from http://www.gnu.org/licenses/agpl-3.0.html
+# from http://www.gnu.org/licenses/agpl-3.0.html 
 ####
 
 import codecs, collections, re
@@ -28,7 +28,7 @@ debug=True
 class Tree(dict):
 	"""
 	just a dictionary that maps nodenumber->{"t":"qsdf", ...}
-	moreover:
+	moreover: 
 		sentencefeatures is a dictionary with sentence wide information, eg "comments":"comment line content"
 			there is a special key: _comments used for comments that are not of the form x = yyy, they are stored as such
 		words is not necessarily a list of tokens: it contains the actual correctly spelled words, ie. the hyphen (1-2) lines
@@ -50,18 +50,19 @@ class Tree(dict):
 	def __repr__(self):
 		#dictrepr = dict.__repr__(self)
 		#return '%s(%s)' % (type(self).__name__, dictrepr)
-		return u"\n".join([u"Tree: "+self.sentence()]+[f+": "+v for f,v in self.sentencefeatures.iteritems()]+[str(i)+u": "+self[i].get("t",u"")+"\t"+str(self[i]) for i in self]).encode("utf-8")
+		return u"\n".join([u"Tree: "+self.sentence(),self.conllu()])
+		#[f+": "+v for f,v in self.sentencefeatures.iteritems()]+[str(i)+u": "+self[i].get("t",u"")+"\t"+str(self[i]) for i in self]).encode("utf-8")
 
 	def update(self, *args, **kwargs):
 		#print 'update', args, kwargs
 		for k, v in dict(*args, **kwargs).iteritems():
 			self[k] = v
-
+	
 	def sentence(self):
 		if self.words==[]:
 			self.words = [self[i].get("t","") for i in sorted(self)]
 		return u" ".join(self.words)
-
+	
 	def conllu(self):
 		treestring = ""
 		for stftkey in sorted(self.sentencefeatures):
@@ -70,7 +71,7 @@ class Tree(dict):
 			else:
 				treestring+="# "+stftkey+" = "+self.sentencefeatures[stftkey]+"\n"
 		for i in sorted(self.keys()):
-			node = self[i]
+			node = self[i]                        
 			govs=node.get("gov",{})
 			govk = sorted(govs.keys())
 			if govk:
@@ -78,15 +79,15 @@ class Tree(dict):
 			else:
 				gk,gv = "_","_"
 			treestring+="\t".join([
-				str(i),
-				node.get("t","_"),
-				node.get("lemma",""),
-				node.get("tag","_"),
-				node.get("xpos","_"),
-				"|".join( [ a+"="+v for a,v in node.iteritems() if a not in ["t","lemma","tag","tag2","xpos","egov","misc","id","index","gov"]])  or "_",
+				str(i), 
+				node.get("t","_"), 
+				node.get("lemma",""), 
+				node.get("tag","_"), 
+				node.get("xpos","_"), 
+				"|".join( [ a+"="+v for a,v in node.iteritems() if a not in ["t","lemma","lemma2","tag","tag2","xpos","egov","misc","id","index","gov"] and v!='_']) or "_", 
 				gk,
 				gv,
-				"|".join( [ str(g)+":"+govs.get(g,"_") for g in govk[1:] ]) or "_",
+				"|".join( [ str(g)+":"+govs.get(g,"_") for g in govk[1:] ]) or "_", 
 				node.get("misc","_")]) + "\n"
 		return treestring
 
@@ -101,7 +102,7 @@ def update(d, u):
 
 
 def conll2tree(conllstring):
-	"""
+	""" 
 	takes the conll string (or malt) representation of a single tree and creates a Tree (dictionary) for it
 	"""
 	tree=Tree()
@@ -116,12 +117,12 @@ def conll2tree(conllstring):
 				else:
 					tree.sentencefeatures["_comments"]=tree.sentencefeatures.get("_comments","")+line.strip()[1:]+"\n"
 				continue
-
+			
 			cells = line.split('\t')
 			nrCells = len(cells)
-
-			if nrCells in [4,10,14]:
-
+			
+			if nrCells in [4,10,12,14]:
+				
 				if nrCells == 4: # malt!
 					t, tag, head, rel = cells
 					if head=="_": head=-1
@@ -132,7 +133,7 @@ def conll2tree(conllstring):
 
 				elif nrCells == 10: # standard conll 10 or conllu
 					nr, t, lemma , tag, xpos, features, head, rel, edeps, misc = cells
-					if "-" in nr:
+					if "-" in nr: 
 						try:	skipuntil=int(nr.split("-")[-1])
 						except:	skipuntil=float(nr.split("-")[-1])
 						tree.words+=[t]
@@ -145,16 +146,41 @@ def conll2tree(conllstring):
 						except:	head = float(head)
 					egov={}
 					if ":" in edeps: # the enhanced graph is used
-						egov=dict([(gf.split(":")[0],gf.split(":")[-1]) for gf in edeps.split("|")])
-
+						egov=dict([(gf.split(":")[0],gf.split(":")[-1]) for gf in edeps.split("|")])					
+					
 					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'xpos': xpos, 'gov':{head: rel}, 'egov':egov, 'misc': misc}
 					if "=" in features:
 						mf=dict([(av.split("=")[0],av.split("=")[-1]) for av in features.split("|")])
 						newf=update(mf,newf)
-
+					
 					tree[nr]=update(tree.get(nr,{}), newf)
 					if nr>skipuntil: tree.words+=[t]
-
+				
+				elif nrCells == 12: # naija
+					nr, t, lemma , tag, xpos, features, head, rel, edeps, misc, startali, endali = cells
+					if "-" in nr: 
+						try:	skipuntil=int(nr.split("-")[-1])
+						except:	skipuntil=float(nr.split("-")[-1])
+						tree.words+=[t]
+						continue
+					try:	nr = int(nr)
+					except:	nr = float(nr) # handling the 3.1 format for "emtpy nodes"
+					if head.strip()=="_": head=-1
+					else:
+						try:	head = int(head)
+						except:	head = float(head)
+					egov={}
+					if ":" in edeps: # the enhanced graph is used
+						egov=dict([(gf.split(":")[0],gf.split(":")[-1]) for gf in edeps.split("|")])					
+					
+					newf={'id':nr,'t': t,'lemma': lemma, 'tag': tag, 'xpos': xpos, 'gov':{head: rel}, 'egov':egov, 'misc': misc, 'startali':startali, 'endali':endali}
+					if "=" in features:
+						mf=dict([(av.split("=")[0],av.split("=")[-1]) for av in features.split("|")])
+						newf=update(mf,newf)
+					
+					tree[nr]=update(tree.get(nr,{}), newf)
+					if nr>skipuntil: tree.words+=[t]
+				
 				elif nrCells == 14:
 					#mate:
 					#6, inscriptions, _, inscription, _, N, _, pl|masc, -1, 4, _, dep, _, _
@@ -172,20 +198,20 @@ def conll2tree(conllstring):
 						head=head2
 					newf={'id':nr,'t': t,'lemma': lemma,'lemma2': lemma2, 'tag': tag, 'xpos': xpos, 'morph': morph, 'morph2': morph2, 'gov':{head: rel}, 'egov':{head2: rel2} }
 					tree[nr]=update(tree.get(nr,{}), newf)
-
+					
 			elif debug:
 				print "strange conll:",nrCells,"columns!",line
-
+	
 	return tree
 
 
 def conllFile2trees(path, encoding="utf-8"):
 	"""
 	file with path -> list of trees
-
-	important function!
+	
+	important function!	
 	called from enterConll, treebankfiles, and uploadConll in treebankfiles.cgi
-
+	
 	"""
 	trees=[]
 	with codecs.open(path,"r",encoding) as f:
@@ -216,30 +242,30 @@ def trees2conllFile(trees, outfile, columns="u"): # changed default from 10 to u
 			if columns=="u": # conllu format
 				treestring = tree.conllu()
 			else:
-
+				
 				treestring = ""
 				for stftkey in sorted(tree.sentencefeatures):
 					if stftkey=="_comments":
 						treestring+=tree.sentencefeatures[stftkey]
 					else:
-						treestring+=stftkey+" = "+tree.sentencefeatures[stftkey]
-				for i in sorted(tree.keys()):
-					node = tree[i]
+						treestring+=stftkey+" = "+tree.sentencefeatures[stftkey]				
+				for i in sorted(tree.keys()):					
+					node = tree[i] 
 					gov = node.get("gov",{}).items()
 					govid = -1
 					func = "_"
 					if gov:
 						for govid,func in gov:
 							if columns==10:
-								treestring+="\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("cat","_"), node.get("xpos","_"), "_", str(govid),func,"_","_"])+"\n"
+								treestring+="\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("xpos","_"), "_", str(govid),func,"_","_"])+"\n"
 							elif columns==14:
 								lemma = node.get("lemma","_")
 								if lemma == "_": lemma = node.get("t","_")
 								treestring+="\t".join([str(i), node.get("t","_"), lemma, lemma or node.get("t","_"), node.get("tag","_"), node.get("tag","_"), node.get("morph","_"), node.get("morph","_"), str(govid),str(govid),func,func,"_","_"])+"\n"
 					else:
 						if columns==10:
-							treestring+="\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("cat","_"), node.get("xpos","_"), "_", str(govid),func,"_","_"])+"\n"
-
+							treestring+="\t".join([str(i), node.get("t","_"), node.get("lemma",""), node.get("tag","_"), node.get("xpos","_"), "_", str(govid),func,"_","_"])+"\n"
+							
 						elif columns==14:
 							lemma = node.get("lemma","_")
 							if lemma == "_": lemma = node.get("t","_")
@@ -305,3 +331,4 @@ if __name__ == "__main__":
 	ts = conllFile2trees("test.conll")
 	print len(ts)
 	print ts[0]
+	

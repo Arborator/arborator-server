@@ -1,7 +1,7 @@
 #! usr/bin/python
 #! coding: utf-8
 
-import conll, datetime, codecs, time, sys, os, glob
+import conll, datetime, codecs, time, sys, os, glob, tqdm
 from database import SQL
 from pprint import pprint
 
@@ -24,7 +24,7 @@ def exportUniqueSentences(project, mode="lasttree",pattern=False):
 	db,cursor=sql.open()
 	sentences={} # toks -> tree
 	outdir=os.path.join("..","projects",project,"export")
-	try: os.mkdir(outdir)
+	try: os.mkdir(outdir)	
 	except OSError: pass
 	outfile=os.path.join(outdir,"allSentences.conll")
 	if pattern:
