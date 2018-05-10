@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ####
-# Copyright (C) 2008-2012 Kim Gerdes
+# Copyright (C) 2008-2015 Kim Gerdes
 # kim AT gerdes. fr
 #
 # This program is free software; you can redistribute it and/or
@@ -24,14 +24,10 @@
 ####
 
 import cgitb, cgi, os, sys
-
 sys.path.append('modules')
 from logintools import isloggedin
 from logintools import logout
-import config
-
-
-
+from lib import config
 thisfile = os.environ.get('SCRIPT_NAME',"index.cgi").split("/")[-1]
 cgitb.enable()
 form = cgi.FieldStorage()
@@ -47,7 +43,9 @@ if logint == "logout":
 	print '''<script type="text/javascript">setTimeout('window.location.href=".";',1000)</script>'''
 	sys.exit()
 project = form.getvalue("project",None)
-if project: project=project.decode("utf-8")
+if project: 
+	try:	project=project.decode("utf-8")
+	except:	pass
 if len(config.projects)==1:project=config.projects[0]
 
 action = form.getvalue("action",None)
@@ -236,7 +234,7 @@ if project :
 	print '<form method="post" action="project.cgi" name="enter" id="enter" class="nav" style="top:4px;right:220px;z-index: 9999;">'
 	if logintest and logint != "logout" : buttonname="Enter"# enter
 	else: buttonname="Login"
-	print (u"""<input type="button" id="ent" name="ent" value="{buttonname}" style="width:80px;" class="fg-button ui-state-default ui-corner-all"  onClick="window.location.href='project.cgi?project={project}'">""".format(project=project,buttonname=buttonname)).encode("utf-8")
+	print (u"""<input type="button" id="ent" name="ent" value="{buttonname}" style="width:80px;" class="fg-button ui-state-default ui-corner-all"  onClick="window.location.href='project.cgi?project={project}'">""".format(project=project.replace("'","\\'").replace('"','\\"'), buttonname=buttonname)).encode("utf-8")
 	#print """<input type="button" id="visit" name="ent" value="Visit" style="width:80px;" class="fg-button ui-state-default ui-corner-all" onClick="window.location.href='visit.cgi'";">"""
 
 	print "</form>"
@@ -247,7 +245,7 @@ print """
 """
 
 print """<div class='center'>
-	<div class="ui-widget ui-widget-content ui-corner-all" style="font-size=23px;margin-top:37px;padding:10px">
+	<div class="ui-widget ui-widget-content ui-corner-all" style="font-size:23px;margin-top:37px;padding:10px">
 	
 	<div style="text-align:center;">
 		<object height="300" width="500" data="images/arborator.svg" type="image/svg+xml"></object>
@@ -255,7 +253,7 @@ print """<div class='center'>
 	
 """
 
-print """<p style="text-align:center;">The Arborator software is aimed at collaboratively annotating dependency corpora.</p>
+print """<p style="text-align:center;">collaboratively annotating dependency corpora</p>
 	<div class='ui-state-highlight ui-corner-all' style='padding: 1em; margin: 20px;clear: both;'><a href='q.cgi'><img src="images/q.png" border="0"><br/>Quick access without login:<br/>Simple graphical editor of CoNLL files</a></div>
 
 	<div class="ui-state-highlight ui-corner-all" style="padding-bottom: 1em; margin: 20px;">"""
@@ -271,25 +269,26 @@ if project or len(config.projects)==1:
 		print '<form method="post" action="project.cgi" name="enter" id="enter2">'
 		if logintest and logint != "logout" : buttonname="Enter"# enter
 		else: buttonname="Login"
-		print (u"""C'mon in: Click on <input type="button" id="ent" name="ent" value="{buttonname}"  style="font:normal .8em Arial;padding-top: 2px;width:80px;" class="fg-button ui-state-default ui-corner-all"  onClick="window.location.href='project.cgi?project={project}'">""".format(project=project,buttonname=buttonname)).encode("utf-8")
+		print (u"""C'mon in: Click on <input type="button" id="ent" name="ent" value="{buttonname}"  style="font:normal .8em Arial;padding-top: 2px;width:80px;" class="fg-button ui-state-default ui-corner-all"  onClick="window.location.href='project.cgi?project={project}'">""".format(project=project.replace("'","\\'").replace('"','\\"'),buttonname=buttonname)).encode("utf-8")
 		print "</form>"
 		if len(config.projects)>1: print "<p><small><a href='.?project='>For access to other annotation projects on this site click here</a></small></p>"
 else:
-	print '<div>Please choose your annotation project:</div>'
+	print '<div>or choose your annotation project:</div>'
 	for project in sorted(config.projects):
-		#project=project.encode("utf-8")
 		if os.path.exists(("projects/"+project+"/"+project+".png").encode("utf-8")):img=u"<img class='project_logo' src='projects/"+project+"/"+project+u".png' align='top'>"
 		else: img=""
 		print 	'<div class="ui-widget ui-widget-content ui-corner-all" style="float:left;margin:1.2em;"><p>',
-		if logintest:print (u'<a href="project.cgi?project={project}">{img} {project}'.format(project=project,img=img)).encode("utf-8"),
-		else:print (u'<a href="?project={project}">{img} {project}'.format(project=project,img=img)).encode("utf-8"),
+		if logintest:
+			print (u'<a href="project.cgi?project={project}">{img} {project}'.format(project=project, img=img)).encode("utf-8"),
+		else:
+			print (u'<a href="?project={project}">{img} {project}'.format(project=project, img=img)).encode("utf-8"),
 		print '</a></p></div>'
 		#print '<div style="clear: both;"></div>'
 	
 	print '<div style="clear: both;"></div>'
 
 
-print "</div><div class='ui-state-highlight ui-corner-all' style='padding: 1em; margin: 20px;clear: both;'><a href='http://rhapsodie.ilpga.fr/wiki/Arborator'>Short usage guide (wiki page)</a></div>"
+print "</div><div class='ui-state-highlight ui-corner-all' style='padding: 1em; margin: 20px;clear: both;'><a href='https://github.com/kimgerdes/arborator/wiki'>Short usage guide (wiki page)</a></div>"
 
 
 #print """<br/><br/>
@@ -347,7 +346,7 @@ font:italic normal .8em/1em Times, serif;text-align:center;margin:0 auto;padding
 	<a href='http://www.univ-paris3.fr/'>Sorbonne nouvelle</a>,
 	<a href='http://ilpga.fr/'>ILPGA</a>,
 	<a href='http://lpp.univ-paris3.fr/'>LPP</a>
-	(<a href='http://lpp.univ-paris3.fr/'>CNRS</a>) <br>and  <br>
+	(<a href='http://lpp.univ-paris3.fr/'>CNRS</a>)
 	
 	<br><br>
 	

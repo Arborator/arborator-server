@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import cgi,sys,codecs
-from os       import environ
+from os import environ
 sys.path.append('modules')
 from logintools import isloggedin
 

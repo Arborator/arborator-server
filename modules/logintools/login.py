@@ -28,6 +28,8 @@ cgitb.enable()
 
 
 sys.path.append('../modules')
+sys.path.insert(0, 'lib')
+
 from configobj import ConfigObj
 from dataenc import pass_enc, pass_dec, unexpired, table_enc, table_dec
 from Cookie import SimpleCookie

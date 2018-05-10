@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2010-2014, Kim Gerdes
+ * Copyright 2010-2017, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -28,16 +28,14 @@ commentid=0;
 erasetreeid=0;
 compacolors={};
 tokensChanged=[];
+teacher=0 // this variable is set to 1 in some types of exercices. then saving a (teacher) tree is impossible.
 
 if (typeof tokenModifyable == 'undefined') tokenModifyable=0;
 
 //////////////////////////////////////////////
-// initialisation ///////////////////////
+/////// initialisation ///////////////////////
 //////////////////////////////////////////////
 
-
-
-		
 
 
 $(document).ready(function(){
@@ -240,7 +238,6 @@ initialOtherTree = function(nr) {
 	{
 		if (dirty.indexOf(currentsvg.id)==-1) // the currentsvg is not dirty
 		{
-			
 			treeid=$(this).attr("treeid");
 			nr=$(this).parent().parent().attr("nr");
 			sid=$(this).parent().parent().attr("sid");
@@ -249,20 +246,18 @@ initialOtherTree = function(nr) {
 			getTree(nr,treeid);
 		}
 		else
-			{
-				$(this).parent().parent().after('<div id="savewarning" style="margin:0 20;" class="ui-state-error ui-corner-all">The tree is unsaved. Save before closing.</div>')
-				$("#savewarning").delay(2000).fadeOut('slow'); ;
-			}
+		{
+			$(this).parent().parent().after('<div id="savewarning" style="margin:0 20;" class="ui-state-error ui-corner-all">The tree is unsaved. Save before closing.</div>')
+			$("#savewarning").delay(2000).fadeOut('slow'); ;
+		}
 				
 	});
-
 	
 	$("#export"+nr).show().click(function()
 	{
 // 		console.log("export clicked",$(this).offset(),$("#ex").attr("nr"));
 		$("#ex").show();
 		$("#ex").offset($(this).offset()).attr("nr",$(this).attr("nr"));
-
 // 		console.log("export clicked",$(this).offset(),$("#ex"),$("#ex").attr("nr"),$("#ex").css("visibility"))
 
 	});
@@ -276,20 +271,19 @@ getJSON = function (nr, treeid) {
 	delete tokens;
 	tokens=new Object();
 	
-	
 	$.getJSON(
-	getTreeCGI,
-	{
-			project: project,
-			treeid: treeid,
-			filename: filename,
-			filetype: filetype,
-			nr: nr			
-	},
-	function(data)
-			{
-				startTree(nr,data)
-			}
+		getTreeCGI,
+		{
+				project: project,
+				treeid: treeid,
+				filename: filename,
+				filetype: filetype,
+				nr: nr			
+		},
+		function(data)
+				{
+					startTree(nr,data)
+				}
 			
 	);
 	initialOtherTree(nr);	
@@ -332,9 +326,7 @@ getTree = function(nr, treeid) {
 startTree = function (nr, data) {
 	delete redata;
 	redata = new Object();
-// 	settings();
-	// 	console.log("startTree - dataaaaaaaaaaa",data,treeid,$("loader"));
-	
+
 	$("html, body").animate({scrollTop: $("#loader").offset().top-50}, 1000,'easeInOutCubic');
 	
 	$.each(data, function(key, val) 
@@ -342,49 +334,56 @@ startTree = function (nr, data) {
 			redata[key]=val;
 		});
 	if ("tree" in redata)
-	{
-		allData[nr]=new Object();
-		$.each(redata.tree, function(key, val) 
 		{
-			tokens[key]=val;
-			allData[nr][key]=val; // todo: only use allData, forget about tokens!
-			
-		});
-		start("holder"+nr, nr);
-		$("#sentencediv"+nr).attr("treeid",treeid);
-	}
+			allData[nr]=new Object();
+			$.each(redata.tree, function(key, val) 
+			{
+				tokens[key]=val;
+				allData[nr][key]=val; // todo: only use allData, forget about tokens!
+				
+			});
+			start("holder"+nr, nr); // call to function from arborator.draw.js
+			$("#sentencediv"+nr).attr("treeid",treeid);
+		}
 	if ("goodtree" in redata)
-	{
-		allGoodData[nr]=new Object();
-		$.each(redata.goodtree, function(key, val) 
 		{
-			allGoodData[nr][key]=val; // todo: only use allData, forget about tokens!
-			
-		});
-	}
-// 				console.log(redata);
-// 				if ("treeid" in redata)
-// 				{
-// 					console.log('iiiiiiiiii');
-// 					treeid=redata["treeid"];
-// 				}
-	for (a in shownsentencefeatures)
-	{
-		if (shownsentencefeatures[a] in redata)
+			allGoodData[nr]=new Object();
+			$.each(redata.goodtree, function(key, val) 
+			{
+				allGoodData[nr][key]=val; 
+				
+			});
+		}
+	
+	if ("teacher" in redata)
 		{
-			$('#holder'+nr).append('<p>'+redata[shownsentencefeatures[a]]+'</p>');
+			teacher = redata["teacher"];
+		}
+		else
+		{
+			teacher = 0;
+		}
+	
+	currentsvg.sentencefeatures={}
+	for (a in redata)
+	{
+		if (!(["tree","goodtree","teacher"].includes(a)))
+		{
+			if (shownsentencefeatures.includes(a))
+			{
+				$('#holder'+nr).append('<p>'+redata[a]+'</p>');
+			}
 		}
 	}
-
 	if (!editable)
 	{
-		
-		console.log("____________"+nr+"."+treeid)
-		console.log(treeid)
+
 		var svg = $('#svg'+nr)[0].paper.toSVG();
-// 			writeSvg(treeid,svg);
 	}
 
+	$("#save"+nr).css({ visibility: 'hidden' });
+	$("#undo"+nr).css({ visibility: 'hidden' });
+	$("#redo"+nr).css({ visibility: 'hidden' });
 	
 }
 
@@ -399,9 +398,7 @@ writeSvg = function(treeid,svg) {
 			"svg":svg
 		},
 		success: function(answer){
-				console.log("cool:saved:"+answer)
-				
-				
+				console.log("cool:saved:"+answer)				
 			},
 		error: function(XMLHttpRequest, textStatus, errorThrown){
 			console.log("uncool:notsaved:"+errorThrown)
@@ -492,26 +489,28 @@ exportTree = function () {
 		{
 			var currentsvg=$('#svg'+nr)[0];			
 			$('#source').attr("value",stringify(currentsvg));
-			$('#cat').attr("value",shownfeatures[categoryindex]);
-			
+// 			$('#cat').attr("value",shownfeatures[categoryindex]);
 			$('#ex').attr("action",exportCGI).submit();			
 		}
 	else 	{
 			$("svg").attr("xmlns","http://www.w3.org/2000/svg");
 			$("svg").attr("xmlns:xlink","http://www.w3.org/1999/xlink");
 			var header = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n'
-// 			$('#source').attr("value",header+$('#holder'+nr).html());
-			$('#source').attr( "value", header+$('#holder'+nr+' >svg').clone().wrap('<p>').parent().html() );
-			
+			$('#source').attr( "value", header+$('#holder'+nr+' >svg').clone().wrap('<p>').parent().html() );			
 			$('#ex').submit();
-// 			.attr("action",exportCGI+"?project="+project)
 		
 		}
 }
 
 	
 function dirt() { 
+	
 	var nr=currentsvg.id.substr(3);
+	
+	if (teacher) 
+	{
+		return;
+	}
 // 	console.log("dirt starts",nr,dirty,currentsvg.id,dirty.indexOf(currentsvg.id))
 	if (currentsvg.undo.undo_available)
 	{
@@ -800,19 +799,21 @@ reallysplitRight = function(project,nr, sid, toknr) {
 check = function(project,snr, sid, graphical) {	
 	
 	prepareData(snr); // useful to be able to compare even before saving
-	console.log(allData);
+// 	console.log(allData, allGoodData, snr);
+
 	var goodcat=[],badcat=[],gooddep=[],baddep=[];
 	if (!(snr in allGoodData)) return;
 	$.each(allGoodData[snr], function(toknr, nodedic) 
 	{
+		console.log(toknr,allData[snr][toknr]);
 		if (nodedic.tag == allData[snr][toknr].tag) goodcat.push(toknr);	
 		else badcat.push(toknr);
+		if ($.isEmptyObject( nodedic.gov )) return;
 		$.each(nodedic.gov, function(govnum, func) 
 		{
-			if (func == allData[snr][toknr].gov[govnum]) gooddep.push(toknr);
+			if ((func == allData[snr][toknr].gov[govnum] || allData[snr][toknr].gov[govnum]==null && govnum==-1)) gooddep.push(toknr);
 			else baddep.push(toknr);
 		})
-		
 	});
 	if (badcat.length==1) 	html="1 category error: "
 	else 		html=badcat.length+" category errors: "
@@ -841,11 +842,8 @@ check = function(project,snr, sid, graphical) {
 ////////////////////////////////////////////////////////////////////
 
 prepareData = function (nr) {
-	var currentsvg=$('#svg'+nr)[0];
-	
-	
+	var currentsvg=$('#svg'+nr)[0];	
 	tree=stringify(currentsvg);
-	
 	allData[nr]=new Object();
 	$.each(nsimple, function(toknr, strangedic) 
 	{
@@ -887,21 +885,16 @@ simpleFeatStruc = function (svg) {
 			for (feat in good) nsimple[i][feat]=svg.words[i][feat]; // copy the good features into nsimple before saving
 // 			console.log("vvv",currentsvg.words[i]["gov"])
 		}
-	return nsimple;
+	return {"tree":nsimple,"sentencefeatures":svg.sentencefeatures};
 	
 	}
 	
 stringify = function (currentsvg) {
-		
 	return JSON.stringify(simpleFeatStruc(currentsvg), "")
-	
 	}
 	
 saveTree = function (project,nr,sid,uid,username) {
-	
-	
 	prepareData(nr);
-	
 	$("#save"+nr).addClass( "ui-state-disabled " );
 	
 	$.ajax({
@@ -960,78 +953,16 @@ saveTree = function (project,nr,sid,uid,username) {
 
 	
 	
-	
-// quickPut = function () {
-// 
-// 	$.ajax({
-// 		type: "POST",
-// 		url: "put.cgi",
-// 		data: {"conll":$('#conll').val(),"addfuncs":$('#addfuncs').val(),"addcats":$('#addcats').val() }, //
-// 		success: function(answer){
-// // 				console.log("answer---",answer,"----answer end")
-// 				$("#trees").html(answer);
-// 				redi();
-// 				
-// 				
-// 			},
-// 		error: function(XMLHttpRequest, textStatus, errorThrown){
-// 			console.log("error",project)
-// 			alert("error saving"+XMLHttpRequest+ "\n"+textStatus+ "\n"+errorThrown);
-// // 			$("#save"+nr).removeClass( "ui-state-disabled " );	
-// 			}
-// 		});
-// 	// 	console.log("saved",project,nr,sid,uid,username)
-// 	}
-// 
-
-
-allTreesConll = function () {
-	
-	dirtySVGs=new Object();
-	for (i in dirty)
-	{		
-		var nr=dirty[i].substr(3)
-		dirtySVGs[nr]=simpleFeatStruc($('#svg'+nr)[0]);
-	// 		console.log(i,nr,dirtySVGs[i]);
-
-	}
-	trees=JSON.stringify(dirtySVGs, "")
-// 	console.log("_____",trees);
-
-
-
-	$.ajax({
-		type: "POST",
-		url: exportCGI,
-		data: {"trees":trees,"exptype":filetype,"filename":filename}, //
-		success: function(answer){
-// 			console.log(answer)
-			$("textarea#conll").val(answer);
-			dirty=[];
-			},
-		error: function(XMLHttpRequest, textStatus, errorThrown){
-			console.log("error",project,nr,sid,uid,username)
-			alert("error conllizing"+XMLHttpRequest+ "\n"+textStatus+ "\n"+errorThrown);
-			}
-	});
-	
-	}
-	
-	
-	
-	
 eraseSentenceNumber=0;
 	
 eraseTree = function(nr, treeid, treecreator) {
 	
-		eraseSentenceNumber=nr;
-		erasetreeid=treeid;
-		
-// 		console.log(username, nr)
-		$("#question").html("<span style='font-size:.7em;'>Are you sure that you want to completely erase from the database the beautiful analysis made by "+treecreator+"?</span>")
-		$('#dialog').dialog('open');
-		
-		}	
+	eraseSentenceNumber=nr;
+	erasetreeid=treeid;
+	$("#question").html("<span style='font-size:.7em;'>Are you sure that you want to completely erase from the database the beautiful analysis made by "+treecreator+"?</span>")
+	$('#dialog').dialog('open');
+	
+	}	
 	
 reallyEraseTree = function() {
 	$.ajax({

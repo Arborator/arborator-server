@@ -19,20 +19,10 @@ See <http://svgkit.sourceforge.net/> for documentation, downloads, license, etc.
 # needs: apt-get install librsvg2-bin !!!!!!!!!!!! new in 2014!!!
 
 
-import cgi
-import cgitb; cgitb.enable() # Show errors to browser.
-import sys
-import os, urlparse
+import cgi, cgitb, sys, os, urlparse, time, re, hashlib
 from subprocess import *
-import time
-import re
-import hashlib
-
-import config
-#,xmlsqlite
-
-#from config import *
-
+from lib import config
+cgitb.enable() # Show errors to browser.
 
 
 form = cgi.FieldStorage()

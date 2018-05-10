@@ -25,21 +25,16 @@
 
 
 import os, cgitb, cgi,time, sys, glob
-import config, conll, database
-
+from lib import config, conll, database
 cgitb.enable()
-#<script type="text/javascript" src="script/jquery.js"></script>
-		#<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" media="screen" />
-#<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-#<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-#<script type="text/javascript" src="script/jquery-ui-1.11.4.custom.min.js"></script>
-#<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-		#<script type="text/javascript" src="script/raphael.export.js"></script>
 
 def printhtmlheader():
 	print """<html><head>
 		<title>Arborator – Quickedit</title>
 		<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+		
+	
+		
 		<script type="text/javascript" src="script/jquery.js"></script>
 		<script type="text/javascript" src="script/raphael.js"></script>
 		
@@ -48,6 +43,9 @@ def printhtmlheader():
 		
 		<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" media="screen" />
 		
+		<script type='text/javascript' > 
+		var currentsvg = "mmmm"; 
+		</script>
 		<script type="text/javascript" src="script/arborator.draw.js"></script>
 		<script type="text/javascript" src="script/q.js"></script>
 		<script type="text/javascript" src="script/jsundoable.js"></script>
@@ -55,6 +53,42 @@ def printhtmlheader():
 		
 		<link href="css/arborator.css" rel="stylesheet" type="text/css">
 		<link href="css/colpick.css" rel="stylesheet" type="text/css">
+
+		
+		<script type="text/javascript" src="annodoc/jquery.svg.min.js"></script>
+		<script type="text/javascript" src="annodoc/jquery.svgdom.min.js"></script>
+		<script type="text/javascript" src="annodoc/jquery.timeago.js"></script>
+		<script type="text/javascript" src="annodoc/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="annodoc/waypoints.min.js"></script>
+		<script type="text/javascript" src="annodoc/jquery.address.min.js"></script>
+
+		<!--brat helper modules-->
+		<script type="text/javascript" src="annodoc/configuration.js"></script>
+		<script type="text/javascript" src="annodoc/util.js"></script>
+		<script type="text/javascript" src="annodoc/annotation_log.js"></script>
+		
+		<!--<script type="text/javascript" src="annodoc/webfont.js"></script>-->
+		<!--brat modules-->
+		<script type="text/javascript" src="annodoc/dispatcher.js"></script>
+		<script type="text/javascript" src="annodoc/url_monitor.js"></script>
+		<script type="text/javascript" src="annodoc/visualizer.js"></script>
+
+		// embedding configuration
+		<script type="text/javascript" src="annodoc/config.js"></script>
+		// project-specific collection data
+		<script type="text/javascript" src="annodoc/collections.js"></script>
+
+		// NOTE: non-local libraries
+		<script type="text/javascript" src="annodoc/annodoc.js"></script>
+		<script type="text/javascript" src="annodoc/conllu.js"></script>
+				
+		<link rel="stylesheet" href="annodoc/font-awesome.min.css">
+		<link rel="stylesheet" type="text/css" href="annodoc/style.css"/>
+		<link rel="stylesheet" type="text/css" href="annodoc/style-vis.css"/>
+		<link rel="stylesheet" type="text/css" href="annodoc/hint.css"/>
+		
+		
+		
 	</head>"""
 	
 def printheadline():	
@@ -70,6 +104,47 @@ def printheadline():
 		"""
 
 def printfooter():
+	#print """
+	#<p>The <code>acl:relcl</code> relation is used for relative clauses modifying
+#a nominal. The relation points from the head of the nominal to the
+#head of the relative clause.</p>
+
+
+
+#<div class="annodoc">
+#<pre><code class="language-conllu"># I wrote the letter with a quill.
+#1  donner  donner  VERB  _  VerbForm=Inf  0  root  _  give
+#2  les  le  DET  _  Definite=Def|Number=Plur  3  det  _  the
+#3  jouets  jouet  NOUN  _  Gender=Masc|Number=Plur  1  dobj  _  toys
+#4  à  à  ADP  _  _  6  case  _  to
+#5  les  le  DET  _  Definite=Def|Number=Plur  6  det  _  the
+#6  enfants  enfant  NOUN  _  Gender=Masc|Number=Plur  1  nmod  _  children
+#</code></pre>
+
+
+#<pre><code class="language-sdparse">J'ai vu l' homme qui t' aime \\n I saw the man who loves you
+#acl:relcl(homme, aime)
+#nsubj(aime, qui)
+#dobj(aime, t')
+#</code></pre>
+
+
+
+#<pre><code class="language-conllu"># I wrote the letter with a quill.
+#1   Я         ja         PRON   _   Case=Nom|Number=Sing|Person=1|PronType=Prs        2   nsubj   _   I
+#2   написал   napisat'   VERB   _   Gender=Masc|Number=Sing|VerbForm=Part|Voice=Act   0   root    _   wrote
+#3   письмо    pis'mo     NOUN   _   Case=Acc|Gender=Neut|Number=Sing                  2   dobj    _   the-letter
+#4   пером     pero       NOUN   _   Case=Ins|Gender=Neut|Number=Sing                  2   nmod    _   with-a-quill
+#</code></pre>
+
+
+
+
+#</div>
+
+
+	#"""
+	
 	print "</div>"
 	print '</body></html>'	
 	
@@ -91,36 +166,72 @@ def printexport():
 	"""
 	
 def printforms():
-	print """<div id="toggle" class="toggle" title="click here to show and hide the CoNLL input"></div>
+	print """
+	<div id="toggleAndBoxx" class="toggleAndBoxx">
+	<div id="toggle" class="toggle" title="click here to show and hide the CoNLL input"></div>
 	<div id="boxx" class="boxx">
 		<div class="arrow" title="you can click here (or anywhere else outside the box) when you have finished editing the CoNLL format or sentence text area">⬌</div>
 		<div id="textual" class="textual">Paste and edit CoNLL file below:
-			<TEXTAREA NAME="conll" id="conll" title="Here you can paste and edit CoNLL files with 4, 10 or 14 columns" style="width:100%; height:400; background-image: url('images/conll10.png'); background-repeat: no-repeat; background-position: 95% bottom; ">1	faut	falloir	V	_	_	0	root	_	_
-2	que	que	CS	_	_	1	obj	_	_
-3	tu	tu	Cl	_	_	6	sub	_	_
-4	me	me	Cl	_	_	6	obl	_	_
-5	les	le	Cl	_	_	6	obj	_	_
-6	donnes	donner	V	_	_	2	dep	_	_
+			<TEXTAREA NAME="conll" id="conll" title="Here you can paste and edit CoNLL files with 4, 10 or 14 columns" style="width:100%; height:400; background-image: url('images/conll10.png'); background-repeat: no-repeat; background-position: 95% bottom; "># conllu format
+1	faut	falloir	V	_	_	0	root	_	must
+2	que	que	C	_	_	4	mark	_	that
+3	tu	tu	Pron	_	_	4	nsubj	_	you
+4	fasses	faire	V	_	_	1	ccomp	_	make
+5	envie	envie	N	_	_	4	dobj	_	desire
+6-7	aux	aux	P+D	_	_	_	_	_	to_the
+6	à	à	P	_	_	8	case	_	to
+7	les	le	D	_	_	8	det	_	the
+8	enfants	enfant	N	_	_	4	iobj	5:nmod	kids
+9	de	de	P	_	_	10	mark	_	to
+10	faire	faire	V	_	_	5	ccomp	_	make
+11-12	du	du	P+D	_	_	_	_	_	of_the
+11	de	de	P	_	_	13	case	_	of
+12	le	le	D	_	_	13	det	_	the
+13	bruit	bruit	N	_	_	10	dobj	_	noise
 
-1	c'	ce	Cl	_	_	2	sub	_	_
-2	est	être	V	_	_	0	root	_	_
-3	plus	plus	Adv	_	_	4	dep	_	_
-4	simple	simple	Adj	_	_	2	pred	_	_</TEXTAREA>
+# conllu format using SpaceAfter=No
+1	Can	can	AUX	MD	VerbForm=Fin	3	aux	_	_
+2	you	you	PRON	PRP	Case=Nom|Person=2|PronType=Prs	3	nsubj	_	_
+3	use	use	VERB	VB	VerbForm=Inf	0	root	_	_
+4	the	the	DET	DT	Definite=Def|PronType=Art	10	det	_	_
+5	'	'	PUNCT	``	_	6	punct	_	SpaceAfter=No
+6	find	find	VERB	VB	VerbForm=Inf	10	compound	_	_
+7	my	my	PRON	PRP$	Number=Sing|Person=1|Poss=Yes|PronType=Prs	8	nmod:poss	_	_
+8	phone	phone	NOUN	NN	Number=Sing	6	dobj	_	SpaceAfter=No
+9	'	'	PUNCT	''	_	6	punct	_	_
+10	feature	feature	NOUN	NN	Number=Sing	3	dobj	_	_
+11	to	to	PART	TO	_	12	mark	_	_
+12	track	track	VERB	VB	VerbForm=Inf	3	advcl	_	_
+13	someone	someone	NOUN	NN	Number=Sing	16	nmod:poss	_	_
+14	else	else	ADJ	JJ	Degree=Pos	13	amod	_	SpaceAfter=No
+15	's	's	PART	POS	_	13	case	_	_
+16	phone	phone	NOUN	NN	Number=Sing	12	dobj	_	SpaceAfter=No
+17	?	?	PUNCT	.	_	3	punct	_	_
+
+# I wrote the letter with a quill.
+1	Я	ja	PRON	_	Case=Nom|Number=Sing|Person=1|PronType=Prs	2	nsubj	_	I
+2	написал	napisat'	VERB	_	Gender=Masc|Number=Sing|VerbForm=Part|Voice=Act	0	root	_	wrote
+3	письмо	pis'mo	NOUN	_	Case=Acc|Gender=Neut|Number=Sing	2	dobj	_	the-letter
+4	пером	pero	NOUN	_	Case=Ins|Gender=Neut|Number=Sing	2	nmod	_	with-a-quill</TEXTAREA>
 	"""
 	
 	print """
 	<div style='float:xxx;'>
 	
-		<div ><span style='float:left;'>additional functions</span> <input type='text' id='addfuncs'  style='width:100%' title='Here you can add additional functions that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' >  </input></div>
+		<div ><span style='float:left;'>additional functions</span> <input type='text' id='addfuncs'  style='width:100%' title='Here you can add additional functions that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='nsubj obj iobj csubj ccomp xcomp obl vocative expl dislocated advcl advmod discourse aux cop mark nmod appos nummod acl amod det clf case conj cc fixed flat compound list parataxis orphan goeswith reparandum punct root dep'></input></div>
 		
-		<div ><span style='float:left;'>additional POS tags</span> <input type='text' id='addcats'  style='width:100%;' title='Here you can add additional categories that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' >  </input> </div>
+		<div ><span style='float:left;'>additional POS tags</span> <input type='text' id='addcats'  style='width:100%;' title='Here you can add additional categories that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='ADJ ADP PUNCT ADV AUX SYM INTJ CONJ X NOUN DET PROPN NUM VERB PART PRON SCONJ _'>  </input> </div>
 		
 		<div >or paste your sentences here:
 		<TEXTAREA NAME="sentences" id="sentences"  title='Here you can provide unanalyzed textual data, one sentence per line. You can then interactively add the syntactic analysis of your sentences. This will erase all the existing trees'  style="width:100%; height:100;"></TEXTAREA>
 		</div>
 		
 	</div>
+			<input type="checkbox" id="annodoccheck"><label for="annodoccheck"><img src='images/annodoc.png' border='0' title='show annodoc graph' style='top:0px;'>  </label>
+
 	
+	
+		
 	<div style='float:right;'>
 		<img  id="style" src='images/style.png' border='0' title='style' style='top:0px;'> 
 		
@@ -139,7 +250,7 @@ def printforms():
 	print ""
 	print "<br>"
 	print """"""
-	print "</div></div>"
+	print "</div></div></div>"
 
 def printmenues():
 	print """	
@@ -168,7 +279,9 @@ def printdialogs():
 	<div id="bb" class="rbubble" style="right: 650px;top: 533px;position: absolute;">Or paste the sentences you want to analyze here.<br/>One sentence per line.</div>
 	<div id="bbb" class="lbubble" style="left: 400px;top: 400px;position: absolute;">As soon as you click anywhere else, the graph is updated and you can modify the dependencies by dragging one word over the other.</div>
 	<div id="bbbb" class="lbubble" style="left: 400px;top: 35px;position: absolute;">You can export the graph in various formats by clicking on the green arrow.</div>
-	
+			
+	<input type="button" id="drawbutton" value="draw" class="ui-button ui-state-default ui-corner-all" onClick='$("#funchoice").empty(); $("#catchoice").empty();$("#stylefunctions").empty();$("#trees").empty();readConll();setupStyleDialog();drawTrees();nokeys=false;'  style="display: none;" >
+
 	"""
 
 ##############################################################################################"

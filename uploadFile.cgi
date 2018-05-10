@@ -25,11 +25,13 @@
 #     USA
 ####
 
-import cgi, os, shutil, config, codecs, re, sys
-import cgitb
-print "Content-Type: application/json\n"
+import cgi, os, shutil, codecs, re, sys, cgitb
+
+from lib import config
+
+#print "Content-Type: application/json\n"
 cgitb.enable()
-#print "Content-Type: text/html\r\n\r\nxxxxxxxx"
+print "Content-Type: text/html\r\n\r\nxxxxxxxx"
 method = os.environ.get( 'REQUEST_METHOD' )
 if method == "POST":
 	form = cgi.FieldStorage()
@@ -50,6 +52,7 @@ if method == "POST":
 				#print n,li.encode("utf-8"),"<br>"
 				if n==4:conll=4
 				if n==10:conll=10
+				elif n==13:conll=10 # orfeo file format: conll10 + begin, end, speaker
 				elif n==14:conll=14
 		if not li.strip():ns-=1 # if last line empty, we counted one too much
 		#if not conll:print "???",filename,"strange datatype<br>"
@@ -98,7 +101,7 @@ if method == "POST":
 					ns+=1						
 						
 		elif analyze=='chinese':
-			from parse import zhparse
+			from lib.parse import zhparse
 			temp=open("corpus/zh.utf-8","wb")
 			temp.write(filecontent)
 			temp.close()
@@ -115,7 +118,19 @@ if method == "POST":
 						ns+=1	
 					nb=1
 					nix=True
+		
+		elif analyze=='french':
+			from tools import parseSentences
+			temp=open("corpus/upload.fr.txt","wb")
+			temp.write(filecontent)
+			temp.close()
 			
+			parsedfile = parseSentences.textToParseAll(os.path.abspath("corpus/upload.fr.txt"))
+			
+			os.rename(parsedfile, foutname)
+			
+			
+		
 		
 		elif analyze=='no':
 			renl=re.compile("\n+",re.U+re.M)
@@ -140,7 +155,7 @@ if method == "POST":
 			out = codecs.open(foutname, "w","utf-8")
 			
 			if analyze=='chinese':
-				from parse import zhparse
+				from lib.parse import zhparse
 				temp=open("corpus/zh.utf-8","wb")
 				temp.write(filecontent)
 				temp.close()

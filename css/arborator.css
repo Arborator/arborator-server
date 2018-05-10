@@ -1,5 +1,5 @@
  label { display: block; }
-  select { width: 50px; height:18px;font-size:1em;margin:5px;}
+  select { width: 50px; height:18px;font-size:.6em;margin:5px;}
 .lbubble
 {
 	color:#fff;
@@ -10,7 +10,7 @@ height: 120px;
 padding: 5px;
 background: #654b6d;
 -webkit-border-radius: 10px;
--moz-border-radius: 10px;
+border-radius: 10px;
 border-radius: 10px;
 z-index: 1111;
 
@@ -42,7 +42,7 @@ height: 120px;
 padding: 5px;
 background: #654b6d;
 -webkit-border-radius: 10px;
--moz-border-radius: 10px;
+border-radius: 10px;
 border-radius: 10px;
 }
 
@@ -97,9 +97,12 @@ textarea, pre { -moz-tab-size:20; -o-tab-size:20; -webkit-tab-size:20; tab-size:
 	z-index: 10;
 	width:630;
 	padding: 2;
-    
 }
 
+.toggleAndBoxx{
+	display:none;
+	
+}
 .arrow{
 	color: #654b6d;
     font-size: 44px;
@@ -118,7 +121,7 @@ textarea, pre { -moz-tab-size:20; -o-tab-size:20; -webkit-tab-size:20; tab-size:
 	position: relative;
 /* 	opacity:0.4; */
 	cursor:pointer;
-	z-index: 12;
+	z-index: 9;
 	float:left;
 	display:none;
 }
@@ -306,7 +309,8 @@ a.toggler {
 	cursor:pointer; 
 	position: relative; 
 	text-align: center; 
-	zoom: 1; 
+	transform: scale(1)
+/* 	zoom: 1;  */
    }
 
 /* .ui-state-default, .ui-widget-content .ui-state-default { */
@@ -392,7 +396,7 @@ a.toggler {
 .funcmenu{
 	border:thin solid silver; width:60px;height:22px;vertical-align: middle;
 	cursor: pointer;
-	color: #036;font: italic 10px Sans;
+	color: #036;font: italic 10px sans-serif;
 	position:absolute;
 }
 
@@ -457,6 +461,10 @@ tfoot td
 }
 
 
+.whitable th{
+	border-bottom:3px solid black;
+	font-weight:bold;
+}
 .whitable td{
 	border-bottom:thin solid black;
 }
@@ -464,6 +472,16 @@ tfoot td
 .whitable tr{
 	background-color: #FFFFFF;
 	
+}
+
+.whitableNarrow th{
+	padding: 0px 1px;
+	border-bottom:3px solid black;
+	font-weight:bold;
+}
+.whitable td{
+	padding: 0px 1px;
+	border-bottom:thin solid black;
 }
 
 td input {

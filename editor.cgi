@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ####
-# Copyright (C) 2009-2012 Kim Gerdes
+# Copyright (C) 2009-2015 Kim Gerdes
 # kim AT gerdes. fr
 # http://arborator.ilpga.fr/
 #
@@ -26,23 +26,20 @@
 ####
 
 import os, cgitb, cgi, sys
-import config, database
-
 sys.path.append('modules')
 from logintools import login
 from logintools import isloggedin
 from logintools import logout
-
+from lib import config, database
 cgitb.enable()
 
 # global variables:
-project,projectconfig,sql,thisfile,textid,textname,username,userid,adminLevel,todo,validator,validvalid,exotype,opensentence,sentencenumbe,addEmptyUser=None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+project,projectEsc,projectconfig,sql,thisfile,textid,textname,username,userid,adminLevel,todo,validator,validvalid,exotype,opensentence,sentencenumbe,addEmptyUser=None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
 
 graphical=0
 ##############################################
 ######################### functions
 
-#def printhtmlheader(project,projectconfig,textid,textname,username,userid,todo,validator,addEmptyUser,opensentence,sql):
 def printhtmlheader():
 	"""
 	all strings in parameters are already in utf-8
@@ -64,14 +61,12 @@ def printhtmlheader():
 		<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" media="screen" />
 		<link href="css/arborator.css" rel="stylesheet" type="text/css">""".format(title=textname)).encode("utf-8")
 	
-			#<script type="text/javascript">editable=true;</script>
-
 	
 	config.jsDefPrinter(projectconfig) # prints all general, text-independant, stuff for javascript: categories, functions, etc
 	
 	#print """<script type="text/javascript"> numbersent=""",snr,";"
 	print """<script type="text/javascript"> numbersent=1;"""
-	print "project= '"+project.encode("utf-8")+"';"
+	print "project= '"+projectEsc.encode("utf-8")+"';"
 	#print "uid= '"+"3"+"';" # TODO!
 	print "textname= '"+textname.encode("utf-8")+"';"
 	print "textid= '"+str(textid)+"';"
@@ -85,7 +80,6 @@ def printhtmlheader():
 	print "validator= '"+str(validator)+"';"
 	if addEmptyUser: print "addEmptyUser= '"+str(addEmptyUser)+"';"
 	else: print "addEmptyUser= null;"
-	#print "addEmptyUser= "+str(addEmptyUser)+";"
 	print "validvalid= '"+str(validvalid)+"';"
 	print "opensentence= '"+str(opensentence)+"';"
 	print "editable= "+str(sql.editable)+";"
@@ -94,7 +88,7 @@ def printhtmlheader():
 	print "filetype = null;"
 	print "function settings() {"
 	print projectconfig["look"]["look"]
-	print """colored={"dependency":null}; //object of elements to be colored. the colors have to be defined in config.py. just leave the object empty {} if you don't want colors
+	print """colored={"dependency":null}; //object of elements to be colored. the colors have to be defined in the configuration. just leave the object empty {} if you don't want colors
 	attris[shownfeatures[categoryindex]]=attris["cat"]
 	colored[shownfeatures[categoryindex]]=null;
 	}
@@ -103,7 +97,6 @@ def printhtmlheader():
 	</head>"""
 	
 
-#def printheadline(project,textname,sentencenumber):
 def printheadline():
 	
 	if os.path.exists("projects/"+project.encode("utf-8")+"/"+project.encode("utf-8")+".png"):img="<img src='projects/"+project.encode("utf-8")+"/"+project.encode("utf-8")+".png' align='top' height='18'>"
@@ -115,8 +108,8 @@ def printheadline():
 	print 	"""<body id="body">
 			<div id="navigation" style="width:100%;margin:0px;border:0px;" class="arbortitle  ui-widget-header ui-helper-clearfix">
 			<a href='.' style='position: fixed;left:1px;top:1px'><img src="images/arboratorNano.png" border="0"></a>
-			<a href='project.cgi?project={project}' style='position: fixed;left:120px;top:5px;color:white;' title="project overview">{img} {project} Annotation Project</a>
-				<span style='margin:5 auto;position: relative;top:5px;' id='sentinfo'>{textname} &nbsp; {sentencenumber} sentences</span>
+			<a href="project.cgi?project={project}" style='position: fixed;left:120px;top:5px;color:white;' title="project overview">{img} {project} Annotation Project</a>
+				<span style='margin:5 auto;position: relative;top:5px;' id='sentinfo'>{textname} &nbsp; {quantityInfo} </span>
 			</div>
 			<div id="center" class="center" style="width:100%;">
 			<form method="post" action="editor.cgi" name="save" id="save" class="nav" style="top:0px;right:150px;">
@@ -124,7 +117,7 @@ def printheadline():
 				{openbutton}
 			</form>
 			<div id="loader" ><img src="images/ajax-loader.gif"/></div>
-		""".format(textname=textname.encode("utf-8"), sentencenumber=sentencenumber,project=project.encode("utf-8"),img=img,openbutton=openbutton)
+		""".format(textname=textname.encode("utf-8"), quantityInfo=quantityInfo,project=project.encode("utf-8"),img=img,openbutton=openbutton)
 	if os.path.exists("sitemessage.html"):print open("sitemessage.html").read()
 
 	
@@ -135,9 +128,9 @@ def printheadline():
 def printfooter():
 	now=lastseens,now=sql.usersLastSeen()	
 	print (u"""<div class="arborfoot fg-toolbar ui-widget-header ui-helper-clearfix">logged in as {username}&nbsp;&nbsp;&nbsp;
-	<a href="{thisfile}?login=logout&project={project}">logout</a>""".format(username=username,project=project,thisfile=thisfile)).encode("utf-8")
-	if username!="guest": print (u'&nbsp;&nbsp;&nbsp;<a href="{thisfile}?login=editaccount&project={project}">edit the account {username}</a>'.format(username=username,project=project,thisfile=thisfile)).encode("utf-8")
-	if adminLevel > 1: print (u'&nbsp;&nbsp;&nbsp;<a href="{thisfile}?login=admin&project={project}">User Administration</a>'.format(project=project,thisfile=thisfile)).encode("utf-8")
+	<a href="{thisfile}?login=logout&project={project}">logout</a>""".format(username=username,project=projectEsc,thisfile=thisfile)).encode("utf-8")
+	if username!="guest": print (u'&nbsp;&nbsp;&nbsp;<a href="{thisfile}?login=editaccount&project={project}">edit the account {username}</a>'.format(username=username,project=projectEsc,thisfile=thisfile)).encode("utf-8")
+	if adminLevel > 1: print (u'&nbsp;&nbsp;&nbsp;<a href="{thisfile}?login=admin&project={project}">User Administration</a>'.format(project=projectEsc,thisfile=thisfile)).encode("utf-8")
 	
 	nowstring=u'<a  title="Ask questions or share your feelings with {r}..." href="mailto:{email}?subject=The%20Arborator%20is%20driving%20me%20crazy!">{r} ({u})</a>'
 	now = [nowstring.format(u=u,r=r,email=email) for (u,r,email) in now if u!= username]
@@ -153,7 +146,6 @@ def printexport():
 	print """
 	<form method="post" action="convert_svg.cgi?project={project}" name="ex" id="ex" style=" position:fixed;top:6px;right:30px;display:none;" >
 		<input type="hidden" id="source" name="source" value="">
-		<input type="hidden" id="cat" name="cat" value="">
 		<select id="exptype" name="type" class="ui-button ui-state-default ui-corner-all" style="height:16px;font: italic 10px Times,Serif;border:thin solid silver;" >
 			<option>pdf</option>
 			<option>ps</option>
@@ -167,7 +159,7 @@ def printexport():
 		</select>
 		<input type="button" title="export" value="export" class="ui-button ui-state-default ui-corner-all" onClick="exportTree();"  style="padding: 0.0em 0.0em;" >
 	</form>
-	""".format(project=project.encode("utf-8"))
+	""".format(project=projectEsc.encode("utf-8"))
 	
 def printmenues():
 	#print projectconfig.functions
@@ -175,7 +167,7 @@ def printmenues():
 	print """	
 	<div id="funcform" style="display:none;position:absolute;">
 		<form  method="post" id="func" name="func" >
-			<select id="funchoice" class='funcmenu' onClick="changeFunc(event);"  size=""" +str( len(projectconfig.functions))+""" style="height:"""+str( len(projectconfig.functions)*13.5)+"""px; width:80px;"  >"""
+			<select id="funchoice" class='funcmenu' onClick="changeFunc(event);"  size=""" +str( len(projectconfig.functions))+""" style="height:"""+str( len(projectconfig.functions)*13.5)+"""px; width:110px;"  >"""
 	for f in projectconfig.functions:
 		#print "___",f.encode("utf-8")
 		print "<option style='color: "+projectconfig.funcDic[f]["stroke"].encode("utf-8")+";'>"+f.encode("utf-8")+"</option>"	
@@ -255,7 +247,7 @@ def printdialogs():
 ##############################################################################################"
 
 def start():
-	global project,projectconfig,sql,thisfile,textid,textname,username,userid,adminLevel,todo,validator,addEmptyUser,validvalid,exotype,opensentence,sentencenumber,graphical
+	global project,projectEsc,projectconfig,sql,thisfile,textid,textname,username,userid,adminLevel,todo,validator,addEmptyUser,validvalid,exotype,opensentence,quantityInfo,graphical
 	form = cgi.FieldStorage()
 	thisfile = os.environ.get('SCRIPT_NAME',".")
 	userdir = 'users/'
@@ -265,16 +257,31 @@ def start():
 		print logout(userdir) # printing cookie header. important!
 		print "Content-Type: text/html\n" # blank line: end of headers
 		print '<script type="text/javascript">window.location.href=".";</script>'
-	project = form.getvalue("project",None)
-	if project: project =project.decode("utf-8")
-	
+	project = form.getvalue("project","")
+	projectEsc=""
+	if project: 
+		project =project.decode("utf-8")
+		projectEsc=project.replace("'","\\'").replace('"','\\"')
 	action = form.getvalue("action",None)
-	if action: action =action.decode("utf-8")
-	if action:
+	if action: 
+		action =action.decode("utf-8")
 		if action.startswith("project_"):project=action[8:]
 	if project: action="project_"+project
 	
-	action, userconfig = login(form, userdir, thisfile, action)
+	try:
+		action, userconfig = login(form, userdir, thisfile, action)
+	except IOError, e:
+		print "Content-Type: text/html\n" # blank line: end of headers
+		print "login failed",e
+		sys.exit()
+	#try:
+		
+	#except IOError, e:
+		#print "login failed",e
+		#sys.exit()
+		#raise IOError('Reading user file failed: %s' % e)
+	#except:
+		#print "login failed"
 	adminLevel, username, realname = int(userconfig["admin"]),userconfig["username"].decode("utf-8"),userconfig["realname"].decode("utf-8")
 	
 	print "Content-Type: text/html\n" # blank line: end of headers
@@ -291,8 +298,13 @@ def start():
 	sql=database.SQL(project)
 		
 	textid = form.getvalue("textid",None)
-	if not textid:textid=1
-	_,textname,_ = sql.getall(None, "texts",["rowid"],[textid])[0]
+	if textid: 	textid=int(textid)
+	else:		textid=1
+	try:
+		_,textname,_ = sql.getall(None, "texts",["rowid"],[textid])[0]
+	except:
+		print "something went seriously wrong: The text you are looking for does not seem to exist!",project.encode("utf-8")
+		textname="text not found!"
 	userid = sql.userid(username,realname)
 	opensentence = form.getvalue("opensentence",1)
 
@@ -302,36 +314,32 @@ def start():
 	
 	validvalid=sql.validvalid(textid)
 	
-	exotype=sql.getExo(textid)
-	#addEmptyUser=None
+	exotype, exotoknum =sql.getExo(textid)
 	#print "uu",sql.exotypes[exotype],sql.exotypes[exotype]=="graphical feedback"
 	if sql.exotypes[exotype] in ["teacher visible","graphical feedback", "percentage"] :
 		addEmptyUser=username
 	if sql.exotypes[exotype] in ["teacher visible"] :
 		validvalid+=[sql.userid(sql.teacher)]
-		
 	if sql.exotypes[exotype]=="graphical feedback":
 		graphical=1
-	#print "addEmptyUser",addEmptyUser
-	sentencenumber=sql.getnumber(None, "sentences",["textid"],[textid])
+	if exotoknum and not adminLevel: 	quantityInfo = ">"+str(exotoknum)+" tokens"
+	else: 					quantityInfo = str(sql.getnumber(None, "sentences",["textid"],[textid]))+" sentences"
 	
-	#return project,projectconfig,sql,thisfile,textid,textname,username,userid,adminLevel,todo,validator,addEmptyUser,validvalid,opensentence
 
 	
 #def main(project,sql,textid,userid,adminLevel,todo,validvalid,validator):
 def main():
 	########### essential loop: all the sentences:
 	
-	#print "validvalid",validvalid, "addEmptyUser",addEmptyUser
-	for snr,sid,s,tid in sorted([(snr,sid,s,tid) for (sid,snr,s,tid) in sql.getall(None, "sentences",["textid"],[textid])]):
+	for snr,sid,s,tid in sql.getAllSentences(textid, username, userid, adminLevel):
 		#print adminLevel, validvalid, validator
 		treelinks, firsttreeid, sentenceinfo=sql.links2AllTrees(sid,snr,username,adminLevel, todo, validvalid, validator,addEmptyUser=addEmptyUser)
 		status=""
 		if todo>=0:status=sql.gettreestatus(sid,userid)
 		status="<span id='status{nr}' class='status' onClick='nexttreestatus({sid},{nr})'>{status}</span>".format(status=status,sid=sid, nr=snr)
 		connectRight=""
-		if adminLevel:
-			connectRight='''<img class="connectRight" src="images/chain.png" border="0" align="bottom" id='connectRight{nr}' nr='{nr}' title="connect with next tree"> '''.format(nr=snr)
+		if adminLevel or (sql.validatorsCanConnect and validator):
+			connectRight='''<img class="connectRight" src="images/chain.png" border="0" align="bottom" id='connectRight{nr}' nr='{nr}' title="connect with next tree (+ctrl: split at selcted word)"> '''.format(nr=snr)
 		exo=""
 		if exotype>1: # 0: no exercise, 1: no feedback
 			exo='''<img class="check" src="images/check.png" border="0" align="bottom" id='check{nr}' nr='{nr}' title="check annotation" graphical={graphical}> '''.format(nr=snr, graphical=graphical)
@@ -348,7 +356,7 @@ def main():
 				{connectRight}
 				{exo}
 			</div><p><small>{sentenceinfo}</small></p>'''.format(sentence=s.encode("utf-8"),nr=snr, sid=sid, firsttreeid=firsttreeid, project=project.encode("utf-8"), userid=userid, treelinks=treelinks.encode("utf-8"), status=status,connectRight=connectRight,exo=exo,sentenceinfo=sentenceinfo.encode("utf-8"))
-	
+		#print "addEmptyUser",addEmptyUser
 	#print '<div id="holder" style="background:white; position:relative;"> </div> '
 
 
@@ -360,7 +368,7 @@ if __name__ == "__main__":
 	#printhtmlheader(project.encode("utf-8"),projectconfig,textid,textname.encode("utf-8"),username.encode("utf-8"),userid,todo,validator,addEmptyUser,opensentence,sql)
 	printhtmlheader()
 	
-	#printheadline(project.encode("utf-8"),textname.encode("utf-8"),sentencenumber)
+	#printheadline(project.encode("utf-8"),textname.encode("utf-8"),quantityInfo)
 	printheadline()
 	printexport()
 	#print "todo",todo

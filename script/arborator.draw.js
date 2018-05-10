@@ -3,7 +3,7 @@
  * version 1.0
  * http://arborator.ilpga.fr/
  *
- * Copyright 2010-2012, Kim Gerdes
+ * Copyright 2010-2018, Kim Gerdes
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
@@ -20,6 +20,8 @@
 attrdirty = {"value":"save all modified trees",'disabled':false,"cursor":"pointer"};
 attrclean = {"value":"all trees are saved",'disabled':true,"cursor":"default"};
 
+noshowtokens = {'misc':{"SpaceAfter=No":"_"}}
+
 ///////////////////////// node object and functions //////////////// 
 ////////////////////////////////////////////////////////////////////
 
@@ -31,6 +33,7 @@ var dirty=[]; // list of dirty svgs
 var lastSelected;
 var keyediting=false;
 var nokeys=false;
+var numbersent=0;
 
 function Pnode(index,token)
 	{
@@ -55,7 +58,7 @@ function Pnode(index,token)
 		for (var i in shownfeatures) 
 			{	
 			var f = shownfeatures[i]; // f= eg. "cat"
-			
+			if (token[f]===undefined) {token[f] = "_";} // 😐
 			this.features[f]=token[f];
 			
 			if ( (token[f] instanceof Object) ) // mode compare!!!
@@ -88,7 +91,10 @@ function Pnode(index,token)
 			}
 			else // normal mode
 			{
-				var t = paper.text(currentx, currenty, token[f]);
+				if (f in noshowtokens && token[f] in noshowtokens[f])
+					{tokenf=noshowtokens[f][token[f]];  }
+				else 	{tokenf=token[f];}
+				var t = paper.text(currentx, currenty, tokenf);
 				t.attr(defaultattris);
 				if (f in token) t.attr(attris[f]);				
 			}
@@ -137,6 +143,7 @@ createConnection = function () {
 	
 	$(currentsvg).mousemove(function(e) 
 	{
+// 		console.log("ddd",currentsvg.id,$(currentsvg));
 		if (currentsvg!=this) 
 		{
 			reset()
@@ -263,6 +270,7 @@ clickOpenFunctionMenu = function(funcnode)  // funcnode=svg text node of the dep
 	{
 // 		console.log("clickOpenFunctionMenu",funcnode,$(currentsvg).position())
 // 		svgpos=$(currentsvg).position();
+// 		console.log("jjjj",$(currentsvg),currentsvg.id);
 		svgpos=$(currentsvg).offset()
 		openFunctionMenu(funcnode.index, funcnode.govind, funcnode.attr("text"), svgpos.left+funcnode.attr("x")-20, svgpos.top+funcnode.attr("y")-7 );   // TODO: make the position of the function menu parametrizable	
 	}
@@ -270,6 +278,8 @@ clickOpenFunctionMenu = function(funcnode)  // funcnode=svg text node of the dep
 	
 openFunctionMenu = function(ind,govind,func,x,y)  // called from clickOpenFunctionMenu and from changeDrag, changeFunc closes the menu
 	{
+// 		currentnr = $(currentsvg).parent().attr("nr");
+// 		console.log("kkkk",$(currentsvg),currentsvg.id);
 		var ff=$('#funcform');
 		var os=$("#funchoice")[0].options;
 		funcnum=functions.indexOf(func);
@@ -489,7 +499,7 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 onkey = function () {
 	$(document).keypress(function(e) {
 		if (nokeys) return true;
-			     
+		e.stopImmediatePropagation();
 		var code = (e.keyCode ? e.keyCode : e.which);
 		
 		switch(code)
@@ -555,7 +565,7 @@ onkey = function () {
 }
 
 keyOpenMenu = function (cat) {
-
+// 	console.log("keyOpenMenu",cat);
 	
 // 	$("#sentinfo").html(" lastSelected "+" "+cat)
 
@@ -572,15 +582,13 @@ nextword = function (forward) {
 	
 	if (!currentsvg) return;
 	$('#funcform').hide();
-	$('#catform').hide();
-	
+	$('#catform').hide();	
 	if (forward) lastSelected++;
 	else  lastSelected--;
 	if (lastSelected > Object.keys(currentsvg.words).length) lastSelected=1;
 	else if (lastSelected<=0) lastSelected=Object.keys(currentsvg.words).length;
 	gov=0; // in case a node has no governor
 	for (gov in currentsvg.words[lastSelected].gov) break; // get first (any) gov
-
 	keyConnection(gov);
 
 }
@@ -694,8 +702,8 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi)
 		t.attr(attris["deptext"]);
 		t.index=ind;
 		t.govind=govind;
-		
 		if (editable) t.click(function (e) {
+// 				console.log(e);
 				clickOpenFunctionMenu(this);
 			})
 		
@@ -924,6 +932,7 @@ makewords = function()
 		
 		return words;
 	};
+
 
 
 start = function (holder, nr) {
