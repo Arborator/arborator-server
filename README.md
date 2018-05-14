@@ -2,7 +2,7 @@
 The Arborator software is aimed at collaboratively annotating dependency corpora.
 
 
-![The Arborator](https://github.com/kimgerdes/arborator/blob/master/images/arborator.png "The Arborator")
+![The Arborator](https://github.com/Arborator/arborator-server/blob/stable/images/arborator.png)
 
 
 Please simply try it out on the [![Quick access to the Arborator](https://github.com/kimgerdes/arborator/blob/master/images/q.png)](http://arborator.ilpga.fr/q.cgi) access to the Arborator (no login is needed)!
@@ -18,4 +18,4 @@ A report on Arborator's options for class-sourcing dependency annotation is here
 
 Please also cite this article if you use Arborator for research.
 
-Check out the instructions on the [Wiki page](https://github.com/kimgerdes/arborator/wiki).
+Check out the instructions on the [Wiki page](https://github.com/Arborator/arborator-server/wiki).
