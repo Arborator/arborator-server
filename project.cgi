@@ -48,6 +48,7 @@ def start():
 	
 	project = (form.getvalue("project",None))
 	if project: project =project.decode("utf-8")
+	project = project.replace("(","").replace(")","").replace("<","").replace(">","")  # May not contain <>() to avoid XSS attacks
 	
 	action = form.getvalue("action",None)
 	if action: action =action.decode("utf-8")
@@ -421,6 +422,7 @@ def printhtmlheader(project):
 	
 	
 def printheadline(project):
+	project = project.replace("(","").replace(")","").replace("<","").replace(">","")
 	if os.path.exists("projects/"+project+"/"+project+".png"):img="<img src='projects/"+project+"/"+project+".png' align='top' height='18'>"
 	else: img=""
 	query = form.getvalue("searchtext","")
@@ -492,7 +494,7 @@ def printmyassignments(project,sql,projectconfig,userid): # assigned texts
 
 def printalltexts(project,sql,adminLevel):############################# all texts of the project
 	nrt,stotal,ttotal,tanno,tvali=sql.getNumberTexts(),0,0,0,0
-	
+	project = project.replace("(","").replace(")","").replace("<","").replace(">","")
 	print """
 	<div class="ui-widget ui-widget-content ui-corner-all box"  style="text-align:-moz-center;" id='projectbox'>
 	The <b>{project}</b> Project has {nrt} texts and {nrs} sentences. <br/>
