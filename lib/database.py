@@ -685,8 +685,9 @@ class SQL:
 			db, cursor = self.open()
 			for tid, uid, _, _, ts in self.treesForSentence(sid):
 				tree = self.gettree(treeid=tid, indb=db, incursor=cursor)
-				if not tree["tree"]: self.clean(cursor, "trees", ["rowid"], [tid])
-                		db.commit()
+				if not tree["tree"]:
+					self.clean(cursor, "trees", ["rowid"], [tid])
+                			db.commit()
 			db.close()
 
 		# putting these trees in order:
