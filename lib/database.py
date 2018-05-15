@@ -656,7 +656,9 @@ class SQL:
 		else: # common mortal:
 			treeDict=dict([ (user, (treeid,uid,realname,timestamp)) for treeid,uid,user,realname,timestamp in self.treesForSentence(sid) if user in self.visibleToEveryone or user==username or uid in validvalid])
 		
-		if not treeDict or (addEmptyUser and addEmptyUser not in treeDict and username not in treeDict):
+		# bugfix - solve invisibles trees occuring due to their non-initialization
+		#if not treeDict or (addEmptyUser and addEmptyUser not in treeDict and username not in treeDict):
+		if not treeDict or (addEmptyUser and addEmptyUser not in treeDict) or (username not in treeDict):
 			# could happen in case of exo:
 			# in case user hasn't created own tree, she should see tree of self.exoBaseAnnotatorName
 			# in case tree of self.exoBaseAnnotatorName doesn't exist = tree of self.importAnnotatorName without deps and cats
