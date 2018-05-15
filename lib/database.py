@@ -685,16 +685,8 @@ class SQL:
 			db, cursor = self.open()
 			for tid, uid, _, _, ts in self.treesForSentence(sid):
 				tree = self.gettree(treeid=tid, indb=db, incursor=cursor)
-				if not tree["tree"]:
-					if len(self.treesForSentence(sid))==1: # don't completely erase the last tree, because we need to preserve the tokens
-			                        cursor.execute('UPDATE features SET value="" WHERE treeid=? AND attr!=?;',(tid,self.tokenName,))
-                        			cursor.execute("DELETE from links WHERE treeid=?;",(tid,))
-                        			cursor.execute("UPDATE trees SET userid=? WHERE rowid=?;",(uid,tid,))
-			                else:
-			                        self.clean(cursor, "features", ["treeid"], [tid])
-                        			self.clean(cursor, "links", ["treeid"], [tid])
-			                        self.clean(cursor, "trees", ["rowid"], [tid])
-                			db.commit()
+				if not tree["tree"]: self.clean(cursor, "trees", ["rowid"], [tid])
+                		db.commit()
 			db.close()
 
 		# putting these trees in order:
