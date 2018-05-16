@@ -241,12 +241,13 @@ class SQL:
 		#open("logger.txt","a").write("enterTree "+str( [cursor, nodedic, sentenceid, userid, notenter, intokenname, tokensChanged,"daddy:",currentFuncName(1)])+"\n")
 		#print nodedic, sentenceid, userid, intokenname
 		#debug end
-		
+
 		if not intokenname:  intokenname=self.tokenName
 
 		wcounter=0
 		timestamp = mktime( datetime.now().timetuple() ) # contrary: asctime(localtime(timestamp))
 
+		if not nodedic: return 0, "", None # prevent invisible trees
 
 		treeid=self.getUniqueId(cursor, "trees", ["sentenceid","userid","annotype"],[sentenceid, userid, 0])
 		if treeid:
