@@ -725,7 +725,10 @@ def printmenues(project,sql):
 	print """<div id="userform" style="position:absolute; display:none;" onclick="var e=arguments[0];e.stopPropagation();">
 			<form  method="post" action="project.cgi?project={project}" id="useraddremove" name="useradd">
 				<select id="userchoice" name="userchoice" style="width:180px;"  >""".format(project=project)
-	for uid,user,realname in sorted(sql.getall(None, "users",None,None), key=lambda x: x[2].lower()):
+
+	user_rows = sorted(sql.getall(None, "users",None,None), key=lambda x: x[2].lower() if x[2] is not None else "")
+
+	for uid,user,realname in user_rows:
 			if user!=parser:
 				#print [user]
 				print "			<option>",
