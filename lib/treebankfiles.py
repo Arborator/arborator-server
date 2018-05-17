@@ -1298,19 +1298,16 @@ def readinsingleconll(projectname,conllfile,useFileInfo=True,eraseAllAnnos=False
 		print "ok"
 	else:
 		print "skipped",conllfile
-	
+
+
 def writeConfigs(project,allcats,allfuncs):
-	with codecs.open("projects/"+project+"/categories.config","w","utf-8") as catfile, codecs.open("projects/"+project+"/functions.config","w","utf-8") as funcfile:
-		
-		for cat in sorted(allcats):
-			catfile.write(cat+'	{"fill": "#69399d"}\n')
-		for func in sorted(allfuncs):
-			funcfile.write(func+'	{"stroke": "#000","stroke-width":"1","stroke-dasharray": ""}\n')
-		funcfile.write('attention	{"stroke": "#DD137B","stroke-width":"1","stroke-dasharray": "- "}\n')
-
-
-
-	
+	with codecs.open("projects/"+project+"/categories.config","w","utf-8") as catfile:
+		with codecs.open("projects/"+project+"/functions.config","w","utf-8") as funcfile:
+			for cat in sorted(allcats):
+				catfile.write(cat+'	{"fill": "#69399d"}\n')
+			for func in sorted(allfuncs):
+				funcfile.write(func+'	{"stroke": "#000","stroke-width":"1","stroke-dasharray": ""}\n')
+			funcfile.write('attention	{"stroke": "#DD137B","stroke-width":"1","stroke-dasharray": "- "}\n')
 
 					
 def computeDifference(tree):
