@@ -38,6 +38,16 @@ from conll import Tree
 debug=False
 #debug=True
 
+# debug & related config. concerning "invisible trees"
+enable_not_show_invisible_trees = True
+enable_not_save_invisible_trees = True
+enable_delete_invisible_trees   = True
+# 1: forcing nodedic = {} in links2AllTrees -> result: invisible trees
+# 2: forcing notenter = ["gov", self.catName, "tag2"] in links2AllTrees -> result: good dummy tree
+# othwrwise: no debug
+debug_invisiable_trees = 0
+
+
 if debug:import traceback
 
 class SQL:
@@ -221,6 +231,11 @@ class SQL:
 	
 	
 	def enterTree(self, cursor, nodedic, sentenceid, userid, notenter=[], intokenname=None, tokensChanged=False):
+
+		# bugfix "invisible trees": prevent invisible trees
+		if enable_not_save_invisible_trees:
+			if not nodedic: return 0,"",None
+
 		"""
 		takes the 
 			db cursor, 
@@ -241,13 +256,12 @@ class SQL:
 		#open("logger.txt","a").write("enterTree "+str( [cursor, nodedic, sentenceid, userid, notenter, intokenname, tokensChanged,"daddy:",currentFuncName(1)])+"\n")
 		#print nodedic, sentenceid, userid, intokenname
 		#debug end
-
+		
 		if not intokenname:  intokenname=self.tokenName
 
 		wcounter=0
 		timestamp = mktime( datetime.now().timetuple() ) # contrary: asctime(localtime(timestamp))
 
-		if not nodedic: return 0, "", None # prevent invisible trees
 
 		treeid=self.getUniqueId(cursor, "trees", ["sentenceid","userid","annotype"],[sentenceid, userid, 0])
 		if treeid:
@@ -261,7 +275,6 @@ class SQL:
 			treeid=self.enter(cursor, "trees",["sentenceid","userid","annotype","status","timestamp"],(sentenceid,userid,0,"0",timestamp),True) # createIfNotExists
 			self.clean(cursor, "features",["treeid"],(treeid,)) # erase all existing features for this treeid, should be a useless line. just in case...
 			self.clean(cursor, "links",["treeid"],(treeid,))
-
 
 		sent=""
 
@@ -648,7 +661,7 @@ class SQL:
 		validvalid: list of userids that should be shown because they have validated the text. if none is given, the validvalid is computed
 		addEmptyUser: in case of "teacher visible" exercises, the user itself needs to be automatically provided with an empty tree
 		"""
-		
+
 		if self.showTreesOfValidatedTexts and not validvalid:
 			validvalid=self.validvalid(None, sid)			
 				
@@ -675,21 +688,38 @@ class SQL:
 			else:	# no tree exists yet for self.exoBaseAnnotatorName, let's create it, 
 				# and save it under exoBaseAnnoId if applicable, and always under the userid
 				nodedic = self.gettree(sid=sid,username=self.importAnnotatorName,indb=db,incursor=cursor, adminLevel=adminLevel)["tree"]
+
+				# debug "invisible tree":
+				# test which configuration leads to invisible tree if debug mode choosed
+				if debug_invisiable_trees :
+					if debug_invisiable_trees == 1:
+						nodedic = {}
+					elif debug_invisiable_trees == 2:
+						notenter = ["gov", self.catName, "tag2"]
+					else : pass
+
 				if exoBaseAnnoId: self.enterTree(cursor, nodedic, sid, exoBaseAnnoId, notenter=["gov",self.catName,"tag2"])
 				wcounter, sent, newtreeid = self.enterTree(cursor, nodedic, sid, userid, notenter=["gov",self.catName,"tag2"])
 				#wcounter, sent, treeid = self.enterTree(cursor, nodedic, sid, userid, t)
 			db.commit()
 			db.close()
-			treeDict[username]=(newtreeid, userid, username,0)
+
+			# bugfix "invisible trees":
+			# not to put in "the visualisation buffer" treeDict a tree which does not exist
+			if newtreeid != None or not enable_not_show_invisible_trees :
+				treeDict[username]=(newtreeid, userid, username,0)
 		else:
-			# delete dummy tree which do not contain anything
-			db, cursor = self.open()
-			for tid, uid, _, _, ts in self.treesForSentence(sid):
-				tree = self.gettree(treeid=tid, indb=db, incursor=cursor)
-				if not tree["tree"]:
-					self.clean(cursor, "trees", ["rowid"], [tid])
-                			db.commit()
-			db.close()
+			# bugfix "invisible trees":
+			# delete all tree which do not contain anything (i.e. invisble trees)
+			if enable_delete_invisible_trees:
+				db, cursor = self.open()
+				for tid, uid, _, _, ts in self.treesForSentence(sid):
+					tree = self.gettree(treeid=tid, indb=db, incursor=cursor)
+					if not tree["tree"]:
+						self.clean(cursor, "trees", ["rowid"], [tid])
+                				db.commit()
+				db.close()
+
 
 		# putting these trees in order:
 		goodlist=[]
