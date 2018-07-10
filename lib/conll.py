@@ -83,7 +83,7 @@ class Tree(dict):
 				node.get("t","_"), 
 				node.get("lemma",""), 
 				node.get("tag","_"), 
-				node.get("xpos","_"), 
+				node.get("tag2","_"),
 				"|".join( [ a+"="+v for a,v in node.iteritems() if a not in ["t","lemma","lemma2","tag","tag2","xpos","egov","misc","id","index","gov"] and v!='_']) or "_", 
 				gk,
 				gv,
