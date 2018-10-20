@@ -48,12 +48,12 @@ def start():
 	
 	project = (form.getvalue("project",None))
 	if project: project =project.decode("utf-8")
-	project = project.replace("(","").replace(")","").replace("<","").replace(">","")  # May not contain <>() to avoid XSS attacks
 	
 	action = form.getvalue("action",None)
 	if action: action =action.decode("utf-8")
 	if action:
 		if action.startswith("project_"):project=action[8:]
+	project = project.replace("(","").replace(")","").replace("<","").replace(">","")  # May not contain <>() to avoid XSS attacks
 	if project: action=u"project_"+project
 	if action:
 		#action, userconfig = login(form, userdir, thisfile, action.encode("utf-8"))
