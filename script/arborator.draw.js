@@ -35,7 +35,7 @@ var keyediting=false;
 var nokeys=false;
 var numbersent=0;
 
-function Pnode(index,token)
+function Pnode(index,token, min_width = 0)
 	{
 		index=parseInt(index,10);
 		this.index=index;
@@ -100,7 +100,6 @@ function Pnode(index,token)
 			}
 			t.attr("index",index);
 			var wi=t.getBBox().width;
-			console.log(wi,token[f])
 			t.width=wi;
 			t.index=index;
 
@@ -108,6 +107,7 @@ function Pnode(index,token)
 			if (f in colored && token[f] in catDic) t.attr(catDic[token[f]]);
 			this.svgs[f]=t;
 			if (wi>this.width) this.width=wi;
+			if (this.width < min_width) this.width = min_width;
 			currenty=currenty+line;
 
 			};
@@ -199,7 +199,7 @@ createConnection = function () {
 
 
 // 	  attris["dragdepline"], attris["deptext"],
-	return drawsvgDep(1,2,50,60,150,150,"", "",false,0,0); // arbitrary points
+	return drawsvgDep(1,2,50,60,150,150,"", "",false,0,1); // arbitrary points
 
 }
 
@@ -675,7 +675,9 @@ moveGov = function (dir) {
 ////////////////////////////////////////////////////////////////
 /////////////////////essential drawing stuff////////////////////
 ////////////////////////////////////////////////////////////////
-
+var _FONTSIZE        = 12;
+var _ARC_HEIGHT_UNIT = _FONTSIZE * 1.2;
+var _ANGLE           = Math.PI / 2.5;
 
 
 drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,height)
@@ -690,14 +692,12 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 		var set=currentsvg.paper.set();
 
 		// code inspired from https://github.com/vieenrose/dep_tregex/blob/master/dep_tregex/tree_to_html.py
-		var _FONTSIZE        = 12;
-		var _ARC_HEIGHT_UNIT = _FONTSIZE * 1.2;
-		var _ANGLE           = Math.PI / 2.5;
+
 
 		var start_x = Math.min(x1,x2);
 		var end_x   = Math.max(x1,x2);
 
-		var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height + 1);
+		var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height);
 		var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
 		var length    = radius * Math.sin(_ANGLE) / 2;
 		var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
@@ -706,7 +706,7 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 			y1 = y2 - heigh_pts;
 			var cstr ="M" + start_x + "," + y1 ;
 			cstr +="L"+ end_x  + "," + y2;
-			//console.log(start_x,end_x,y1,y2);
+
 		}
 		else {
 			var cstr ="M" + start_x + "," + y1;
@@ -766,7 +766,6 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 
 drawDep = function(ind,govind,func,c, height)	// draw dependency of type func from govind to ind (c is usually 0, only for multiple heads)
 	{
-// 		console.log("drawDep",ind,govind,func);
 		if (govind==0 ) // head of sentence
 		{
 			node2=currentsvg.words[ind];
@@ -840,8 +839,11 @@ drawalldeps = function()
 {
 
 	// code inspired from https://github.com/vieenrose/dep_tregex/blob/master/dep_tregex/tree_to_html.py
-	// get list of tid gid, sorted by their distance
-  var toknum = Object.keys(currentsvg.words).length;
+
+	var toknum = Object.keys(currentsvg.words).length;
+
+	// ugly way to get a list of (tokenId,govId) sorting by linear distance
+	// ie. dist. = abs(tokenId - govId)
 	var tidgid_dist = {};
 	for (var tid in currentsvg.words)
 	{
@@ -849,10 +851,10 @@ drawalldeps = function()
 		for (var gid in n.gov)
 		{
 			var dist = Math.abs(tid - gid);
-			if (gid==0){dist = toknum;}
-			//console.log(gid,n.gov[gid],dist,toknum);
+			if (gid==0) {
+				dist = toknum; // treat root as like it has a gov. very far from him
+			}
 			tidgid_dist[tid.toString() + " " + gid.toString()] = dist;
-
 		};
 	};
 	var tidgids = Object.keys(tidgid_dist).sort(function(a,b){return tidgid_dist[a]-tidgid_dist[b]});
@@ -861,15 +863,14 @@ drawalldeps = function()
 	var arcnum = tidgids.length;
 
 	var levels = Array(toknum).fill(0);
-	console.log(arcnum,toknum);
-  for (var i = 0; i < arcnum; i++)
+	for (var i = 0; i < arcnum; i++)
 	{
 		tidgid = tidgids[i].split(" ");
 		var tid = parseInt(tidgid[0],10);
 		var gid = parseInt(tidgid[1],10);
 		var n = currentsvg.words[tid];
 
-		// cleaning
+		// cleaning before drawing
 		for (var j in n.svgdep)
 		{
 			n.svgdep[j].remove();
@@ -877,26 +878,52 @@ drawalldeps = function()
 		};
 		n.svgdep={};
 
-		// draw dependency relations by level
-		var c;
-		if (tid_cnt[tid] == undefined)
-			{tid_cnt[tid] = 0;}
-		c = tid_cnt[tid];
-		var height = 0
+		// draw dependency relations by level (of height)
+
+		// tid_cnt is used to memorise how much
+		// governeor a specific token has
+		// this value is requires by the function drawDep
+		// meaningful if multi-head is allowed
+		if (tid_cnt[tid] == undefined) {tid_cnt[tid] = 0;}
+		var c = tid_cnt[tid];
+		var height = 1; // build from the level of height 1
 		var start;
 		var end;
 		start = Math.min(tid,gid);
 		end = Math.max(tid,gid);
 
-		if (gid==0) {start = 0; end = toknum-1;}
-		for (var j = start + 1; j < end; j++) {if (levels[j]>height) {height =levels[j];}};
+		if (gid == 0) {
+			start = 0; end = toknum - 1; // root's label would be the tallest one in graph
+		}
+		// get the level of height for actual arc to draw
+		for (var j = start + 1; j < end; j++) {
+			if (levels[j] > height) {
+				height = levels[j];
+			}
+		};
+
+		// draw this arc
 		drawDep(tid,gid,n.gov[gid],c,height);
-		// update level when the current node is not root {ie. not vertical arc}
-		if (gid>0){
-			for (var j = start; j <= end; j++) {levels[j]=height+1;};}
+
+		// update levels of height over tokens
+		// root have vertical arc so do not occupy any level
+		if (gid > 0){
+			for (var j = start; j <= end; j++)
+			{
+				levels[j]=height+1; // wait for the next level
+			};
+		}
+		// count number of head of token with id "tid"
 		tid_cnt[tid] += 1;
 
 	};
+
+	// horizontal resizing
+	// a. detection inter-label overlaping detection
+
+	// b1. increase token width so that long label can be displayed correctly
+	// b2. resotre orginal token width when long label chnaged to short one
+
 
 };
 
@@ -967,17 +994,22 @@ makewordsxx = function()
 	};
 
 
-makewords = function()
+makewords = function(tid_labellen = {})
 	{
+
 		var words = new Object();
 		svgwi=0;
 		currentx=tab;
 		for (var i in tokens)
-			{
-			var node = new Pnode( i, tokens[i]);
-			words[i]=node;
-			currentx=currentx+node.width+tab;
-			};
+		{
+				min_width = 0;
+				if (i in tid_labellen)
+					min_width = tid_labellen[i] * _FONTSIZE *.8;
+				var node = new Pnode(i, tokens[i], min_width);
+				words[i]=node;
+				//console.log(node.width,min_width,tokens[i],(i in tid_labellen))
+				currentx=currentx+node.width+tab;
+		};
 
 		return words;
 	};
@@ -1012,9 +1044,39 @@ start = function (holder, nr) {
 draw = function() {
 
 	currentsvg.words = makewords();
+
+	// detect label length
+	tid_labellen = {};
+	for (var tid in currentsvg.words) {
+		var n = currentsvg.words[tid];
+		for (var gid in n.gov) {
+			var len = n.gov[gid].length;
+			if (tid in tid_labellen){
+				if (tid_labellen[tid] < len){
+					tid_labellen[tid] = len;
+				}
+			}
+			else {
+				if (Math.abs(tid-gid) < 2) {
+					tid_labellen[tid] = len;
+					if (gid in tid_labellen) {
+						if (tid_labellen[gid] < len){
+							tid_labellen[gid] = len;
+						}
+					}
+					else {
+						tid_labellen[gid] = len;
+					}
+				}
+			}
+		}
+	}
+	currentsvg.paper.clear();
+	currentsvg.words = makewords(tid_labellen);
+
 	if (editable)
 	{
-		if(currentsvg.dragConnection) currentsvg.dragConnection = drawsvgDep(1,2,50,60,150,150,"", "",false,0,0).hide();
+		if(currentsvg.dragConnection) currentsvg.dragConnection = drawsvgDep(1,2,50,60,150,150,"", "",false,0,1).hide();
 		else currentsvg.dragConnection = createConnection().hide();
 		lastSelected=0;
 	}
