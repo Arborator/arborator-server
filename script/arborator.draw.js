@@ -35,7 +35,7 @@ var keyediting=false;
 var nokeys=false;
 var numbersent=0;
 
-function Pnode(index,token, min_width = 0)
+function Pnode(index,token)
 	{
 		index=parseInt(index,10);
 		this.index=index;
@@ -107,10 +107,42 @@ function Pnode(index,token, min_width = 0)
 			if (f in colored && token[f] in catDic) t.attr(catDic[token[f]]);
 			this.svgs[f]=t;
 			if (wi>this.width) this.width=wi;
-			if (this.width < min_width) this.width = min_width;
+
 			currenty=currenty+line;
 
 			};
+
+			// add-on 1 by Luigi : adjust the current token width in fonction of the label width
+			for (var gov_index in this.gov) {
+
+				if (gov_index - index == 1) {
+					// as left-adjacent dependent of its governor, this token
+					// adapt its width in fonction of arc label width
+					var label = this.gov[gov_index];
+					var min_width = label.length * _FONTSIZE * .75;
+					if (this.width < min_width) {
+						this.width = min_width;
+					}
+				}
+
+				if (index + 1 in tokens) {
+					for (var i in tokens[index + 1].gov) {
+						if (i == index) {
+							// as left-adjacent governor of one of its dependent, this token
+							// adapt its width in fonction of arc label width
+							var label = tokens[index + 1].gov[i];
+							var min_width = label.length * _FONTSIZE * .85;
+							// then adapt its width to the width of this label
+							if (this.width < min_width) {
+								this.width = min_width;
+							}
+							console.log(label,tokens[index].t,tokens[index+1].t,this.width,min_width);
+						}
+					}
+				}
+			}
+
+
 
 
 		for (var a in token) // remaining features
@@ -199,7 +231,7 @@ createConnection = function () {
 
 
 // 	  attris["dragdepline"], attris["deptext"],
-	return drawsvgDep(1,2,50,60,150,150,"", "",false,0,1); // arbitrary points
+	return drawsvgDep(1,2,50,60,150,150,"", "",false,0); // arbitrary points
 
 }
 
@@ -677,10 +709,11 @@ moveGov = function (dir) {
 ////////////////////////////////////////////////////////////////
 var _FONTSIZE        = 12;
 var _ARC_HEIGHT_UNIT = _FONTSIZE * 1.2;
-var _ANGLE           = Math.PI / 2.5;
+var _ANGLE           = Math.PI / 3;
+var _YANDEX_STYLE_EN = false; // flag allowing to switch between original and Yandex style
 
 
-drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,height)
+drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,height = 1)
 	{
 		// ind: word index
 // 		govind: index of governor
@@ -691,29 +724,45 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 // 		console.log("drawsvgDep",ind,govind,func);
 		var set=currentsvg.paper.set();
 
+		// add-on 3 by Luigi
+		// Yandex-style tree layout
 		// code inspired from https://github.com/vieenrose/dep_tregex/blob/master/dep_tregex/tree_to_html.py
 
 
-		var start_x = Math.min(x1,x2);
-		var end_x   = Math.max(x1,x2);
+			var start_x = Math.min(x1,x2);
+			var end_x   = Math.max(x1,x2);
 
-		var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height);
-		var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
-		var length    = radius * Math.sin(_ANGLE) / 2;
-		var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
+			var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
+			var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
+			var length    = radius * Math.sin(_ANGLE) / 2;
+			var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
 
-		if (!govind) {
-			y1 = y2 - heigh_pts;
-			var cstr ="M" + start_x + "," + y1 ;
-			cstr +="L"+ end_x  + "," + y2;
+			if (govind == 0) {
+				// vertical line for root
+				ytop = y2 - heigh_pts;
+				var cstr ="M" + start_x + "," + ytop ;
+				cstr +="L"+ end_x  + "," + y2;
 
-		}
-		else {
-			var cstr ="M" + start_x + "," + y1;
-			cstr +="A" + radius + "," + radius + " 0 0 1 "+ (start_x + length / 2) + "," + yy;
-			cstr +="L"+ (end_x - length / 2)   + "," + yy;
-			cstr +="A" + radius + "," + radius + " 0 0 1 "+ end_x   + "," + y2;
-		}
+			}
+			else {
+				// arc of other relations
+				var cstr ="M" + start_x + "," + y1;
+				cstr +="A" + radius + "," + radius + " 0 0 1 "+ (start_x + length / 2) + "," + yy;
+				cstr +="L"+ (end_x - length / 2)   + "," + yy;
+				cstr +="A" + radius + "," + radius + " 0 0 1 "+ end_x   + "," + y2;
+
+				if (!_YANDEX_STYLE_EN) { // original arc drawing style
+					//var x1x2=Math.abs(x1-x2)/2;
+					//var yy = Math.max(y1-x1x2-worddistancefactor*Math.abs(ind-govind),-tokdepdist);
+					//yy = Math.min(yy,y1-depminh);
+					var yy        = Math.min(y1 - worddistancefactor*heigh_pts, y1 - depminh);
+					var cstr="M"+x1+","+y1+"C"+x1+","+yy+" "+x2+","+yy+" "+(x2+.01)+","+y2;
+
+				}
+			}
+
+
+
 
 
 		var c = currentsvg.paper.path(cstr).attr(attris["depline"]).attr({"x":x1,"y":y1,"smooth":true});
@@ -721,8 +770,8 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 		var poi = currentsvg.paper.pointer(x2,y2,pois,0).attr(attris["depline"]);
 // 		.data("xfunc",func);
 
-		a=c.getPointAtLength(c.getTotalLength()/2);
-		if (!govind) a=c.getPointAtLength(0);
+		a=c.getPointAtLength(c.getTotalLength()/2); // put text in the middle of arc
+		if (govind == 0) a=c.getPointAtLength(0); // Luigi : root style ajustement : put text on the top of a root
 		t = currentsvg.paper.text(a.x, a.y-funccurvedist-funcposi*10, func);
 		t.attr(attris["deptext"]);
 		t.index=ind;
@@ -732,12 +781,16 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 				clickOpenFunctionMenu(this);
 			})
 
-		if (govind==0) { // case: head of sentence (root): the function name needs special treetment
+		/*
+		if (govind==0 && !_YANDEX_STYLE_EN) { // case: head of sentence (root): the function name needs special treetment
 
+				var newx=a.x+t.getBBox().width/2+funccurvedist/2;
+				if (newx+t.getBBox().width/2 > svgwi) newx=a.x-t.getBBox().width/2-funccurvedist/2;
+				if (newx-t.getBBox().width/2 < 0) newx=a.x;
 // 			console.log("--",c.getPointAtLength(100),c.getTotalLength(),t,a.y-funccurvedist-funcposi*10,a.y,funccurvedist,funcposi*10)
-			var newx=a.x;
-			t.attr("x",newx);
+				t.attr("x",newx);
 		}
+		*/
 // 		console.log(color,colored,functions)
 		if (color) // case compare: colors depend on users
 		{
@@ -838,39 +891,44 @@ drawDep = function(ind,govind,func,c, height)	// draw dependency of type func fr
 drawalldeps = function()
 {
 
+	// add-on 2 by Luigi : allocation of arc height
 	// code inspired from https://github.com/vieenrose/dep_tregex/blob/master/dep_tregex/tree_to_html.py
 
-	var toknum = Object.keys(currentsvg.words).length;
-
-	// ugly way to get a list of (tokenId,govId) sorting by linear distance
-	// ie. dist. = abs(tokenId - govId)
-	var tidgid_dist = {};
-	for (var tid in currentsvg.words)
-	{
-		var n = currentsvg.words[tid];
-		for (var gid in n.gov)
+	// get a list of token id and governor id pair sorted by distance
+	// because shorter arc will occupy lower level of height
+	var toknum = Object.keys(currentsvg.words).length; // number of tokens
+	var dict = {};
+	for (i in currentsvg.words)
+		for (j in currentsvg.words[i].gov)
 		{
-			var dist = Math.abs(tid - gid);
-			if (gid==0) {
-				dist = toknum; // treat root as like it has a gov. very far from him
-			}
-			tidgid_dist[tid.toString() + " " + gid.toString()] = dist;
-		};
-	};
-	var tidgids = Object.keys(tidgid_dist).sort(function(a,b){return tidgid_dist[a]-tidgid_dist[b]});
+			var d = Math.abs(i-j);
+			if (j == 0) d = toknum - 1; // root
+			dict[i + ' ' + j] = d;
+		}
+	// sort the dictionary'keys by their associated values
+	var tokenid_govind = Object.keys(dict).sort(function(a,b){return dict[a]-dict[b]});
 
-	var tid_cnt = {}
-	var arcnum = tidgids.length;
-
-	var levels = Array(toknum).fill(0);
+	var arcnum = tokenid_govind.length;
+	var gov_cnt = {}
+	var heights = Array(toknum).fill(1);
 	for (var i = 0; i < arcnum; i++)
 	{
-		tidgid = tidgids[i].split(" ");
+		// unpack tokenid_govind to token id and governor id
+		tidgid = tokenid_govind[i].split(" ");
 		var tid = parseInt(tidgid[0],10);
 		var gid = parseInt(tidgid[1],10);
 		var n = currentsvg.words[tid];
+		if (!(tid in gov_cnt)) gov_cnt[tid] = 0;
+		var c = gov_cnt[tid];
+		gov_cnt[tid] += 1; // count num of governor
+		var height = 1;
+		var start = Math.min(tid, gid), end = Math.max(tid, gid);
+		if (gid == 0) {start = 0; end = toknum - 1;}
 
-		// cleaning before drawing
+		// get height for current arc
+		for (var j = start + 1; j < end; j++) if (heights[j] > height) height = heights[j];
+
+		// clear
 		for (var j in n.svgdep)
 		{
 			n.svgdep[j].remove();
@@ -878,53 +936,13 @@ drawalldeps = function()
 		};
 		n.svgdep={};
 
-		// draw dependency relations by level (of height)
-
-		// tid_cnt is used to memorise how much
-		// governeor a specific token has
-		// this value is requires by the function drawDep
-		// meaningful if multi-head is allowed
-		if (tid_cnt[tid] == undefined) {tid_cnt[tid] = 0;}
-		var c = tid_cnt[tid];
-		var height = 1; // build from the level of height 1
-		var start;
-		var end;
-		start = Math.min(tid,gid);
-		end = Math.max(tid,gid);
-
-		if (gid == 0) {
-			start = 0; end = toknum - 1; // root's label would be the tallest one in graph
-		}
-		// get the level of height for actual arc to draw
-		for (var j = start + 1; j < end; j++) {
-			if (levels[j] > height) {
-				height = levels[j];
-			}
-		};
-
 		// draw this arc
 		drawDep(tid,gid,n.gov[gid],c,height);
 
-		// update levels of height over tokens
-		// root have vertical arc so do not occupy any level
-		if (gid > 0){
-			for (var j = start; j <= end; j++)
-			{
-				levels[j]=height+1; // wait for the next level
-			};
-		}
-		// count number of head of token with id "tid"
-		tid_cnt[tid] += 1;
+		// update heights
+		if (gid != 0) for (var j = start; j <= end; j++) heights[j] = height + 1;
 
 	};
-
-	// horizontal resizing
-	// a. detection inter-label overlaping detection
-
-	// b1. increase token width so that long label can be displayed correctly
-	// b2. resotre orginal token width when long label chnaged to short one
-
-
 };
 
 
@@ -994,20 +1012,46 @@ makewordsxx = function()
 	};
 
 
-makewords = function(tid_labellen = {})
+makewords = function()
 	{
-
+		// for tokens involved in an adjacent dependency relation as
+		// (dependent or govenor), note token id and the longest of its
+		// associated depencency labels under the form of a dictionray
+		// token id to label
+		/*
+		tid2label = {};
+		for (var i in tokens) {
+			var node = tokens[i];
+			for (var j in node.gov) {
+				var label = node.gov[j];
+				if (Math.abs(i-j) < 2) {
+					k = i;
+					if (k in tid2label) {
+						oldlabel = tid2label[k];
+						if (oldlabel.length < label) tid2label[k] = label;
+					}
+					else {
+						tid2label[k] = label;
+					}
+					k = j;
+					if (k in tid2label) {
+						oldlabel = tid2label[k];
+						if (oldlabel.length < label) tid2label[k] = label;
+					} // if
+					else {
+						tid2label[k] = label;
+					} // else
+				} // if
+			} // for with j
+		} // for with i
+		*/
 		var words = new Object();
 		svgwi=0;
 		currentx=tab;
 		for (var i in tokens)
 		{
-				min_width = 0;
-				if (i in tid_labellen)
-					min_width = tid_labellen[i] * _FONTSIZE *.8;
-				var node = new Pnode(i, tokens[i], min_width);
+				var node = new Pnode(i, tokens[i]);
 				words[i]=node;
-				//console.log(node.width,min_width,tokens[i],(i in tid_labellen))
 				currentx=currentx+node.width+tab;
 		};
 
@@ -1045,38 +1089,9 @@ draw = function() {
 
 	currentsvg.words = makewords();
 
-	// detect label length
-	tid_labellen = {};
-	for (var tid in currentsvg.words) {
-		var n = currentsvg.words[tid];
-		for (var gid in n.gov) {
-			var len = n.gov[gid].length;
-			if (tid in tid_labellen){
-				if (tid_labellen[tid] < len){
-					tid_labellen[tid] = len;
-				}
-			}
-			else {
-				if (Math.abs(tid-gid) < 2) {
-					tid_labellen[tid] = len;
-					if (gid in tid_labellen) {
-						if (tid_labellen[gid] < len){
-							tid_labellen[gid] = len;
-						}
-					}
-					else {
-						tid_labellen[gid] = len;
-					}
-				}
-			}
-		}
-	}
-	currentsvg.paper.clear();
-	currentsvg.words = makewords(tid_labellen);
-
 	if (editable)
 	{
-		if(currentsvg.dragConnection) currentsvg.dragConnection = drawsvgDep(1,2,50,60,150,150,"", "",false,0,1).hide();
+		if(currentsvg.dragConnection) currentsvg.dragConnection = drawsvgDep(1,2,50,60,150,150,"", "",false,0).hide();
 		else currentsvg.dragConnection = createConnection().hide();
 		lastSelected=0;
 	}
