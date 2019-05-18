@@ -19,7 +19,7 @@ getTreeStyleStatus = function ()
 {
 	if (_YANDEX_STYLE_EN)
 	{
-		return "Anndoc Style";
+		return "Yandex Style";
 	}
 	else {
 		return "Arborator Style";
