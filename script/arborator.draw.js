@@ -845,6 +845,7 @@ var _ARC_HEIGHT_UNIT = _FONTSIZE * 1.2;
 var _ANGLE           = Math.PI / 3;
 var _YANDEX_STYLE_EN      = true;  // Yandex or Arborator style
 var _TOKEN_WIDTH_RESIZING = true; // auto adapt token width to associated label widths
+var _PAPER_HEIGHT_RESIZING = true; // auto adapt the height of the drawing space according to tree height
 
 drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,height = 1)
 	{
@@ -1212,6 +1213,7 @@ draw = function() {
 		lastSelected=0;
 	}
 	currentsvg.setAttribute("width",svgwi+extraspace);
+	currentsvg.setAttribute("height",dependencyspace+shownfeatures.length*line);
 
 	// set dependencyspace
 	drawalldeps3();
@@ -1221,17 +1223,31 @@ draw = function() {
 }
 
 // this drawin funciton autoresize paper height according to
-// tree height
+// tree height if _PAPER_HEIGHT_RESIZING is true
 drawalldeps3 = function () {
-	// auto set dependencyspace
-	var tree_height = drawalldeps();
-	var tree_height_pts = _ARC_HEIGHT_UNIT * Math.abs(tree_height + 4 - 2 * _YANDEX_STYLE_EN);
-	dependencyspace = tree_height_pts;
 
-	// redrawing
-	clearTreeAndTokens(currentsvg.words);
-	currentsvg.setAttribute("height",dependencyspace+shownfeatures.length*line);
-	currentsvg.words = makewords();
+	if (_PAPER_HEIGHT_RESIZING) {
+
+		// detect dependencyspace
+		var tree_height = drawalldeps();
+		var tree_height_pts = 0 ;
+		for (var i in currentsvg.words){
+			t = currentsvg.words[i];
+			for (var j in t.svgdep)
+			{
+				var real_heigth_of_dep_label = t.svgdep[j].getBBox().height;
+				if (tree_height_pts < real_heigth_of_dep_label)
+					tree_height_pts = real_heigth_of_dep_label;
+			}
+		}
+
+		dependencyspace = tree_height_pts + 2 *_FONTSIZE;
+
+		// redrawing
+		clearTreeAndTokens(currentsvg.words);
+		currentsvg.setAttribute("height",dependencyspace+shownfeatures.length*line);
+		currentsvg.words = makewords();
+	}
 
 	// draw relations
 	drawalldeps();
