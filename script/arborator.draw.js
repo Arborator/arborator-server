@@ -136,7 +136,7 @@ function Pnode(index,token)
 							if (this.width < min_width) {
 								this.width = min_width;
 							}
-							console.log(label,tokens[index].t,tokens[index+1].t,this.width,min_width);
+							//console.log(label,tokens[index].t,tokens[index+1].t,this.width,min_width);
 						}
 					}
 				}
@@ -364,6 +364,7 @@ function changeFunc(event){ // called by onclick on the func menu or return
 	ff.hide();
 	currentsvg.dragConnection.hide();
 
+
 }
 
 
@@ -502,11 +503,79 @@ moveConnection = function(x2,y2) // moves the connection so that it links the is
 applyPath = function(x1,y1,x2,y2,lineattris) //
 	{
 // 		console.log(x1,y1,x2,y2,lineattris);
+
+		/*
 		var x1x2=Math.abs(x1-x2)/2;
 		var yy = Math.max(y1-x1x2-worddistancefactor*3,-tokdepdist);// 3 is adhoc: curve looks like link between tokens that are 3 words apart. original: worddistancefactor*Math.abs(ind-govind) TODO: think about this...
 		yy = Math.min(yy,y1-depminh);
 
 		var path="M"+x1+","+y1+"C"+x1+","+yy+" "+x2+","+yy+" "+x2+","+y2;
+		*/
+
+		// add-on 4 by Luigi
+		var toknum = Object.keys(currentsvg.words).length; // number of tokens
+		var dict = {};
+		for (i in currentsvg.words)
+			for (j in currentsvg.words[i].gov)
+			{
+				var d = Math.abs(i-j);
+				if (j == 0) d = toknum - 1; // root
+				dict[i + ' ' + j] = d;
+			}
+		// sort the dictionary'keys by their associated values
+		var tokenid_govind = Object.keys(dict).sort(function(a,b){return dict[a]-dict[b]});
+
+		var arcnum = tokenid_govind.length;
+		var gov_cnt = {}
+		var heights = Array(toknum).fill(1);
+		for (var i = 0; i < arcnum; i++)
+		{
+			// unpack tokenid_govind to token id and governor id
+			tidgid = tokenid_govind[i].split(" ");
+			var tid = parseInt(tidgid[0],10);
+			var gid = parseInt(tidgid[1],10);
+			var n = currentsvg.words[tid];
+			if (!(tid in gov_cnt)) gov_cnt[tid] = 0;
+			var c = gov_cnt[tid];
+			gov_cnt[tid] += 1; // count num of governor
+			var height = 1;
+			var start = Math.min(tid, gid), end = Math.max(tid, gid);
+			if (gid == 0) {start = 0; end = toknum - 1;}
+
+			// get height for current arc
+			for (var j = start + 1; j < end; j++) if (heights[j] > height) height = heights[j];
+			if (gid != 0) for (var j = start; j <= end; j++) heights[j] = height + 1;
+
+		};
+		//
+		var height = 1;
+		for (var j = 0; j < toknum; j++) if (heights[j] > height) height = heights[j];
+
+
+		var start_x = Math.min(x1,x2);
+		var end_x   = Math.max(x1,x2);
+
+		var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
+		var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
+		var length    = radius * Math.sin(_ANGLE) / 2;
+		var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
+
+			// arc of other relations
+			var cstr ="M" + start_x + "," + y1;
+			cstr +="A" + radius + "," + radius + " 0 0 1 "+ (start_x + length / 2) + "," + yy;
+			cstr +="L"+ (end_x - length / 2)   + "," + yy;
+			cstr +="A" + radius + "," + radius + " 0 0 1 "+ end_x   + "," + y2;
+
+			if (!_YANDEX_STYLE_EN) { // original arc drawing style
+				//var x1x2=Math.abs(x1-x2)/2;
+				//var yy = Math.max(y1-x1x2-worddistancefactor*Math.abs(ind-govind),-tokdepdist);
+				//yy = Math.min(yy,y1-depminh);
+				yy        = Math.min(y1 - worddistancefactor*heigh_pts, y1 - depminh);
+				cstr="M"+x1+","+y1+"C"+x1+","+yy+" "+x2+","+yy+" "+(x2+.01)+","+y2;
+
+			}
+
+		var path = cstr;
 
 		currentsvg.dragConnection[1].attr({path:path}).attr(lineattris);;// curve
 		currentsvg.dragConnection[2].translate(x2-isDrag.ox,y2-isDrag.oy).attr(lineattris);; // pointer
@@ -710,7 +779,7 @@ moveGov = function (dir) {
 var _FONTSIZE        = 12;
 var _ARC_HEIGHT_UNIT = _FONTSIZE * 1.2;
 var _ANGLE           = Math.PI / 3;
-var _YANDEX_STYLE_EN = false; // flag allowing to switch between original and Yandex style
+var _YANDEX_STYLE_EN = true; // flag allowing to switch between original and Yandex style
 
 
 drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,height = 1)
