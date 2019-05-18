@@ -29,10 +29,8 @@ getTreeStyleStatus = function ()
 
 toggleTreeStyle = function (button)
 {
-	console.log(button.value );
 	_YANDEX_STYLE_EN = !_YANDEX_STYLE_EN;
 	button.value = getTreeStyleStatus();
-	console.log(button.value );
 }
 
 attrdirty = {"value":"save all modified trees",'disabled':false,"cursor":"pointer"};
@@ -406,7 +404,16 @@ function clearTreeAndTokens(nodes)
 			// rm arcs
 			for (var j in t.svgdep)
 			{
-				var pathObj = t.svgdep[j];  // a path object
+				var pathObj = t.svgdep[j];
+				// text obj
+				pathObj[0].remove();
+				delete pathObj[0];
+				// curve / path
+				pathObj[1].remove();
+				delete pathObj[1];
+				// pointer
+				pathObj[2].remove();
+				delete pathObj[2];
 				pathObj.remove();
 				delete pathObj;
 			};
@@ -890,8 +897,32 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 			var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
 
 			if (govind == 0) {
+
+				// get the height of the highest curve
+				// baseline is the height of the first token
+				var min_y ;
+				for (var i in currentsvg.words) {
+						min_y = currentsvg.words[i].svgs[shownfeatures[0]].getBBox().y;
+						break;
+				}
+				// search for the height of the highest curve if there is
+				for (var i in currentsvg.words){
+					t = currentsvg.words[i];
+					for (var j in t.svgdep)
+					{
+						var pathObj =  t.svgdep[j][1];
+						//var real_y_of_dep_label = pathObj.getBBox().y;
+						//var real_y_of_token = t.svgs[shownfeatures[0]].getBBox().y - t.svgs[shownfeatures[0]].getBBox().height;
+						//var d = real_y_of_token - real_y_of_dep_label;
+						// var real_y_of_dep_label = Math.abs(t.svgdep[j].getBBox().height - t.svgdep[j].getBBox().y);
+						//console.log(pathObj.getBBox().y);
+						if (min_y === undefined) min_y = pathObj.getBBox().y;
+						else if (min_y > pathObj.getBBox().y && j != 0) min_y = pathObj.getBBox().y;
+					}
+				}
+
 				// vertical line for root
-				ytop = y2 - heigh_pts;
+				ytop = min_y ;// y2 - heigh_pts;
 				var cstr ="M" + start_x + "," + ytop ;
 				cstr +="L"+ end_x  + "," + y2;
 
@@ -1054,7 +1085,7 @@ drawalldeps = function()
 		for (j in currentsvg.words[i].gov)
 		{
 			var d = Math.abs(i-j);
-			if (j == 0) d = toknum - 1; // root
+			if (j == 0) d = toknum; // root
 			dict[i + ' ' + j] = d;
 		}
 	// sort the dictionary'keys by their associated values
@@ -1247,19 +1278,26 @@ drawalldeps3 = function () {
 	if (_PAPER_HEIGHT_RESIZING) {
 
 		// detect dependencyspace
-		var tree_height = drawalldeps();
-		var tree_height_pts = 0 ;
+		drawalldeps();
+		var tree_height_pts = 0;
 		for (var i in currentsvg.words){
 			t = currentsvg.words[i];
 			for (var j in t.svgdep)
 			{
-				var real_heigth_of_dep_label = t.svgdep[j].getBBox().height;
-				if (tree_height_pts < real_heigth_of_dep_label)
-					tree_height_pts = real_heigth_of_dep_label;
+				var txtObj =  t.svgdep[j][0];
+				var real_y_of_dep_label = txtObj.getBBox().y; // top of arc label
+				var real_y_of_token = t.svgs[shownfeatures[0]].getBBox().y; // bottom of the bottom of the first feature line of token
+				//console.log(real_y_of_dep_label,real_y_of_token,shownfeatures[0]);
+				var d = real_y_of_token - real_y_of_dep_label + t.svgs[shownfeatures[0]].getBBox().height;
+				if (tree_height_pts < d) tree_height_pts = d;
 			}
 		}
 
-		dependencyspace = tree_height_pts + 2 *_FONTSIZE;
+		// paper should be drawable when there is an almost empty tree
+		// we leave at least 3 token widths / lines
+		if (tree_height_pts < t.svgs[shownfeatures[0]].getBBox().height * 3)
+			tree_height_pts = t.svgs[shownfeatures[0]].getBBox().height * 3;
+		dependencyspace = tree_height_pts;
 
 		// redrawing
 		clearTreeAndTokens(currentsvg.words);
