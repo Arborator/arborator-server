@@ -374,7 +374,27 @@ function changeFunc(event){ // called by onclick on the func menu or return
 
 }
 
-
+function clearTreeAndTokens(nodes)
+{
+	for (var i in nodes)
+	{
+		 // rm tokens
+		 var t = nodes[i];
+		 for (var f in t.svgs) {
+				var txtObj = t.svgs[f];  // a paper.text object
+				txtObj.remove();
+				delete txtObj;
+			}
+			// rm arcs
+			for (var j in t.svgdep)
+			{
+				var pathObj = t.svgdep[j];  // a path object
+				pathObj.remove();
+				delete pathObj;
+			};
+			t.svgdep={};
+	}
+}
 
 
 function establishRelations(depind,gi2f)
@@ -397,7 +417,10 @@ function establishRelations(depind,gi2f)
 	for (var i in gi2f)
 	{
 		depn.gov[i]=gi2f[i]
-		tokens[depind].gov[i]=gi2f[i] // Luiig : sync tokens[depind] with depn
+		// Luiig : sync tokens[depind] with depn
+		if (tokens[depind]["gov"] == undefined) {tokens[depind].gov = {};}
+		tokens[depind].gov[i]=gi2f[i];
+
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + "―" + gi2f[i] + "→ "+depn.features.t + " ";//normal link
 		else info=info+" link ―" + gi2f[i] + "→ "+depn.features.t;//root link
 
@@ -405,10 +428,11 @@ function establishRelations(depind,gi2f)
 
 	if (_TOKEN_WIDTH_RESIZING){
 		// redrawing tokens before redraw relations
-		currentsvg.paper.clear();
+		clearTreeAndTokens(currentsvg.words);
 		currentsvg.words = makewords();
+		//console.log(tokens[depind].gov);
 	}
-	drawalldeps(); //
+	drawalldeps3(); //
 
 	currentsvg.undo.undoable(info, establishRelations, [depind, oldgi2f]);
 
@@ -427,6 +451,8 @@ function eraseRelation(depind,gi2f)
 		if (i in gi2f)
 		{
 			delete depn.gov[i];
+			// sync tokens[ind]'s feature with  depn.gov[i]
+			delete tokens[depind].gov[i]; // debug
 			if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + " ―"+ depn.gov[i]+ "→ "+depn.features.t + " ";
 			else info=info+" link ―"+depn.gov[i]+ "→ "+depn.features.t;
 		}
@@ -434,10 +460,10 @@ function eraseRelation(depind,gi2f)
 
 	if (_TOKEN_WIDTH_RESIZING){
 		// redrawing tokens before redraw relations
-		currentsvg.paper.clear();
+		clearTreeAndTokens(currentsvg.words);
 		currentsvg.words = makewords();
 	}
-	//drawalldeps(); //
+	drawalldeps3(); //
 
 	currentsvg.undo.undoable(info, establishRelations, [depind,oldgi2f]);
 
@@ -460,6 +486,9 @@ function addRelations(depind,gi2f)
 	for (var i in gi2f)
 	{
 		depn.gov[i]=gi2f[i]
+		// Luiig : sync tokens[depind] with depn
+		if (tokens[depind]["gov"] == undefined) tokens[depind]["gov"] = {};
+		tokens[depind]["gov"][i]=gi2f[i];
 
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + "―" + gi2f[i] + "→ "+depn.features.t + " ";//normal link
 		else info=info+" link ―" + gi2f[i] + "→ "+depn.features.t;//root link
@@ -468,10 +497,10 @@ function addRelations(depind,gi2f)
 
 	if (_TOKEN_WIDTH_RESIZING){
 		// redrawing tokens before redraw relations
-		currentsvg.paper.clear();
+		clearTreeAndTokens(currentsvg.words);
 		currentsvg.words = makewords();
 	}
-	drawalldeps();
+	drawalldeps3();
 	currentsvg.undo.undoable(info, establishRelations, [depind, oldgi2f]);
 
 }
@@ -495,14 +524,14 @@ function establishCat(ind,cat)
 	var oldcat=node.features[shownfeatures[categoryindex]];
 	var info="replacing the category "+oldcat+"of the node "+currentsvg.words[ind].features.t+" by "+cat
 	node.features[shownfeatures[categoryindex]]=cat;
+	tokens[ind][shownfeatures[categoryindex]] = cat // sync tokens[ind]'s feature with the new one
 	node.svgs[shownfeatures[categoryindex]].attr("text",cat);
 
 	// added by Luigi
 	if (_TOKEN_WIDTH_RESIZING){
-		currentsvg.paper.clear();
-		tokens[ind][shownfeatures[categoryindex]] = cat // sync tokens[ind]'s feature with the new one
+		clearTreeAndTokens(currentsvg.words);
 		currentsvg.words = makewords();
-		drawalldeps(); //
+		drawalldeps3(); //
 	}
 	currentsvg.undo.undoable(info, establishCat, [ind, oldcat]);
 
@@ -1045,8 +1074,11 @@ drawalldeps = function()
 
 		// update heights
 		if (gid != 0) for (var j = start; j <= end; j++) heights[j] = height + 1;
-
 	};
+	// get full height
+	var tree_height = 1;
+	for (var j = 0; j < toknum; j++) if(heights[j] > tree_height) tree_height = heights[j] ;
+	return tree_height;
 };
 
 
@@ -1073,7 +1105,7 @@ drawalldeps2 = function()
 
 		};
 
-  drawalldeps();
+  drawalldeps3();
 	};
 
 ////////////////////////// initialisation ///////////////////////////
@@ -1171,10 +1203,8 @@ start = function (holder, nr) {
 
 draw = function() {
 
-	currentsvg.paper.clear();
+	// set svgwi
 	currentsvg.words = makewords();
-
-
 	if (editable)
 	{
 		if(currentsvg.dragConnection) currentsvg.dragConnection = drawsvgDep(1,2,50,60,150,150,"", "",false,0).hide();
@@ -1182,11 +1212,29 @@ draw = function() {
 		lastSelected=0;
 	}
 	currentsvg.setAttribute("width",svgwi+extraspace);
+
+	// set dependencyspace
+	drawalldeps3();
+
+
+	// 	TODO:work on the difference between drawalldeps and drawalldeps2
+}
+
+// this drawin funciton autoresize paper height according to
+// tree height
+drawalldeps3 = function () {
+	// auto set dependencyspace
+	var tree_height = drawalldeps();
+	var tree_height_pts = _ARC_HEIGHT_UNIT * Math.abs(tree_height + 4 - 2 * _YANDEX_STYLE_EN);
+	dependencyspace = tree_height_pts;
+
+	// redrawing
+	clearTreeAndTokens(currentsvg.words);
 	currentsvg.setAttribute("height",dependencyspace+shownfeatures.length*line);
+	currentsvg.words = makewords();
 
-// 	TODO:work on the difference between drawalldeps and drawalldeps2
+	// draw relations
 	drawalldeps();
-
 }
 
 
