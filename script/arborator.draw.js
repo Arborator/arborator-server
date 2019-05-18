@@ -112,39 +112,6 @@ function Pnode(index,token)
 
 			};
 
-			// add-on 1 by Luigi : adjust the current token width in fonction of the label width
-			for (var gov_index in this.gov) {
-
-				if (gov_index - index == 1) {
-					// as left-adjacent dependent of its governor, this token
-					// adapt its width in fonction of arc label width
-					var label = this.gov[gov_index];
-					var min_width = label.length * _FONTSIZE * .75;
-					if (this.width < min_width) {
-						this.width = min_width;
-					}
-				}
-
-				if (index + 1 in tokens) {
-					for (var i in tokens[index + 1].gov) {
-						if (i == index) {
-							// as left-adjacent governor of one of its dependent, this token
-							// adapt its width in fonction of arc label width
-							var label = tokens[index + 1].gov[i];
-							var min_width = label.length * _FONTSIZE * .85;
-							// then adapt its width to the width of this label
-							if (this.width < min_width) {
-								this.width = min_width;
-							}
-							//console.log(label,tokens[index].t,tokens[index+1].t,this.width,min_width);
-						}
-					}
-				}
-			}
-
-
-
-
 		for (var a in token) // remaining features
 			{
 				v=token[a]
@@ -152,15 +119,55 @@ function Pnode(index,token)
 				this.features[a]=v;
 			}
 
-
 		if (editable) activate(this.svgs[shownfeatures[0]], this.svgs[shownfeatures[categoryindex]]);
 
-		svgwi=svgwi+this.width+tab;
+		//svgwi=svgwi+this.width+tab;
 		this.x=0;
 		this.y=0;
 		this.svgdep={};		// the svg dependency (the arrow and the function name): gives the svgobject for each govind
 
 	};
+
+	// add-on 1 by Luigi : adjust the current token width in fonction of the label width
+	tokenWidthDetection = function(node)
+	{
+		// node.width defines the common width of each of
+		// feature texts related to a token
+		var index = node.index;
+		var new_width = node.width;
+		for (var gov_index in node.gov) {
+
+			if (gov_index - index == 1) {
+				// as left-adjacent dependent of its governor, this token
+				// adapt its width in fonction of arc label width
+				var label = node.gov[gov_index];
+				var min_width = label.length * _FONTSIZE * .75;
+				if (new_width < min_width) {
+					new_width = min_width;
+					needRespace = true;
+				}
+			}
+
+			if (index + 1 in tokens) {
+				for (var i in tokens[index + 1].gov) {
+					if (i == index) {
+						// as left-adjacent governor of one of its dependent, this token
+						// adapt its width in fonction of arc label width
+						var label = tokens[index + 1].gov[i];
+						var min_width = label.length * _FONTSIZE * .85;
+						// then adapt its width to the width of this label
+						if (new_width < min_width) {
+							new_width = min_width;
+							needRespace = true;
+						}
+						//console.log(label,tokens[index].t,tokens[index+1].t,this.width,min_width);
+					}
+				}
+			}
+		}
+		return new_width;
+
+	} // end of tokenWidthDetection
 
 
 
@@ -390,12 +397,19 @@ function establishRelations(depind,gi2f)
 	for (var i in gi2f)
 	{
 		depn.gov[i]=gi2f[i]
+		tokens[depind].gov[i]=gi2f[i] // Luiig : sync tokens[depind] with depn
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + "―" + gi2f[i] + "→ "+depn.features.t + " ";//normal link
 		else info=info+" link ―" + gi2f[i] + "→ "+depn.features.t;//root link
 
 	}
 
-	drawalldeps();
+	if (_TOKEN_WIDTH_RESIZING){
+		// redrawing tokens before redraw relations
+		currentsvg.paper.clear();
+		currentsvg.words = makewords();
+	}
+	drawalldeps(); //
+
 	currentsvg.undo.undoable(info, establishRelations, [depind, oldgi2f]);
 
 }
@@ -417,8 +431,17 @@ function eraseRelation(depind,gi2f)
 			else info=info+" link ―"+depn.gov[i]+ "→ "+depn.features.t;
 		}
 	}
-	drawalldeps();
+
+	if (_TOKEN_WIDTH_RESIZING){
+		// redrawing tokens before redraw relations
+		currentsvg.paper.clear();
+		currentsvg.words = makewords();
+	}
+	//drawalldeps(); //
+
 	currentsvg.undo.undoable(info, establishRelations, [depind,oldgi2f]);
+
+
 
 }
 
@@ -443,6 +466,11 @@ function addRelations(depind,gi2f)
 
 	}
 
+	if (_TOKEN_WIDTH_RESIZING){
+		// redrawing tokens before redraw relations
+		currentsvg.paper.clear();
+		currentsvg.words = makewords();
+	}
 	drawalldeps();
 	currentsvg.undo.undoable(info, establishRelations, [depind, oldgi2f]);
 
@@ -458,6 +486,7 @@ function changeCat(){ // called by onclick on the menu or return
 	var id = cc.data("index");
 	establishCat(id,cat);
 	cc.hide();
+
 }
 
 function establishCat(ind,cat)
@@ -467,12 +496,18 @@ function establishCat(ind,cat)
 	var info="replacing the category "+oldcat+"of the node "+currentsvg.words[ind].features.t+" by "+cat
 	node.features[shownfeatures[categoryindex]]=cat;
 	node.svgs[shownfeatures[categoryindex]].attr("text",cat);
+
+	// added by Luigi
+	if (_TOKEN_WIDTH_RESIZING){
+		currentsvg.paper.clear();
+		tokens[ind][shownfeatures[categoryindex]] = cat // sync tokens[ind]'s feature with the new one
+		currentsvg.words = makewords();
+		drawalldeps(); //
+	}
 	currentsvg.undo.undoable(info, establishCat, [ind, oldcat]);
 
+
 }
-
-
-
 
 moveConnection = function(x2,y2) // moves the connection so that it links the isDrag-element -------> to the x2,y2 position
 	{
@@ -779,8 +814,8 @@ moveGov = function (dir) {
 var _FONTSIZE        = 12;
 var _ARC_HEIGHT_UNIT = _FONTSIZE * 1.2;
 var _ANGLE           = Math.PI / 3;
-var _YANDEX_STYLE_EN = true; // flag allowing to switch between original and Yandex style
-
+var _YANDEX_STYLE_EN      = true;  // Yandex or Arborator style
+var _TOKEN_WIDTH_RESIZING = true; // auto adapt token width to associated label widths
 
 drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,height = 1)
 	{
@@ -1072,10 +1107,14 @@ makewordsxx = function()
 		for (var i in ks)
 			{
 // 				console.log("iii",i, tokens[ks[i]]);
-			var node = new Pnode( i, tokens[i]);
+			var node = new Pnode(i, tokens[i]);
+			if (_TOKEN_WIDTH_RESIZING) node.width = tokenWidthDetection(node);
 			words[i]=node;
 			currentx=currentx+node.width+tab;
+			svgwi=svgwi+node.width+tab; // moved from inside Pnode to here
 			};
+			// adjust drawing paper width
+			currentsvg.setAttribute("width",svgwi+extraspace);
 
 		return words;
 	};
@@ -1083,49 +1122,25 @@ makewordsxx = function()
 
 makewords = function()
 	{
-		// for tokens involved in an adjacent dependency relation as
-		// (dependent or govenor), note token id and the longest of its
-		// associated depencency labels under the form of a dictionray
-		// token id to label
-		/*
-		tid2label = {};
-		for (var i in tokens) {
-			var node = tokens[i];
-			for (var j in node.gov) {
-				var label = node.gov[j];
-				if (Math.abs(i-j) < 2) {
-					k = i;
-					if (k in tid2label) {
-						oldlabel = tid2label[k];
-						if (oldlabel.length < label) tid2label[k] = label;
-					}
-					else {
-						tid2label[k] = label;
-					}
-					k = j;
-					if (k in tid2label) {
-						oldlabel = tid2label[k];
-						if (oldlabel.length < label) tid2label[k] = label;
-					} // if
-					else {
-						tid2label[k] = label;
-					} // else
-				} // if
-			} // for with j
-		} // for with i
-		*/
 		var words = new Object();
+		// gloabl variable assignment
 		svgwi=0;
 		currentx=tab;
 		for (var i in tokens)
 		{
 				var node = new Pnode(i, tokens[i]);
+				if (_TOKEN_WIDTH_RESIZING) node.width = tokenWidthDetection(node);
 				words[i]=node;
 				currentx=currentx+node.width+tab;
+				svgwi=svgwi+node.width+tab; // moved from inside Pnode to here
 		};
+		// adjust drawing paper width
+		currentsvg.setAttribute("width",svgwi+extraspace);
 
 		return words;
 	};
+
+
 
 
 
@@ -1156,7 +1171,9 @@ start = function (holder, nr) {
 
 draw = function() {
 
+	currentsvg.paper.clear();
 	currentsvg.words = makewords();
+
 
 	if (editable)
 	{
