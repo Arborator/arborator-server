@@ -17,7 +17,7 @@
 # See the GNU General Public License (www.gnu.org) for more details.
 #
 # You can retrieve a copy of of version 3 of the GNU Affero General Public License
-# from http://www.gnu.org/licenses/agpl-3.0.html 
+# from http://www.gnu.org/licenses/agpl-3.0.html
 # For a copy via US Mail, write to the
 #     Free Software Foundation, Inc.
 #     59 Temple Place - Suite 330,
@@ -35,7 +35,6 @@ cgitb.enable()
 
 # global variables:
 project,projectEsc,projectconfig,sql,thisfile,textid,textname,username,userid,adminLevel,todo,validator,validvalid,exotype,opensentence,sentencenumbe,addEmptyUser=None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
-
 graphical=0
 ##############################################
 ######################### functions
@@ -43,7 +42,7 @@ graphical=0
 def printhtmlheader():
 	"""
 	all strings in parameters are already in utf-8
-	
+
 	"""
 	print (u"""<html><head>
 		<title>Arborator - Editor - {title}</title>
@@ -57,13 +56,13 @@ def printhtmlheader():
 		<script type="text/javascript" src="script/jsundoable.js"></script>
 		<script type="text/javascript" src="script/arborator.edit.js"></script>
 		<script type="text/javascript" src="script/raphael.export.js"></script>
-		
+
 		<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" media="screen" />
 		<link href="css/arborator.css" rel="stylesheet" type="text/css">""".format(title=textname)).encode("utf-8")
-	
-	
+
+
 	config.jsDefPrinter(projectconfig) # prints all general, text-independant, stuff for javascript: categories, functions, etc
-	
+
 	#print """<script type="text/javascript"> numbersent=""",snr,";"
 	print """<script type="text/javascript"> numbersent=1;"""
 	print "project= '"+projectEsc.encode("utf-8")+"';"
@@ -92,19 +91,21 @@ def printhtmlheader():
 	attris[shownfeatures[categoryindex]]=attris["cat"]
 	colored[shownfeatures[categoryindex]]=null;
 	}
-	
+
 	</script>
 	</head>"""
-	
+
 
 def printheadline():
-	
+
 	if os.path.exists("projects/"+project.encode("utf-8")+"/"+project.encode("utf-8")+".png"):img="<img src='projects/"+project.encode("utf-8")+"/"+project.encode("utf-8")+".png' align='top' height='18'>"
 	else: img=""
-	
+
+
+
 	if adminLevel:openbutton= '<input type="button" id="openall" name="openall" value="open all" style="width:105px;z-index:33;" class="fg-button ui-state-default ui-corner-all " onClick="openAllTrees();">'
 	else:openbutton=""
-	
+
 	print 	"""<body id="body">
 			<div id="navigation" style="width:100%;margin:0px;border:0px;" class="arbortitle  ui-widget-header ui-helper-clearfix">
 			<a href='.' style='position: fixed;left:1px;top:1px'><img src="images/arboratorNano.png" border="0"></a>
@@ -120,27 +121,32 @@ def printheadline():
 		""".format(textname=textname.encode("utf-8"), quantityInfo=quantityInfo,project=project.encode("utf-8"),img=img,openbutton=openbutton)
 	if os.path.exists("sitemessage.html"):print open("sitemessage.html").read()
 
-	
+
 	#ui-state-disabled
 
 
 #def printfooter(project,username,thisfile, now):
 def printfooter():
-	now=lastseens,now=sql.usersLastSeen()	
+	now=lastseens,now=sql.usersLastSeen()
 	print (u"""<div class="arborfoot fg-toolbar ui-widget-header ui-helper-clearfix">logged in as {username}&nbsp;&nbsp;&nbsp;
 	<a href="{thisfile}?login=logout&project={project}">logout</a>""".format(username=username,project=projectEsc,thisfile=thisfile)).encode("utf-8")
 	if username!="guest": print (u'&nbsp;&nbsp;&nbsp;<a href="{thisfile}?login=editaccount&project={project}">edit the account {username}</a>'.format(username=username,project=projectEsc,thisfile=thisfile)).encode("utf-8")
 	if adminLevel > 1: print (u'&nbsp;&nbsp;&nbsp;<a href="{thisfile}?login=admin&project={project}">User Administration</a>'.format(project=projectEsc,thisfile=thisfile)).encode("utf-8")
-	
+
+
+
+
 	nowstring=u'<a  title="Ask questions or share your feelings with {r}..." href="mailto:{email}?subject=The%20Arborator%20is%20driving%20me%20crazy!">{r} ({u})</a>'
 	now = [nowstring.format(u=u,r=r,email=email) for (u,r,email) in now if u!= username]
 	if len(now)==1: print (u'&nbsp;&nbsp;&nbsp;You are not alone! This other user is online now: '+now[0]).encode("utf-8")
 	elif len(now)>1: print( u'&nbsp;&nbsp;&nbsp;You are not alone! These other users are online now: '+u", ".join(now)).encode("utf-8")
+	# a tree style toggle button
+	print """<input type="button" id="treeStyleButton" onClick="toggleTreeStyle(this);" value="" style="height:16px;font: italic 10px Times,Serif;border:thin solid silver;">"""
+	print """<script type="text/javascript">document.getElementById("treeStyleButton").value=getTreeStyleStatus();</script> """
 	print "</div>"
 	print '</body></html>'
 	#&nbsp;&nbsp;&nbsp;<a href="admin.cgi?project={project}">Corpus Administration</a>
-	
-	
+
 #def printexport(project):
 def printexport():
 	print """
@@ -160,36 +166,36 @@ def printexport():
 		<input type="button" title="export" value="export" class="ui-button ui-state-default ui-corner-all" onClick="exportTree();"  style="padding: 0.0em 0.0em;" >
 	</form>
 	""".format(project=projectEsc.encode("utf-8"))
-	
+
 def printmenues():
 	#print projectconfig.functions
 	# form for functions and form for categories
-	print """	
+	print """
 	<div id="funcform" style="display:none;position:absolute;">
 		<form  method="post" id="func" name="func" >
 			<select id="funchoice" class='funcmenu' onClick="changeFunc(event);"  size=""" +str( len(projectconfig.functions))+""" style="height:"""+str( len(projectconfig.functions)*13.5)+"""px; width:110px;"  >"""
 	for f in projectconfig.functions:
 		#print "___",f.encode("utf-8")
-		print "<option style='color: "+projectconfig.funcDic[f]["stroke"].encode("utf-8")+";'>"+f.encode("utf-8")+"</option>"	
+		print "<option style='color: "+projectconfig.funcDic[f]["stroke"].encode("utf-8")+";'>"+f.encode("utf-8")+"</option>"
 	print """
 			</select>
 		</form>
 	</div>
-	
+
 	<div id="catform" style="display:none;position:absolute;">
 		<form  method="post" id="cat" name="cat" >
 			<select id="catchoice" class='funcmenu' onClick="changeCat();"  size=""" +str( len(projectconfig.categories))+""" style="height:"""+str( len(projectconfig.categories)*13.5)+"""px; " >"""
 
-	for i,c in enumerate(projectconfig.categories): 
-		print "<option style='color: "+projectconfig.catDic[c]["fill"].encode("utf-8")+";'>"+c.encode("utf-8")+"</option>"	
-	
+	for i,c in enumerate(projectconfig.categories):
+		print "<option style='color: "+projectconfig.catDic[c]["fill"].encode("utf-8")+";'>"+c.encode("utf-8")+"</option>"
+
 	print """
 			</select>
 		</form>
 	</div>
-	<div style="border-top:1px solid #EEE;">&nbsp;</div>	
+	<div style="border-top:1px solid #EEE;">&nbsp;</div>
 	"""
-	
+
 	# form for compare
 	print """
 		<div class="ui-widget ui-widget-content ui-corner-all" style="position: absolute; padding: 5px;z-index:20;display:none;" id="compbox">
@@ -205,28 +211,28 @@ def printmenues():
 	# form for check
 	print """
 		<div class="ui-widget ui-widget-content ui-corner-all" style="position: absolute; padding: 5px;z-index:20;display:none;" id="checkbox">
-			
+
 				<div id="checklist">
 				</div><br>
 				<div align="center">
 					<img src="images/check.png" border="0" align="bottom">
 				</div>
-			
+
 		</div>
 		"""
 
 def printdialogs():
-	
+
 	print """
 	<div id="dialog" title="Confirmation" style="display: none;" >
 		<div class="ui-state-error ui-corner-all" style="margin: 40px;padding: 10pt 0.7em; font-weight:100;">
 			<h2 id="question">Are you sure?</h2>
 		</div>
 	</div>
-	
+
 	<div id="fdialog" title="Features">
 		<form method="post" action="editor.cgi" id="featureform">
-			
+
 			<input type="hidden" id="eusername" name="username" value="">
 			<input type="hidden" id="esentenceid" name="sentenceid" value="">
 			<table id="featab" class="ui-widget ui-widget-content" style="width:100%;">
@@ -239,7 +245,7 @@ def printdialogs():
 				<tbody  id="featabody"></tbody>
 			</table>
 		</form>
-	
+
 	</div>
 	"""
 
@@ -259,15 +265,15 @@ def start():
 		print '<script type="text/javascript">window.location.href=".";</script>'
 	project = form.getvalue("project","")
 	projectEsc=""
-	if project: 
+	if project:
 		project =project.decode("utf-8")
 		projectEsc=project.replace("'","\\'").replace('"','\\"')
 	action = form.getvalue("action",None)
-	if action: 
+	if action:
 		action =action.decode("utf-8")
 		if action.startswith("project_"):project=action[8:]
 	if project: action="project_"+project
-	
+
 	try:
 		action, userconfig = login(form, userdir, thisfile, action)
 	except IOError, e:
@@ -275,7 +281,7 @@ def start():
 		print "login failed",e
 		sys.exit()
 	#try:
-		
+
 	#except IOError, e:
 		#print "login failed",e
 		#sys.exit()
@@ -283,7 +289,7 @@ def start():
 	#except:
 		#print "login failed"
 	adminLevel, username, realname = int(userconfig["admin"]),userconfig["username"].decode("utf-8"),userconfig["realname"].decode("utf-8")
-	
+
 	print "Content-Type: text/html\n" # blank line: end of headers
 	projectconfig=None
 	try:	projectconfig = config.configProject(project) # read in the settings of the current project
@@ -296,7 +302,7 @@ def start():
 
 
 	sql=database.SQL(project)
-		
+
 	textid = form.getvalue("textid",None)
 	if textid: 	textid=int(textid)
 	else:		textid=1
@@ -311,9 +317,9 @@ def start():
 	todo = sql.gettodostatus(userid,textid)
 	validator=0
 	if todo>0: validator=int(todo) # -1 and 0 => 0, 1 => 1
-	
+
 	validvalid=sql.validvalid(textid)
-	
+
 	exotype, exotoknum =sql.getExo(textid)
 	#print "uu",sql.exotypes[exotype],sql.exotypes[exotype]=="graphical feedback"
 	if sql.exotypes[exotype] in ["teacher visible","graphical feedback", "percentage"] :
@@ -324,13 +330,13 @@ def start():
 		graphical=1
 	if exotoknum and not adminLevel: 	quantityInfo = ">"+str(exotoknum)+" tokens"
 	else: 					quantityInfo = str(sql.getnumber(None, "sentences",["textid"],[textid]))+" sentences"
-	
 
-	
+
+
 #def main(project,sql,textid,userid,adminLevel,todo,validvalid,validator):
 def main():
 	########### essential loop: all the sentences:
-	
+
 	for snr,sid,s,tid in sql.getAllSentences(textid, username, userid, adminLevel):
 		#print adminLevel, validvalid, validator
 		treelinks, firsttreeid, sentenceinfo=sql.links2AllTrees(sid,snr,username,adminLevel, todo, validvalid, validator,addEmptyUser=addEmptyUser)
@@ -346,13 +352,13 @@ def main():
 		print '''<div id='sentencediv{nr}' class='sentencediv' style="margin:10px;" sid={sid}  nr={nr}>
 				<a id='toggler{nr}' class="toggler" treeid="{firsttreeid}" nr="{nr}" >
 					{nr}: {sentence} &nbsp;
-				</a> 
+				</a>
 				<span id="othertrees{nr}" > {treelinks} </span>
 				<img class="saveimg" src="images/save.png" border="0" align="bottom" id='save{nr}' title="save">
 				<img class="undoimg" src="images/undo.png" border="0" align="bottom" id='undo{nr}'>
-				<img class="redoimg" src="images/redo.png" border="0" align="bottom" id='redo{nr}'> 
+				<img class="redoimg" src="images/redo.png" border="0" align="bottom" id='redo{nr}'>
 				{status}
-				<img class="exportimg" src="images/export.png" border="0" align="bottom" id='export{nr}' nr='{nr}' title="export"> 
+				<img class="exportimg" src="images/export.png" border="0" align="bottom" id='export{nr}' nr='{nr}' title="export">
 				{connectRight}
 				{exo}
 			</div><p><small>{sentenceinfo}</small></p>'''.format(sentence=s.encode("utf-8"),nr=snr, sid=sid, firsttreeid=firsttreeid, project=project.encode("utf-8"), userid=userid, treelinks=treelinks.encode("utf-8"), status=status,connectRight=connectRight,exo=exo,sentenceinfo=sentenceinfo.encode("utf-8"))
@@ -362,23 +368,21 @@ def main():
 
 ##############################################################################################"
 
-		
+
 if __name__ == "__main__":
 	start()
 	#printhtmlheader(project.encode("utf-8"),projectconfig,textid,textname.encode("utf-8"),username.encode("utf-8"),userid,todo,validator,addEmptyUser,opensentence,sql)
 	printhtmlheader()
-	
+
 	#printheadline(project.encode("utf-8"),textname.encode("utf-8"),quantityInfo)
 	printheadline()
 	printexport()
+
 	#print "todo",todo
 	#main(project,sql,textid,userid,adminLevel,todo,validvalid,validator)
 	main()
-	
+
 	printmenues()
 	printdialogs()
-	
+
 	printfooter()
-	
-	
-	

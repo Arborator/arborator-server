@@ -15,7 +15,25 @@
  *
  */
 
+getTreeStyleStatus = function ()
+{
+	if (_YANDEX_STYLE_EN)
+	{
+		return "Anndoc Style";
+	}
+	else {
+		return "Arborator Style";
+	}
 
+}
+
+toggleTreeStyle = function (button)
+{
+	console.log(button.value );
+	_YANDEX_STYLE_EN = !_YANDEX_STYLE_EN;
+	button.value = getTreeStyleStatus();
+	console.log(button.value );
+}
 
 attrdirty = {"value":"save all modified trees",'disabled':false,"cursor":"pointer"};
 attrclean = {"value":"all trees are saved",'disabled':true,"cursor":"default"};
