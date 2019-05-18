@@ -436,7 +436,7 @@ function establishRelations(depind,gi2f)
 	{
 		depn.gov[i]=gi2f[i]
 		// Luiig : sync tokens[depind] with depn
-		if (tokens[depind]["gov"] == undefined) {tokens[depind].gov = {};}
+		if (tokens[depind]["gov"] === undefined) {tokens[depind].gov = {};}
 		tokens[depind].gov[i]=gi2f[i];
 
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + "―" + gi2f[i] + "→ "+depn.features.t + " ";//normal link
@@ -505,7 +505,7 @@ function addRelations(depind,gi2f)
 	{
 		depn.gov[i]=gi2f[i]
 		// Luiig : sync tokens[depind] with depn
-		if (tokens[depind]["gov"] == undefined) tokens[depind]["gov"] = {};
+		if (tokens[depind]["gov"] === undefined) tokens[depind]["gov"] = {};
 		tokens[depind]["gov"][i]=gi2f[i];
 
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + "―" + gi2f[i] + "→ "+depn.features.t + " ";//normal link
