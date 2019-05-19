@@ -603,24 +603,60 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 	{
 // 		console.log(x1,y1,x2,y2,lineattris);
 
-		/*
-		var x1x2=Math.abs(x1-x2)/2;
-		var yy = Math.max(y1-x1x2-worddistancefactor*3,-tokdepdist);// 3 is adhoc: curve looks like link between tokens that are 3 words apart. original: worddistancefactor*Math.abs(ind-govind) TODO: think about this...
-		yy = Math.min(yy,y1-depminh);
+			var start_x = 0;
+			var end_x = 0;
+			if (x1 < x2) {
+				start_x = x1;
+				end_x   = x2;
+				start_y = y1;
+				end_y = y2;
+			}
+			else { // x2 < x1
+				start_x = x2;
+				end_x   = x1;
+				start_y = y2;
+				end_y = y1;
+			}
 
-		var path="M"+x1+","+y1+"C"+x1+","+yy+" "+x2+","+yy+" "+x2+","+y2;
-		*/
+		// get intended tid, gid of the new arc
+		var words = currentsvg.words;
+		var tidnew,gidnew;
+		for (var i in words)
+		{
+			var word = words[i];
+			var svg = word.svgs[shownfeatures[0]];
+			var x = svg.getBBox().x;
+			var w = svg.getBBox().width;
+			if ((start_x <= x + w) && (end_x >= x))
+			{
+				var ii = parseInt(i,10);
+				if (tidnew===undefined) tidnew=ii;
+				else if ((tidnew < ii) == (x1 < x2)) tidnew = ii;
+				if (gidnew===undefined) gidnew=ii;
+				else if ((gidnew > ii) == (x1 < x2)) gidnew = ii;
 
-		// add-on 4 by Luigi
+			}
+		}
+		if (gidnew == tidnew) gidnew = 0; // root
+
+		establishTemporaryRelations(tidnew,gidnew);
+
+		// get intended height for the new arc
 		var toknum = Object.keys(currentsvg.words).length; // number of tokens
 		var dict = {};
-		for (i in currentsvg.words)
+		for (i in currentsvg.words) {
 			for (j in currentsvg.words[i].gov)
 			{
 				var d = Math.abs(i-j);
 				if (j == 0) d = toknum - 1; // root
 				dict[i + ' ' + j] = d;
 			}
+			if (i==tidnew){
+				var d = Math.abs(i-gidnew);
+				if (gidnew == 0) d = toknum - 1; // root
+				dict[i + ' ' + gidnew] = d;
+			}
+		}
 		// sort the dictionary'keys by their associated values
 		var tokenid_govind = Object.keys(dict).sort(function(a,b){return dict[a]-dict[b]});
 
@@ -644,26 +680,11 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 			// get height for current arc
 			for (var j = start + 1; j < end; j++) if (heights[j] > height) height = heights[j];
 			if (gid != 0) for (var j = start; j <= end; j++) heights[j] = height + 1;
-
+			if (tidnew == tid && gidnew == gid)
+				break
 		};
-		//
-		var height = 1;
-		for (var j = 0; j < toknum; j++) if (heights[j] > height) height = heights[j];
 
-
-		var start_x,end_x;
-		if (x1 < x2) {
-			start_x = x1;
-			end_x   = x2;
-			start_y = y1;
-			end_y = y2;
-		}
-		else { // x2 < x1
-			start_x = x2;
-			end_x   = x1;
-			start_y = y2;
-			end_y = y1;
-		}
+		console.log(height);
 
 		var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
 		var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
@@ -676,10 +697,8 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 			cstr +="L"+ (end_x - length / 2)   + "," + yy;
 			cstr +="A" + radius + "," + radius + " 0 0 1 "+ end_x   + "," + end_y;
 
-			if (!_YANDEX_STYLE_EN) { // original arc drawing style
-				//var x1x2=Math.abs(x1-x2)/2;
-				//var yy = Math.max(y1-x1x2-worddistancefactor*Math.abs(ind-govind),-tokdepdist);
-				//yy = Math.min(yy,y1-depminh);
+			if (!_YANDEX_STYLE_EN)
+			{ // original arc drawing style
 				yy        = Math.min(y1 - worddistancefactor*heigh_pts, y1 - depminh);
 				cstr="M"+x1+","+y1+"C"+x1+","+yy+" "+x2+","+yy+" "+(x2+.01)+","+y2;
 
