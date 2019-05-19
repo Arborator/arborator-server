@@ -866,7 +866,7 @@ moveGov = function (dir) {
 /////////////////////essential drawing stuff////////////////////
 ////////////////////////////////////////////////////////////////
 var _FONTSIZE        = 12;
-var _ARC_HEIGHT_UNIT = _FONTSIZE * 1.2;
+var _ARC_HEIGHT_UNIT = _FONTSIZE * 1.5;
 var _ANGLE           = Math.PI / 3;
 var _YANDEX_STYLE_EN      = true;  // Yandex or Arborator style
 var _TOKEN_WIDTH_RESIZING = true; // auto adapt token width to associated label widths
