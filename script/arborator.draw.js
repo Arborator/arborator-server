@@ -902,7 +902,7 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 				// baseline is the height of the first token
 				var min_y ;
 				for (var i in currentsvg.words) {
-						min_y = currentsvg.words[i].svgs[shownfeatures[0]].getBBox().y;
+						min_y = currentsvg.words[i].svgs[shownfeatures[0]].getBBox().y - 3 * _ARC_HEIGHT_UNIT;
 						break;
 				}
 				// search for the height of the highest curve if there is
@@ -922,7 +922,7 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 				}
 
 				// vertical line for root
-				ytop = min_y ;// y2 - heigh_pts;
+				ytop = min_y - _ARC_HEIGHT_UNIT ;// y2 - heigh_pts;
 				var cstr ="M" + start_x + "," + ytop ;
 				cstr +="L"+ end_x  + "," + y2;
 
