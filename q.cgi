@@ -32,29 +32,29 @@ def printhtmlheader():
 	print """<html><head>
 		<title>Arborator – Quickedit</title>
 		<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
-		
-	
-		
+
+
+
 		<script type="text/javascript" src="script/jquery.js"></script>
 		<script type="text/javascript" src="script/raphael.js"></script>
-		
+
 		<script type="text/javascript" src="script/jquery-ui-1.8.18.custom.min.js"></script>
 		<script type="text/javascript" src="script/jquery.cookie.js"></script>
-		
+
 		<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" media="screen" />
-		
-		<script type='text/javascript' > 
-		var currentsvg = "mmmm"; 
+
+		<script type='text/javascript' >
+		var currentsvg = "mmmm";
 		</script>
 		<script type="text/javascript" src="script/arborator.draw.js"></script>
 		<script type="text/javascript" src="script/q.js"></script>
 		<script type="text/javascript" src="script/jsundoable.js"></script>
 		<script type="text/javascript" src="script/colpick.js"></script>
-		
+
 		<link href="css/arborator.css" rel="stylesheet" type="text/css">
 		<link href="css/colpick.css" rel="stylesheet" type="text/css">
 
-		
+
 		<script type="text/javascript" src="annodoc/jquery.svg.min.js"></script>
 		<script type="text/javascript" src="annodoc/jquery.svgdom.min.js"></script>
 		<script type="text/javascript" src="annodoc/jquery.timeago.js"></script>
@@ -66,7 +66,7 @@ def printhtmlheader():
 		<script type="text/javascript" src="annodoc/configuration.js"></script>
 		<script type="text/javascript" src="annodoc/util.js"></script>
 		<script type="text/javascript" src="annodoc/annotation_log.js"></script>
-		
+
 		<!--<script type="text/javascript" src="annodoc/webfont.js"></script>-->
 		<!--brat modules-->
 		<script type="text/javascript" src="annodoc/dispatcher.js"></script>
@@ -81,29 +81,36 @@ def printhtmlheader():
 		// NOTE: non-local libraries
 		<script type="text/javascript" src="annodoc/annodoc.js"></script>
 		<script type="text/javascript" src="annodoc/conllu.js"></script>
-				
+
 		<link rel="stylesheet" href="annodoc/font-awesome.min.css">
 		<link rel="stylesheet" type="text/css" href="annodoc/style.css"/>
 		<link rel="stylesheet" type="text/css" href="annodoc/style-vis.css"/>
 		<link rel="stylesheet" type="text/css" href="annodoc/hint.css"/>
-		
-		
-		
+
+
+
 	</head>"""
-	
-def printheadline():	
+
+def printheadline():
 	print 	"""<body id="body">
 			<div id="navigation" style="width:100%;margin:0px;border:0px;" class="arbortitle  ui-widget-header ui-helper-clearfix">
 				<a href='.' style='position: fixed;left:1px;top:1px'><img src="images/arboratorNano.png" border="0" title="Arborator Main Page"></a>
 				<img src="images/q.png" border="0" title="Arborator – Quickedit">
-				<a style="position: fixed;right:1px;top:1px;right:5px;" id='help' title="restart the help animation"><img src="images/help.png" style="vertical-align: text-top" border="0">Help</a>
+				<a style="position: fixed;right:1px;top:1px;right:5px;" id='help' title="restart the help animation"><img src="images/help.png" style="vertical-align: text-top" border="0">Help</a>"""
+
+	# a tree style toggle button
+	print """<input type="button" id="treeStyleButton" onClick="toggleTreeStyle(this);" value="" style="height:16px;font: italic 10px Times,Serif;border:thin solid silver;">"""
+	print """<script type="text/javascript">document.getElementById("treeStyleButton").value=getTreeStyleStatus();</script> """
+	print """
 			</div>
+
 			<div id="center" class="center" style="width:100%;float:right;top:0px;">
 				<div id="trees">
 			</div>
 		"""
 
 def printfooter():
+
 	#print """
 	#<p>The <code>acl:relcl</code> relation is used for relative clauses modifying
 #a nominal. The relation points from the head of the nominal to the
@@ -144,10 +151,10 @@ def printfooter():
 
 
 	#"""
-	
+
 	print "</div>"
-	print '</body></html>'	
-	
+	print '</body></html>'
+
 def printexport():
 	print """
 	<form method="post" action="convert_svg.cgi?project=quickie" name="ex" id="ex" style=" position:fixed;top:6px;right:30px;display:none;"  target="_blank">
@@ -164,7 +171,7 @@ def printexport():
 		<input type="button" title="export" value="export" class="ui-button ui-state-default ui-corner-all" onClick="exportTree();"  style="padding: 0.0em 0.0em;" >
 	</form>
 	"""
-	
+
 def printforms():
 	print """
 	<div id="toggleAndBoxx" class="toggleAndBoxx">
@@ -214,37 +221,37 @@ def printforms():
 3	письмо	pis'mo	NOUN	_	Case=Acc|Gender=Neut|Number=Sing	2	dobj	_	the-letter
 4	пером	pero	NOUN	_	Case=Ins|Gender=Neut|Number=Sing	2	nmod	_	with-a-quill</TEXTAREA>
 	"""
-	
+
 	print """
 	<div style='float:xxx;'>
-	
+
 		<div ><span style='float:left;'>additional functions</span> <input type='text' id='addfuncs'  style='width:100%' title='Here you can add additional functions that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='nsubj obj iobj csubj ccomp xcomp obl vocative expl dislocated advcl advmod discourse aux cop mark nmod appos nummod acl amod det clf case conj cc fixed flat compound list parataxis orphan goeswith reparandum punct root dep'></input></div>
-		
+
 		<div ><span style='float:left;'>additional POS tags</span> <input type='text' id='addcats'  style='width:100%;' title='Here you can add additional categories that do not appear in the CoNLL data (space or comma separated) in order to make them appear in the drop down menu when editing.' value='ADJ ADP PUNCT ADV AUX SYM INTJ CONJ X NOUN DET PROPN NUM VERB PART PRON SCONJ _'>  </input> </div>
-		
+
 		<div >or paste your sentences here:
 		<TEXTAREA NAME="sentences" id="sentences"  title='Here you can provide unanalyzed textual data, one sentence per line. You can then interactively add the syntactic analysis of your sentences. This will erase all the existing trees'  style="width:100%; height:100;"></TEXTAREA>
 		</div>
-		
+
 	</div>
 			<input type="checkbox" id="annodoccheck"><label for="annodoccheck"><img src='images/annodoc.png' border='0' title='show annodoc graph' style='top:0px;'>  </label>
 
-	
-	
-		
+
+
+
 	<div style='float:right;'>
-		<img  id="style" src='images/style.png' border='0' title='style' style='top:0px;'> 
-		
+		<img  id="style" src='images/style.png' border='0' title='style' style='top:0px;'>
+
 	</div>
 	<div id="styledialog" title="Design your dependency tree" style="background-color: white;">
 		<div id="stylefunctions" title="functions">
-	
+
 		</div>
 		<div style='float:right;'>
 			<input type="checkbox" id="styleconllcheck">include style information in CoNLL
 		</div>
 	</div>
-	
+
 	"""
 	#print "" checked="checked"
 	print ""
@@ -253,7 +260,7 @@ def printforms():
 	print "</div></div></div>"
 
 def printmenues():
-	print """	
+	print """
 	<div id="funcform" style="display:none;position:absolute;">
 		<form  method="post" id="func" name="func" >
 			<select id="funchoice" class='funcmenu' onClick="changeFunc(event);" size=0 style="height:0; width:80px;"  >
@@ -267,7 +274,7 @@ def printmenues():
 		</form>
 	</div>
 	"""
-	
+
 def printdialogs():
 	print """
 	<div id="dialog" title="Confirmation" style="display: none;" >
@@ -279,7 +286,7 @@ def printdialogs():
 	<div id="bb" class="rbubble" style="right: 650px;top: 533px;position: absolute;">Or paste the sentences you want to analyze here.<br/>One sentence per line.</div>
 	<div id="bbb" class="lbubble" style="left: 400px;top: 400px;position: absolute;">As soon as you click anywhere else, the graph is updated and you can modify the dependencies by dragging one word over the other.</div>
 	<div id="bbbb" class="lbubble" style="left: 400px;top: 35px;position: absolute;">You can export the graph in various formats by clicking on the green arrow.</div>
-			
+
 	<input type="button" id="drawbutton" value="draw" class="ui-button ui-state-default ui-corner-all" onClick='$("#funchoice").empty(); $("#catchoice").empty();$("#stylefunctions").empty();$("#trees").empty();readConll();setupStyleDialog();drawTrees();nokeys=false;'  style="display: none;" >
 
 	"""
@@ -289,7 +296,7 @@ def printdialogs():
 def start():
 	form = cgi.FieldStorage()
 	thisfile = os.environ.get('SCRIPT_NAME',".")
-	
+
 	print "Content-Type: text/html\n" # blank line: end of headers
 
 ##############################################################################################"
