@@ -639,8 +639,6 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 		}
 		if (gidnew == tidnew) gidnew = 0; // root
 
-		establishTemporaryRelations(tidnew,gidnew);
-
 		// get intended height for the new arc
 		var toknum = Object.keys(currentsvg.words).length; // number of tokens
 		var dict = {};
