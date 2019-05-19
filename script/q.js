@@ -15,6 +15,9 @@
  *
  */
 
+// these 2 funcitons do not yet work with quick edit, so we disabled it here
+_TOKEN_WIDTH_RESIZING=false;
+_PAPER_HEIGHT_RESIZING=false;
 
 // needs arborator.draw.js
 // does not need arborator.edit.js
@@ -728,7 +731,7 @@ wordsToConll = function (words) {
 
 drawalldeps = function()
 	{
-		console.log("drawalldeps@q.js")
+
 	currentnr = $(currentsvg).parent().attr("nr");
 	var thisconll=wordsToConll(currentsvg.words);
 	conlltrees[currentnr]=thisconll;
