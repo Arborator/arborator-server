@@ -897,14 +897,24 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 		// Yandex-style tree layout
 		// code inspired from https://github.com/vieenrose/dep_tregex/blob/master/dep_tregex/tree_to_html.py
 
-
-			var start_x = Math.min(x1,x2);
-			var end_x   = Math.max(x1,x2);
+			var start_x,end_x;
+			if (x1 < x2) {
+				start_x = x1;
+				end_x   = x2;
+				start_y = y1;
+				end_y = y2;
+			}
+			else { // x2 < x1
+				start_x = x2;
+				end_x   = x1;
+				start_y = y2;
+				end_y = y1;
+			}
 
 			var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
 			var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
 			var length    = radius * Math.sin(_ANGLE) / 2;
-			var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
+
 
 			if (govind == 0) {
 
@@ -939,10 +949,11 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 			}
 			else {
 				// arc of other relations
-				var cstr ="M" + start_x + "," + y1;
+				var yy        = Math.min(start_y - heigh_pts, start_y - depminh);
+				var cstr ="M" + start_x + "," + start_y;
 				cstr +="A" + radius + "," + radius + " 0 0 1 "+ (start_x + length / 2) + "," + yy;
 				cstr +="L"+ (end_x - length / 2)   + "," + yy;
-				cstr +="A" + radius + "," + radius + " 0 0 1 "+ end_x   + "," + y2;
+				cstr +="A" + radius + "," + radius + " 0 0 1 "+ end_x   + "," + end_y;
 
 				if (!_YANDEX_STYLE_EN) { // original arc drawing style
 					//var x1x2=Math.abs(x1-x2)/2;
@@ -1101,6 +1112,18 @@ drawalldeps = function()
 	// sort the dictionary'keys by their associated values
 	var tokenid_govind = Object.keys(dict).sort(function(a,b){return dict[a]-dict[b]});
 
+	// clear
+	for (var i in currentsvg.words)
+	{
+		var n = currentsvg.words[i];
+		for (var j in n.svgdep)
+		{
+			n.svgdep[j].remove();
+			delete n.svgdep[j];
+		};
+	}
+	n.svgdep={};
+
 	var arcnum = tokenid_govind.length;
 	var gov_cnt = {}
 	var heights = Array(toknum).fill(1);
@@ -1120,14 +1143,6 @@ drawalldeps = function()
 
 		// get height for current arc
 		for (var j = start + 1; j < end; j++) if (heights[j] > height) height = heights[j];
-
-		// clear
-		for (var j in n.svgdep)
-		{
-			n.svgdep[j].remove();
-			delete n.svgdep[j];
-		};
-		n.svgdep={};
 
 		// draw this arc
 		drawDep(tid,gid,n.gov[gid],c,height);
