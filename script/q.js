@@ -1,5 +1,5 @@
 /*!
- * arborator script for quickie 
+ * arborator script for quickie
  * version 1.0
  * http://arborator.ilpga.fr/
  *
@@ -7,23 +7,23 @@
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
- * you may not use this file except in compliance with the License. 
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at http://www.gnu.org/licenses/agpl-3.0.html
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and limitations under the License. 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
  *
- */ 
+ */
 
 
 // needs arborator.draw.js
 // does not need arborator.edit.js
 
 
-conlls = {	10: 	{"id": 0, "t":1, "lemma": 2, "cat": 3, "xpos":4, "morph":5, "gov":6, "func":7, "xgov":8, "gloss":9}, 
-// 		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":8, "func":10}, 
-		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":9, "func":11}, 
-		4: 	{"t":0, "lemma": 0, "cat": 1, "gov":2, "func":3} 
+conlls = {	10: 	{"id": 0, "t":1, "lemma": 2, "cat": 3, "xpos":4, "morph":5, "gov":6, "func":7, "xgov":8, "gloss":9},
+// 		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":8, "func":10},
+		14: 	{"id": 0, "t":1, "lemma": 3, "cat": 5, "gov":9, "func":11},
+		4: 	{"t":0, "lemma": 0, "cat": 1, "gov":2, "func":3}
 	}
 el=10;
 defaultCat="_"
@@ -54,7 +54,7 @@ $(function() {
 	$('#annodoccheck').change(function() {
 		if (this.checked) {drawAnnodoc();$(this).button('option', 'label', 'Hide Annodoc graph');}
 		else {$( ".annodoc" ).remove();$(this).button('option', 'label', 'Show Annodoc graph');}
-	}); 
+	});
 	settings();
 
 	if (window.opener) 	// this window was opened by another window i.e. by depedit
@@ -66,8 +66,8 @@ $(function() {
 			conllarea=$("#conll");
 			$("#toggleAndBoxx").show();
 		}
-		
-		
+
+
 	else 			// this window is independent
 		{
 			conllarea=$("#conll");
@@ -75,7 +75,7 @@ $(function() {
 		}
 	var conll = $.urlParam('conll');
 	if (conll!=null) conllarea.val(decodeURIComponent(conll));
-	
+
 	readConll();
 	setupStyleDialog()
 	drawTrees();
@@ -91,7 +91,7 @@ $(function() {
 		$("#stylefunctions").empty();
 		$("#trees").empty();
 		readConll();
-		setupStyleDialog() 
+		setupStyleDialog()
 		drawTrees();
 		nokeys=false;
 	});
@@ -106,7 +106,7 @@ $(function() {
 			conllize();
 			$("#trees").empty();
 			readConll();
-			setupStyleDialog() 
+			setupStyleDialog()
 			drawTrees();
 			sentencesText=$("#sentences").val();
 		}
@@ -127,11 +127,11 @@ $(function() {
 		$(this).toggleClass("expanded");
 		$(".boxx").slideToggle();
 	});
-	
+
 	$("#style").click(function()	{
 		$( "#styledialog" ).dialog( "open" );
 	});
-	
+
 	$("#share").click(function()	{
 		history.pushState('URL with conll', 'URL with conll', location.href.split("?")[0]+"?conll="+encodeURIComponent(conllarea.val()));
 	});
@@ -146,30 +146,30 @@ $(function() {
  			width:400,
 			draggable: true
 			});
-	
+
 	$("#style").click(function()	{
 		styling();
 	});
-	
+
 	$("#help").click(function()	{
 		help()
 	});
-	
+
 	$('#styleconllcheck').change(function(){
 		var c = this.checked ? '#f00' : '#09f';
 		$('p').css('color', c);
 	});
-	
-	
-	
-	
+
+
+
+
 	conllarea.focus();
-	
+
 // 	help();
 });
 
 
-settings = function() 
+settings = function()
 	{
 		shownfeatures=["t", "cat", "lemma","gloss"]; // recomputed in readConll
 		erase="--ERASE--"
@@ -187,7 +187,7 @@ settings = function()
 		rootTriggerSquare = 50; 	// distance from top of svg above which root connections are created and minimum width of this zone (from 0 to 50 par example the connection jumps to the middle)
 		extraspace=50 		// extends the width of the svg in order to fit larger categories
 		defaultattris={"font": '14px Arial', "text-anchor":'start'};
-		attris = {"t":		{"font": '18px Arial', "text-anchor":'start',"fill": '#000',"cursor":'move',"stroke-width": '0'}, 
+		attris = {"t":		{"font": '18px Arial', "text-anchor":'start',"fill": '#000',"cursor":'move',"stroke-width": '0'},
 			"cat":	{"font": '12px Times', "text-anchor":'start',"fill": '#036',"cursor":'pointer'},
 			"lemma":	{"font": '14px Times', "text-anchor":'start',"fill": '#036'},
 			"depline":	{"stroke": '#000',"stroke-width":'1',"stroke-dasharray": ''},
@@ -195,18 +195,18 @@ settings = function()
 			"dragdepline":	{"stroke": '#dd137b',"stroke-width":'2'},
 			"dragdeplineroot":	{"stroke": '#654b6d',"stroke-width":'2'},
 			"source":	{"fill": '#654b6d'},
-			"target":	{"fill": '#dd137b',"cursor": 'url("images/connect.png"),pointer', "font-style":'italic'}, 
+			"target":	{"fill": '#dd137b',"cursor": 'url("images/connect.png"),pointer', "font-style":'italic'},
 			"form":	{"font-style":'italic'}
 			};
 		colored={"dependency":null}; 	//object of elements to be colored. the colors have to be defined in config.py. just leave the object empty {} if you don't want colors
 		attris[shownfeatures[categoryindex]]=attris["cat"]
 		colored[shownfeatures[categoryindex]]=null;
-		
+
 		catDic={};
 		var fd = $.cookie("funcDic");
 		if (fd == null) funcDic = {};
 		else funcDic= $.parseJSON(fd);
-		
+
 		editable=true;
 		tokenModifyable=true;
 	}
@@ -216,7 +216,7 @@ function drawTrees() {
 	inDrawTrees=true;
 	$.each(trees, function(i, tree){
 		tokens=new Object();
-		$.each(tree, function(key, val) 
+		$.each(tree, function(key, val)
 			{
 				tokens[key]=val;
 			});
@@ -248,13 +248,13 @@ function final() {
 		})
 	$(".othertree").click(function()
 		{
-			toggleOpen($(this).parent().prev(),	$(this).attr("nr"), $(this).attr("treeid"));	
+			toggleOpen($(this).parent().prev(),	$(this).attr("nr"), $(this).attr("treeid"));
 		})
 	$(".saveimg").click(function()
 		{
 			var nr=$(this).parent().attr("nr");
 			var sid=$(this).parent().attr("sid");
-			
+
 			saveTree(project,nr,sid,userid, username);
 		});
 	$(".undoimg").click(function()
@@ -273,10 +273,10 @@ function final() {
 			currentsvgchanged();
 			currentsvg.undo.redo();
 		});
-	
+
 	$(".connect").click(function()
 		{
-			
+
 			var nr=parseInt($(this).parent().attr("nr"));
 			currentsvg=$('#svg'+nr)[0];
 			var basewords=currentsvg.words;
@@ -288,8 +288,8 @@ function final() {
 				var newid = parseInt(nodei)+ind;
 				node["index"]=newid;
 				var newgov={};
-				for (var j in node.gov) 
-				{	
+				for (var j in node.gov)
+				{
 					var newgovind = parseInt(j)
 					if (j!=0) newgovind+=ind
 					newgov[newgovind]=node.gov[j];
@@ -302,9 +302,9 @@ function final() {
 			conllarea.val(conlltrees.join("\n"));
 			$("#trees").empty();
 			readConll();
-			setupStyleDialog() 
+			setupStyleDialog()
 			drawTrees();
-			
+
 		});
 	$(".cut").click(function()
 		{
@@ -320,8 +320,8 @@ function final() {
 				var newgov={};
 				if (i<=ind)
 					{
-						for (var j in node.gov) 
-						{	
+						for (var j in node.gov)
+						{
 							if (j<=ind) newgov[j]=node.gov[j];
 						}
 						newwords1[i]=node;
@@ -330,32 +330,32 @@ function final() {
 					{
 						var newid = parseInt(i)-ind;
 						node["index"]=newid;
-						for (var j in node.gov) 
-						{	
+						for (var j in node.gov)
+						{
 							if (j>ind) newgov[j-ind]=node.gov[j];
 						}
 						newwords2[newid]=node;
 					}
 				node.gov = newgov;
 			});
-			
+
 			conlltrees.splice(nr,1,wordsToConll(newwords1),wordsToConll(newwords2))
 			conllarea.val(conlltrees.join("\n"));
 			$("#trees").empty();
 			readConll();
-			setupStyleDialog() 
+			setupStyleDialog()
 			drawTrees();
-			
+
 		});
-	
+
 	$(".exportimg").click(function()
 	{
 		$("#ex").show();
 		$("#ex").offset($(this).offset()).attr("nr",$(this).attr("nr"));
 	});
-	
+
 	onkey();
-	
+
 	$("#dialog").dialog({
 			bgiframe: true,
 			autoOpen: false,
@@ -363,7 +363,7 @@ function final() {
  			width:400,
 			modal: true,
 			buttons: {
-				
+
 				Cancel: function() {
 					$(this).dialog('close');
 					return false;
@@ -375,8 +375,8 @@ function final() {
 				}
 				}
 			});
-	
-	
+
+
 // 'Erase node completely': function(){deleteNode($("#fdialog").attr("index"));} ,
 // 				'Add as new node': function(){featureChanged(-1);} ,
 	$("#fdialog").dialog({
@@ -391,17 +391,17 @@ function final() {
 					'Erase this node': function() {eraseNode(parseInt($("#fdialog").attr("index"),10));$(this).dialog('close');},
 					'Duplicate this node': function() {createNode(parseInt($("#fdialog").attr("index"),10));$(this).dialog('close');},
 					Cancel: function() {$(this).dialog('close');},
-					'OK': function(){featureChanged($("#fdialog").attr("index"));$(this).dialog('close');} 
+					'OK': function(){featureChanged($("#fdialog").attr("index"));$(this).dialog('close');}
 				}
 			});
 	else	$("#fdialog").dialog({
 				buttons: {
 					Cancel: function() {$(this).dialog('close');},
-					'OK': function(){featureChanged($("#fdialog").attr("index"));$(this).dialog('close');} 
+					'OK': function(){featureChanged($("#fdialog").attr("index"));$(this).dialog('close');}
 				}
 			});
-		
-	
+
+
 	$(document).mouseup(function()
 	{
 		if(isDrag)
@@ -409,41 +409,41 @@ function final() {
 			currentsvg.dragConnection.hide();
 			isDrag = false;
 		}
-	}); 
-	
-	
+	});
+
+
 // 	var svg = paper.toSVG();
 // 	$("#e").html(svg);
-// 	
+//
 }
 
-	
+
 function readConll() {
 	// reads the conll representation of the whole treebank that is in the conll field
 	categories={};
 	addcats=$.trim($("#addcats").val())
 	if (addcats) { $.each(addcats.split(/[,\s]+/), function(){ categories[this]=true;}) }
-	
+
 	functions={};
 	addfuncs=$.trim($("#addfuncs").val())
 	if (addfuncs) { $.each(addfuncs.split(/[,\s]+/), function(){functions[this]=true;}) }
 	$.each(funcDic, function(key,val){functions[key]=true;});
-	
+
 	trees=[]; // list of tree objects
 	uextras=[]; // list of comments. each comment is a hashtable position(=line)->comment
 	conlltrees=[]; // list of conll strings
 	treenr=0;
-	
+
 	var treelines = $.trim(conllarea.val()).split(/\n\s*\n\s*\n*/);
 // 	console.log(232,treelines)
 	$.each(treelines, function(i,treeline){ // splits the conll txt into tree segments:
-		
+
 		words=[]
-		
+
 		conlltrees.push(treeline);
-		
+
 		var data=conllNodesToTree(treeline);
-		
+
 		trees.push(data.tree);
 		uextras.push(data.uextra)
 		sentence="";
@@ -455,12 +455,12 @@ function readConll() {
 		if (treenr!=treelines.length-1) gt+='<div class="connect" title="connect with next sentence." id="connect'+i+'">&gt;</div>'
 		gt += '<div class="cut" title="cut after selected word." id="cut'+i+'"><img src="images/cut.png"/></div>'
 		$("#trees").append('<div id="sentencediv'+treenr+'" class="sentencediv" nr="'+treenr+'"> <a id="toggler'+treenr+'" class="toggler expanded" nr="'+treenr+'"> '+treenr+': '+sentence+' </a>		<img id="undo'+treenr+'" class="undoimg"	src="images/undo.png">				<img id="redo'+treenr+'" class="redoimg"	src="images/redo.png"> <img id="export'+treenr+'" class="exportimg" border="0" title="export the dependency graph in various image formats" nr="'+treenr+'" src="images/export.png" style="visibility: visible;"> </div> <div id="holder'+treenr+'" class="svgholder"	nr="'+treenr+'">'+gt+'</div>')
-		
+
 		treenr++;
 	});
-	conllarea.css("backgroundImage","url('images/conll"+el+".png')");	
+	conllarea.css("backgroundImage","url('images/conll"+el+".png')");
 	categories=$.map(categories, function(element,index) {return index}).sort() // to array
-	$.each(categories, function(key, val) 
+	$.each(categories, function(key, val)
 			{
 				$("#catchoice").append("<option>"+val+"</option>")
 			});
@@ -469,18 +469,18 @@ function readConll() {
 	functions=$.map(functions, function(element,index) {return index}).sort() // to array
 	functions.push("");
 	functions.push(erase);
-	
+
 	// 	adapt which nodes should be shown depending on what we find on the first node
 	firstnode=trees[0][Math.min.apply(Math,Object.keys(trees[0]))]; // take lowest existing treenode number
 	shownfeatures = $.grep(shownfeatures, function (attri,i)
 		{ // for each shownfeatures :
-			if (i < 2 || ((attri in firstnode) && firstnode[attri]!=defaultCat)) { 
+			if (i < 2 || ((attri in firstnode) && firstnode[attri]!=defaultCat)) {
 				// either the first two (token and cat) or non default value:
 				return true; // keep it
 				}
 			return false; // kick it out
 		});
-	
+
 }
 
 
@@ -529,7 +529,7 @@ function conllNodesToTree(treeline)
 						var xgov = elements[conlls[el]["xgov"]];
 						if (xgov.indexOf(':') > -1){
 							var xgovs=xgov.split("|");
-							$.each(xgovs, function(ind,xg){ 
+							$.each(xgovs, function(ind,xg){
 								// for each extra governor line:
 								var xgs=xg.split(":")
 								if (xgs.length >=2) {
@@ -538,7 +538,7 @@ function conllNodesToTree(treeline)
 									var func= xgs.slice(1).join(":");
 									tree[id]["gov"][gov]=func;
 								}
-								
+
 							});
 
 						}
@@ -556,15 +556,15 @@ function conllNodesToTree(treeline)
 				}
 			}
 			gov = elements[conlls[el]["gov"]];
-			if (gov!="" && gov!="_") 
+			if (gov!="" && gov!="_")
 			{
 				if (gov==-1)
 				{
 					gov = elements[conlls[el]["gov"]+1];
 				}
 				var func = elements[conlls[el]["func"]];
-				if (func.indexOf('::') !== -1) 
-					{	
+				if (func.indexOf('::') !== -1)
+					{
 						var stydic = func.substring(func.indexOf("::") + 1);
 						func = func.split("::")[0];
 						if (stydic!="") funcDic[func] = $.parseJSON(stydic);
@@ -576,14 +576,14 @@ function conllNodesToTree(treeline)
 			}
 			categories[elements[conlls[el]["cat"]]]=true;
 			lastid=id;
-			});	
+			});
 		return {tree:tree, uextra:uextra};
 	}
 
 
 
-				
-			
+
+
 function conllize()
 	// sentences to conll
 	{
@@ -591,7 +591,7 @@ function conllize()
 		$.each($.trim($("#sentences").val()).split(/\s*\n\s*/), function(i,sentence){
 			var words=sentence.split(/\s+/);
 			for (i in words)
-			{		
+			{
 				var word = words[i] ;
 				conll=conll+(parseInt(i)+1)+"\t"+word+"\t"+word+"	"+defaultCat+"	_	_	0	root	_	_\n";
 			}
@@ -601,15 +601,15 @@ function conllize()
 	}
 
 
-	
-help = function() {	
+
+help = function() {
 	$("#b").fadeIn(2000).delay(2222).fadeOut(2000);
 	$("#bb").delay(2222).fadeIn(2000).delay(1111).fadeOut(2000);
 	$("#bbb").delay(4444).fadeIn(2000).delay(1111).fadeOut(2000);
 	$("#bbbb").delay(6444).fadeIn(2000).delay(1111).fadeOut(2000);
 }
 
-styling = function() {	
+styling = function() {
 	$('.color-box').colpick({
 			colorScheme:'dark',
 			layout:'rgbhex',
@@ -617,7 +617,7 @@ styling = function() {
 			onSubmit:function(hsb,hex,rgb,el) {
 				$(el).css('background-color', '#'+hex);
 				var name = $(el).attr('name');
-				if (name in funcDic) 
+				if (name in funcDic)
 					funcDic[name]["stroke"]='#'+hex;
 				else 	funcDic[name]={"stroke":'#'+hex};
 				$("#trees").empty();
@@ -627,10 +627,10 @@ styling = function() {
 				$.cookie("funcDic", JSON.stringify(funcDic), { expires: 365 });
 			}
 		});
-	
+
 	$( ".selector" ).change(function(handler) {
 			var name=$(this).attr('name');
-			if (name in funcDic) 
+			if (name in funcDic)
 				funcDic[name]["stroke-dasharray"]=$(this).val();
 			else 	funcDic[name]={"stroke":'#000',"stroke-dasharray":$(this).val()};
 			$("#trees").empty();
@@ -648,11 +648,11 @@ setupStyleDialog = function() {
 	var lineStyles2='" class="selector" title="line style">	<option value="" style="font-size:.6em;height:5px;" selected>─────</option>	<option value="- ">---------</option>	<option value=". " >┈┈┈┈┈</option> </select>'
 	$("#stylefunctions").empty();
 	$("#funchoice").empty();
-	
-	$.each(functions, function(i, val) 
+
+	$.each(functions, function(i, val)
 			{
 				$("#funchoice").append("<option style='color:"+((val in funcDic) ? funcDic[val]["stroke"] : "#000")+";'>"+val+"</option>")
-				if (val!="" && val!=erase) 
+				if (val!="" && val!=erase)
 				{
 					$("#stylefunctions").append("<div><div class='color-box' style='background-color:"+((val in funcDic) ? funcDic[val]["stroke"] : "#000")+";' name='"+val+"'></div><div>"+val+" "+lineStyles1+val+lineStyles2+"</div></div><br>")
 				}
@@ -670,7 +670,7 @@ currentsvgchanged = function () {
 	if (isSelected && isSelected.index < Object.keys(currentsvg.words).length) // if selected word and not last word
 	{
 		$("#cut"+nr).attr("title","cut after selected word '"+isSelected.attr("text")+"'").show();
-		
+
 	}
 }
 
@@ -682,9 +682,9 @@ wordsToConll = function (words) {
 		{
 			var n = words[i];
 			var c=0;
-			
+
 			if ($.isEmptyObject(n.gov)) // no governors
-			{					
+			{
 				if (el == 4) 	ar = [n.features.t,n.features.cat,"_","_"];
 				else if (el == 10) 	ar = [n.index,n.features.t,n.features.lemma,n.features.cat,n.features.xpos,n.features.morph,"_","_","_",( (("NoSpaceAfter" in n.features) && n.features["NoSpaceAfter"]==true) ? "SpaceAfter=No" : n.features.gloss)];
 				else if (el == 14) 	ar = [n.index,n.features.t,"_",n.features.lemma,"_",n.features.cat,"_","_","_","_","_","_","_","_"]
@@ -693,7 +693,7 @@ wordsToConll = function (words) {
 			else // at least one governor
 			{
 				var ngovs = Object.keys(n.gov).sort();
-				if (el == 10) { 
+				if (el == 10) {
 					// conllu case: pushing additional govs into special column
 					var xgovsl=[]
 					while (ngovs.length > 1) {
@@ -709,7 +709,7 @@ wordsToConll = function (words) {
 					var cat=n.features.cat;
 					var func = $('#styleconllcheck').prop('checked') ? n.gov[j]+"::"+(n.gov[j] in funcDic ? JSON.stringify(funcDic[n.gov[j]]) : "") :	n.gov[j];
 					c+=1;
-					if (el == 4)	{	
+					if (el == 4)	{
 								if (c>1) {t="_";cat="_"}
 								ar = [t,cat,j,func]
 							}
@@ -725,51 +725,91 @@ wordsToConll = function (words) {
 
 
 // overriding the arborator.draw function to add conll stuff
-drawalldeps = function() 
+
+drawalldeps = function()
 	{
+		console.log("drawalldeps@q.js")
 	currentnr = $(currentsvg).parent().attr("nr");
 	var thisconll=wordsToConll(currentsvg.words);
 	conlltrees[currentnr]=thisconll;
-	for (var i in currentsvg.words)
+
+	// get a list of token id and governor id pair sorted by distance
+	// because shorter arc will occupy lower level of height
+	var toknum = Object.keys(currentsvg.words).length; // number of tokens
+	var dict = {};
+	for (i in currentsvg.words)
+		for (j in currentsvg.words[i].gov)
 		{
-			var n = currentsvg.words[i];
-			for (var j in n.svgdep) 
-			{
-				n.svgdep[j].remove();
-				delete n.svgdep[j];
-			}
-			n.svgdep={};
-			var c=0;
-			
-			var distarray = $.map(n.gov, function(value, index) {return [[Math.abs(index-i),index]];}).sort(); // order drawing of multiple governors by increasing distance
-			for (var jj in distarray) 
-			{
-				var j=distarray[jj][1];
-				drawDep(n.index,j,n.gov[j],c);
-				c+=1;
-			};
-			
+			var d = Math.abs(i-j);
+			if (j == 0) d = toknum; // root
+			dict[i + ' ' + j] = d;
+		}
+	// sort the dictionary'keys by their associated values
+	var tokenid_govind = Object.keys(dict).sort(function(a,b){return dict[a]-dict[b]});
+
+	// clear
+	for (var i in currentsvg.words)
+	{
+		var n = currentsvg.words[i];
+		for (var j in n.svgdep)
+		{
+			n.svgdep[j].remove();
+			delete n.svgdep[j];
 		};
-		
-// 	deptreeexperiment();
-		
+	}
+	n.svgdep={};
+
+
+	var arcnum = tokenid_govind.length;
+	var gov_cnt = {};
+	var heights = {};
+	for (var i = 0; i < arcnum; i++)
+	{
+
+		// unpack tokenid_govind to token id and governor id
+		tidgid = tokenid_govind[i].split(" ");
+		var tid = parseInt(tidgid[0],10);
+		var gid = parseInt(tidgid[1],10);
+		var n = currentsvg.words[tid];
+		if (!(tid in gov_cnt)) gov_cnt[tid] = 0;
+		var c = gov_cnt[tid];
+		gov_cnt[tid] += 1; // count num of governor
+		var height = 1;
+		var start = Math.min(tid, gid), end = Math.max(tid, gid);
+		if (gid == 0) {start = 0; end = toknum - 1;}
+
+		// get height for current arc
+		for (var j = start + 1; j < end; j++)
+		{
+			if (heights[j] === undefined) heights[j] = 1;
+			if (heights[j] > height) height = heights[j];
+		}
+
+		drawDep(tid,gid,n.gov[gid],c,height);
+
+		// update heights
+		if (gid != 0) for (var j = start; j <= end; j++) heights[j] = height + 1;
+
+	}
+
+
 	if (inDrawTrees) return; // if i got here by reading the conll text content, no need to again write it back into the conll textarea
-	
-	
+
+
 	// making new conlltext
 	var conlltext = "";
 	$.each(conlltrees, function(i, conlltree){ // just modifies the changed tree, keeps the other conll strings
 			if (i==currentnr) conlltext+=thisconll+"\n";
 			else conlltext+=conlltrees[i]+"\n"
 		})
-	
-// 	if (autostart) 
+
+// 	if (autostart)
 	conllarea.val(conlltext);
-			
-	
+
+
 // 	console.log("autostart",autostart)
 
-	
+
 // 	console.log(window.location.href.slice(-13) != "?autostart=no", 88888, window.opener)
 	};
 
@@ -785,7 +825,7 @@ function changeCat(){ // called by onclick on the menu or return
 	var id = cc.data("index");
 	establishCat(id,cat);
 	cc.hide();
-	
+
 	currentnr = $(currentsvg).parent().attr("nr");
 	var thisconll=wordsToConll(currentsvg.words);
 	conlltrees[currentnr]=thisconll;
@@ -796,13 +836,13 @@ function changeCat(){ // called by onclick on the menu or return
 			else conlltext+=conlltrees[i]+"\n"
 		})
 	conllarea.val(conlltext);
-		
-}	
-	
-	
-	
+
+}
+
+
+
 deptreeexperiment = function(){ // unfinished experiment of creating an unordered tree representation
-		
+
 	var roots=[];
 	var leaves=[];
 	for (var i in currentsvg.words)
@@ -814,7 +854,7 @@ deptreeexperiment = function(){ // unfinished experiment of creating an unordere
 			n.kids=n.kids||[];
 			n.levels=n.levels||{};
 			n.levels[0]=n.width;
-			for (var j in n.gov) 
+			for (var j in n.gov)
 			{
 				if (j==0) continue;
 				var nn = currentsvg.words[j];
@@ -834,18 +874,18 @@ deptreeexperiment = function(){ // unfinished experiment of creating an unordere
 // 	for (var i in leaves)
 // 		{
 // 			var n = currentsvg.words[i];
-// 			
+//
 // 		}
 	console.log("end deptree",currentsvg.words);
-		
+
 }
-	
+
 walkdown = function(n,level,maxi,already){
 	console.log("walkingdown",n.index,n.features.t,n,level,maxi,already);
-	
+
 	if (level < n.level) n.level=level;
 	n.level=n.level||level
-	
+
 	console.log("***",already.indexOf(n.index));
 	if (already.indexOf(n.index)>-1) return maxi;
 	already.push(n.index);
@@ -854,49 +894,49 @@ walkdown = function(n,level,maxi,already){
 		m=walkdown(n.kids[i], level+1,maxi,already );
 		if (m>maxi) maxi=m;
 	}
-	
-	
+
+
 	console.log("***walkingdown",n.index,n,already);
-	
-	for (var i in n.kids) 
+
+	for (var i in n.kids)
 	{
 		var kid=n.kids[i];
-		for (var j in kid.levels) 
+		for (var j in kid.levels)
 		{
 			var j=parseInt(j);
 			console.log("i'm in",n.index,"kid",kid.index,"kid level",j);
 			n.levels[j+1]=(n.levels[j+1]||0)+kid.levels[j];
-			
+
 		}
 	}
-	
-	
+
+
 	console.log("___walkingdown",n.index,n.level,"==",n.levels,n,already);
-	return maxi	
+	return maxi
 }
-	
-	
+
+
 exportTree = function () {
-	
+
 	nr=$("#ex").attr("nr");
-	
+
 	var v=$("#exptype")[0].options[$("#exptype")[0].selectedIndex].value;
 
 	$("svg").attr("xmlns","http://www.w3.org/2000/svg");
 	$("svg").attr("xmlns:xlink","http://www.w3.org/1999/xlink");
-	
+
 // 			$('#source').attr("value",header+$('#holder'+nr).html());
 	$('#source').attr( "value", svgheader+$('#holder'+nr+' >svg').clone().wrap('<p>').parent().html() );
-	
+
 	if(v=="xxxsvg")	// TODO: no need to go via the server to show svg content
 	{
 		var x=window.open();
 		x.document.open();
 		x.document.write(svgheader+$('#holder'+nr+' >svg').clone().wrap('<p>'));
-		x.document.close();	
+		x.document.close();
 	}
 	else $('#ex').submit();
-		
+
 // 		}
 }
 
@@ -905,9 +945,9 @@ openFeatureTable = function() {
 }
 
 
-	
-	
-function dirt() { 
+
+
+function dirt() {
 	var nr=currentsvg.id.substr(3);
 	if (currentsvg.undo.undo_available)
 	{
@@ -918,7 +958,7 @@ function dirt() {
 		dirty.push(currentsvg.id);
 	}
 	else
-	{	
+	{
 		var ind=dirty.indexOf(currentsvg.id);
 		$("#save"+nr).css({ visibility: 'hidden' });
 		$("#undo"+nr).css({ visibility: 'hidden' });
@@ -927,14 +967,14 @@ function dirt() {
 	if (currentsvg.undo.redo_available)
 	{
 		$("#redo"+nr).css({ visibility: 'visible' }).attr("title","redo: "+currentsvg.undo.redo_names[currentsvg.undo.redo_available - 1]);
-	}	
+	}
 	else
-	{	
+	{
 		$("#redo"+nr).css({ visibility: 'hidden' });
-	}	
+	}
 	if (dirty.length==0)	$("#sav").attr(attrclean).addClass( "ui-state-disabled " );
 	else			$("#sav").attr(attrdirty).removeClass( "ui-state-disabled " );
-	
+
 }
 
 function drawAnnodoc() {
@@ -945,25 +985,25 @@ function drawAnnodoc() {
 // 			$( '<xspan class="annodoc"><img id="export'+i+'" class="exportannodoc" border="0" style="visibility: visible;" src="images/export.bw.png" nr="'+i+'" title="export the Annodoc svg graph"></xspan>').insertAfter( '#export'+i );
 
 		})
-	
-	
+
+
 	Annodoc.activate(Config.bratCollData, Collections.listing);
-	
+
 // 	$(".exportannodoc").click(function()
 // 	{
 // 			console.log($(this).attr("nr"))
 // 			console.log( $("#annodoc"+$(this).attr("nr")+" svg" ).attr("xmlns:xlink","http://www.w3.org/1999/xlink").attr("xmlns","http://www.w3.org/1999/xlink").prop("outerHTML") );
-// 			
-// 			
-// 	
+//
+//
+//
 // // 			$('#source').attr("value",header+$('#holder'+nr).html());
 // // 	$('#source').attr( "value", svgheader+$('#holder'+nr+' >svg').clone().wrap('<p>').parent().html() );
-// 	
-// 			
-// 			
+//
+//
+//
 // // 		$("#ex").show();
 // // 		$("#ex").offset($(this).offset()).attr("nr",$(this).attr("nr"));
 // 	});
-	
-	
+
+
 }
