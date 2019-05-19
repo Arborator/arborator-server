@@ -484,9 +484,11 @@ function eraseRelation(depind,gi2f)
 		oldgi2f[i]=depn.gov[i]
 		if (i in gi2f)
 		{
-			delete depn.gov[i];
+			if (i in depn.gov) delete depn.gov[i];
 			// sync tokens[ind]'s feature with  depn.gov[i]
-			delete tokens[depind].gov[i]; // debug
+			if (depind in tokens)
+			 	if (i in tokens[depind].gov)
+				 	delete tokens[depind].gov[i]; // debug
 			if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + " ―"+ depn.gov[i]+ "→ "+depn.features.t + " ";
 			else info=info+" link ―"+depn.gov[i]+ "→ "+depn.features.t;
 		}
@@ -659,8 +661,8 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 		var tokenid_govind = Object.keys(dict).sort(function(a,b){return dict[a]-dict[b]});
 
 		var arcnum = tokenid_govind.length;
-		var gov_cnt = {}
-		var heights = Array(toknum).fill(1);
+		var gov_cnt = {};
+		var heights = {};
 		for (var i = 0; i < arcnum; i++)
 		{
 			// unpack tokenid_govind to token id and governor id
@@ -676,14 +678,17 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 			if (gid == 0) {start = 0; end = toknum - 1;}
 
 			// get height for current arc
-			for (var j = start + 1; j < end; j++) if (heights[j] > height) height = heights[j];
-			if (gid != 0) for (var j = start; j <= end; j++) heights[j] = height + 1;
+			for (var j = start + 1; j < end; j++)
+			{
+				if (heights[j] ===undefined) heights[j]=1;
+				if (heights[j] > height) height = heights[j];
+			}
+			if (gid != 0) for (var j = start; j <= end; j++) {
+				heights[j] = height + 1;
+			}
 			if (tidnew == tid && gidnew == gid)
-				break
+				break;
 		};
-
-		console.log(height);
-
 		var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
 		var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
 		var length    = radius * Math.sin(_ANGLE) / 2;
@@ -949,8 +954,9 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 				// get the height of the highest curve
 				// baseline is the height of the first token
 				var min_y ;
+				// baseline = token level of height
 				for (var i in currentsvg.words) {
-						min_y = currentsvg.words[i].svgs[shownfeatures[0]].getBBox().y - 3 * _ARC_HEIGHT_UNIT;
+						min_y = currentsvg.words[i].svgs[shownfeatures[0]].getBBox().y;
 						break;
 				}
 				// search for the height of the highest curve if there is
@@ -959,18 +965,13 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 					for (var j in t.svgdep)
 					{
 						var pathObj =  t.svgdep[j][1];
-						//var real_y_of_dep_label = pathObj.getBBox().y;
-						//var real_y_of_token = t.svgs[shownfeatures[0]].getBBox().y - t.svgs[shownfeatures[0]].getBBox().height;
-						//var d = real_y_of_token - real_y_of_dep_label;
-						// var real_y_of_dep_label = Math.abs(t.svgdep[j].getBBox().height - t.svgdep[j].getBBox().y);
-						//console.log(pathObj.getBBox().y);
 						if (min_y === undefined) min_y = pathObj.getBBox().y;
 						else if (min_y > pathObj.getBBox().y && j != 0) min_y = pathObj.getBBox().y;
 					}
 				}
 
-				// vertical line for root
-				ytop = min_y - _ARC_HEIGHT_UNIT ;// y2 - heigh_pts;
+				// put root at one level giher than other arc (or than baseline if empty tree)
+				ytop = min_y - _ARC_HEIGHT_UNIT ;
 				var cstr ="M" + start_x + "," + ytop ;
 				cstr +="L"+ end_x  + "," + y2;
 
@@ -1153,8 +1154,8 @@ drawalldeps = function()
 	n.svgdep={};
 
 	var arcnum = tokenid_govind.length;
-	var gov_cnt = {}
-	var heights = Array(toknum).fill(1);
+	var gov_cnt = {};
+	var heights = {};
 	for (var i = 0; i < arcnum; i++)
 	{
 		// unpack tokenid_govind to token id and governor id
@@ -1170,7 +1171,11 @@ drawalldeps = function()
 		if (gid == 0) {start = 0; end = toknum - 1;}
 
 		// get height for current arc
-		for (var j = start + 1; j < end; j++) if (heights[j] > height) height = heights[j];
+		for (var j = start + 1; j < end; j++)
+		{
+			if (heights[j] === undefined) heights[j] = 1;
+			if (heights[j] > height) height = heights[j];
+		}
 
 		// draw this arc
 		drawDep(tid,gid,n.gov[gid],c,height);
