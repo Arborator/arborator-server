@@ -432,7 +432,8 @@ function establishRelations(depind,gi2f)
 {
 	var depn=currentsvg.words[depind];
 	for (i in depn.svgdep) { depn.svgdep[i].remove(); }
-	for (i in tokens[depind].svgdep) { tokens[depind].svgdep[i].remove(); }
+	if (!(tokens[depind] === undefined))
+		for (i in tokens[depind].svgdep) { tokens[depind].svgdep[i].remove(); }
 	oldgi2f={};
 	info="removing"
 	for (var i in depn.gov)
@@ -450,9 +451,11 @@ function establishRelations(depind,gi2f)
 	{
 		depn.gov[i]=gi2f[i]
 		// Luiig : sync tokens[depind] with depn
-		if (tokens[depind]["gov"] === undefined) {tokens[depind].gov = {};}
+		if (!(tokens[depind] === undefined))
+			if (tokens[depind]["gov"] === undefined) {tokens[depind].gov = {};}
 
-		tokens[depind].gov[i]=gi2f[i];
+		if (!(tokens[depind] === undefined))
+			tokens[depind].gov[i]=gi2f[i];
 
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + "―" + gi2f[i] + "→ "+depn.features.t + " ";//normal link
 		else info=info+" link ―" + gi2f[i] + "→ "+depn.features.t;//root link
@@ -476,7 +479,8 @@ function eraseRelation(depind,gi2f)
 {
 	var depn=currentsvg.words[depind];
 	for (i in depn.svgdep) { depn.svgdep[i].remove(); }
-	for (i in tokens[depind].svgdep) { tokens[depind].svgdep[i].remove(); }
+	if (!(tokens[depind] === undefined))
+		for (i in tokens[depind].svgdep) { tokens[depind].svgdep[i].remove(); }
 	info="removing"
 	oldgi2f={};
 	for (var i in depn.gov)
@@ -512,7 +516,8 @@ function addRelations(depind,gi2f)
 	var depn=currentsvg.words[depind];
 
 	for (i in depn.svgdep) { depn.svgdep[i].remove(); }
-	for (i in tokens[depind].svgdep) { tokens[depind].svgdep[i].remove(); }
+	if (!(tokens[depind] === undefined))
+		for (i in tokens[depind].svgdep) { tokens[depind].svgdep[i].remove(); }
 
 	oldgi2f={};
 
@@ -524,8 +529,11 @@ function addRelations(depind,gi2f)
 	{
 		depn.gov[i]=gi2f[i]
 		// Luiig : sync tokens[depind] with depn
-		if (tokens[depind]["gov"] === undefined) tokens[depind]["gov"] = {};
-		tokens[depind]["gov"][i]=gi2f[i];
+		if (!(tokens[depind] === undefined))
+		{
+			if (tokens[depind]["gov"] === undefined) tokens[depind]["gov"] = {};
+			tokens[depind]["gov"][i]=gi2f[i];
+		}
 
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + "―" + gi2f[i] + "→ "+depn.features.t + " ";//normal link
 		else info=info+" link ―" + gi2f[i] + "→ "+depn.features.t;//root link
