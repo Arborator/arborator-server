@@ -654,7 +654,7 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 			if (i==tidnew){
 				var d = Math.abs(i-gidnew);
 				if (gidnew == 0) d = toknum - 1; // root
-				dict[i + ' ' + gidnew] = d;
+				dict[i + ' ' + gidnew] = d + .5; // put this element later in the list
 			}
 		}
 		// sort the dictionary'keys by their associated values
