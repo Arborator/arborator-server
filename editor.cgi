@@ -167,16 +167,96 @@ def printexport():
 	</form>
 	""".format(project=projectEsc.encode("utf-8"))
 
+
 def printmenues():
+
+	def getGroupeName(name, lst, sep = ':'):
+
+		if name[0]=='@':
+			name = name[1:]
+
+		# if this name used as group name in other names
+		for othername in lst:
+			# yes, it's also a group name
+			if name+':' in othername:
+				return name
+
+		# if this name contains a group name
+		position = name.find(sep);
+		if position < 0:
+			# no, definitely, this is a singleton, no groupe name
+			return ''
+		else :
+			# yes, so extract the groupe name
+			gName = name[:position]
+			#print '<script type="text/javascript">console.log('+"'"+gName+"'"+');</script>'
+			return gName;
+
+
 	#print projectconfig.functions
 	# form for functions and form for categories
+	funcList = projectconfig.functions;
+	funcNameList = [f.encode("utf-8") for f in funcList];
+
+	# sort function names by alphabetical order
+	# based on filtered name
+	def nameFilter(name,lstSyms2rm):
+
+		return  "".join(c for c in name if c not in lstSyms2rm)
+
+	funcNameList= sorted(funcNameList, key=lambda x: nameFilter(x,['@']))
+
+	# get grouped and non-grouped function names as well as groupe name
+	groupedNames = [];
+	nongroupedNames = [];
+	gnames = set()
+	for n in funcNameList:
+		gname = getGroupeName(n,funcNameList);
+		if gname:
+			gnames.add(gname);
+			groupedNames.append(n);
+		else:
+			nongroupedNames.append(n);
+	gnames = list(gnames);
+
+
+	# size for selection / option tag
+	fontheigtht = 13.5
+	fontwidth = 5.5
+	tab = 4
+	selectListWidth = (max([len(n) for n in funcNameList]) + tab) * fontwidth;
+	selectListHeight = (len(gnames)+len(projectconfig.functions)-2)*fontheigtht;
+
 	print """
 	<div id="funcform" style="display:none;position:absolute;">
 		<form  method="post" id="func" name="func" >
-			<select id="funchoice" class='funcmenu' onClick="changeFunc(event);"  size=""" +str( len(projectconfig.functions))+""" style="height:"""+str( len(projectconfig.functions)*13.5)+"""px; width:110px;"  >"""
-	for f in projectconfig.functions:
-		#print "___",f.encode("utf-8")
-		print "<option style='color: "+projectconfig.funcDic[f]["stroke"].encode("utf-8")+";'>"+f.encode("utf-8")+"</option>"
+		<select id="funchoice" class='funcmenu' onClick="changeFunc(event);"  size=""" +str( len(projectconfig.functions))+""" style="height:"""+str(selectListHeight)+"""px; width:""" +str(selectListWidth)+ """px;"  >"""
+
+	# print non grouped and grouped function names
+	for f in nongroupedNames:
+		funcColor = projectconfig.funcDic[f]["stroke"].encode("utf-8");
+		print "<option style='color: "+funcColor+";'>"+f+"</option>"
+
+	currentGroupName = ''
+	for f in groupedNames:
+		funcColor = projectconfig.funcDic[f]["stroke"].encode("utf-8");
+		gName = getGroupeName(f,funcNameList);
+		if not gName: # do not belong to a group neither used as a group name
+			# close previous group
+			if currentGroupName:
+				print "</optgroup>"
+		elif gName != currentGroupName:
+			if currentGroupName:
+				print "</optgroup>"
+
+			# start a new group
+			print "<optgroup label="+"'"+str(gName.upper())+"'"+">";
+
+		currentGroupName = gName;
+
+		# print the option
+		print "<option style='color: "+funcColor+";'>"+f+"</option>"
+
 	print """
 			</select>
 		</form>
