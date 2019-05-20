@@ -1,4 +1,4 @@
-/*!
+.6/*!
  * arborator script for dependency drawing
  * version 1.0
  * http://arborator.ilpga.fr/
@@ -698,6 +698,7 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 				break;
 		};
 		var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
+		if (!_YANDEX_STYLE_EN) heigh_pts *= .6
 		var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
 		var length    = radius * Math.sin(_ANGLE) / 2;
 		var yy        = Math.min(start_y - heigh_pts, start_y - depminh);
@@ -953,6 +954,7 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 			}
 
 			var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
+			if (!_YANDEX_STYLE_EN) heigh_pts *= .6
 			var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
 			var length    = radius * Math.sin(_ANGLE) / 2;
 
@@ -979,7 +981,11 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 				}
 
 				// put root at one level giher than other arc (or than baseline if empty tree)
-				ytop = min_y - _ARC_HEIGHT_UNIT ;
+				if (_YANDEX_STYLE_EN)
+					ytop = min_y - _ARC_HEIGHT_UNIT ;
+				else
+					ytop = min_y - _ARC_HEIGHT_UNIT * .6 ;
+
 				var cstr ="M" + start_x + "," + ytop ;
 				cstr +="L"+ end_x  + "," + y2;
 
