@@ -338,7 +338,9 @@ openFunctionMenu = function(ind,govind,func,x,y)  // called from clickOpenFuncti
 // 		console.log("kkkk",$(currentsvg),currentsvg.id);
 		var ff=$('#funcform');
 		var os=$("#funchoice")[0].options;
-		funcnum=functions.indexOf(func);
+		var functionsFromOptions = [];
+		for (var i in os) functionsFromOptions.push(os[i].value);
+		funcnum=functionsFromOptions.indexOf(func);
 		if (funcnum==null) funcnum=0;
 		if (funcnum in os) os[funcnum].selected = true;
 		ff.css({ top: y, left: x });
