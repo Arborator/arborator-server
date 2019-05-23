@@ -615,19 +615,18 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 	{
 // 		console.log(x1,y1,x2,y2,lineattris);
 
-			var start_x = 0;
-			var end_x = 0;
+			var left_x=0,right_x=0,left_y=0,right_y=0;
 			if (x1 < x2) {
-				start_x = x1;
-				end_x   = x2;
-				start_y = y1;
-				end_y = y2;
+				left_x = x1;
+				right_x = x2;
+				left_y = y1;
+				right_y = y2;
 			}
 			else { // x2 < x1
-				start_x = x2;
-				end_x   = x1;
-				start_y = y2;
-				end_y = y1;
+				left_x = x2;
+				right_x   = x1;
+				left_y = y2;
+				right_y = y1;
 			}
 
 		// get intended tid, gid of the new arc
@@ -639,7 +638,7 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 			var svg = word.svgs[shownfeatures[0]];
 			var x = svg.getBBox().x;
 			var w = svg.getBBox().width;
-			if ((start_x <= x + w) && (end_x >= x))
+			if ((left_x <= x + w) && (right_x >= x))
 			{
 				var ii = parseInt(i,10);
 				if (tidnew===undefined) tidnew=ii;
@@ -703,13 +702,13 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 		if (!_YANDEX_STYLE_EN) heigh_pts *= .6
 		var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
 		var length    = radius * Math.sin(_ANGLE) / 2;
-		var yy        = Math.min(start_y - heigh_pts, start_y - depminh);
+		var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
 
 			// arc of other relations
-			var cstr ="M" + start_x + "," + start_y;
-			cstr +="A" + radius + "," + radius + " 0 0 1 "+ (start_x + length / 2) + "," + yy;
-			cstr +="L"+ (end_x - length / 2)   + "," + yy;
-			cstr +="A" + radius + "," + radius + " 0 0 1 "+ end_x   + "," + end_y;
+			var cstr ="M" + left_x + "," + left_y;
+			cstr +="A" + radius + "," + radius + " 0 0 1 "+ (left_x + length / 2) + "," + yy;
+			cstr +="L"+ (right_x - length / 2)   + "," + yy;
+			cstr +="A" + radius + "," + radius + " 0 0 1 "+ right_x   + "," + right_y;
 
 			if (!_YANDEX_STYLE_EN)
 			{ // original arc drawing style
@@ -941,18 +940,18 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 		// Yandex-style tree layout
 		// code inspired from https://github.com/vieenrose/dep_tregex/blob/master/dep_tregex/tree_to_html.py
 
-			var start_x,end_x;
+			var left_x=0,right_x=0,left_y=0,right_y=0;
 			if (x1 < x2) {
-				start_x = x1;
-				end_x   = x2;
-				start_y = y1;
-				end_y = y2;
+				left_x = x1;
+				right_x   = x2;
+				left_y = y1;
+				right_y = y2;
 			}
 			else { // x2 < x1
-				start_x = x2;
-				end_x   = x1;
-				start_y = y2;
-				end_y = y1;
+				left_x = x2;
+				right_x   = x1;
+				left_y = y2;
+				right_y = y1;
 			}
 
 			var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
@@ -981,24 +980,24 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 						else if (min_y > pathObj.getBBox().y && j != 0) min_y = pathObj.getBBox().y;
 					}
 				}
-
 				// put root at one level giher than other arc (or than baseline if empty tree)
 				if (_YANDEX_STYLE_EN)
-					ytop = min_y - _ARC_HEIGHT_UNIT ;
+                                       ytop = min_y - _ARC_HEIGHT_UNIT ;
 				else
-					ytop = min_y - _ARC_HEIGHT_UNIT * .6 ;
+                                       ytop = min_y - _ARC_HEIGHT_UNIT * .6 ;
 
-				var cstr ="M" + start_x + "," + ytop ;
-				cstr +="L"+ end_x  + "," + y2;
+				var cstr ="M" + left_x + "," + ytop ;
+				cstr +="L"+ right_x  + "," + y2;
 
 			}
 			else {
 				// arc of other relations
-				var yy        = Math.min(start_y - heigh_pts, start_y - depminh);
-				var cstr ="M" + start_x + "," + start_y;
-				cstr +="A" + radius + "," + radius + " 0 0 1 "+ (start_x + length / 2) + "," + yy;
-				cstr +="L"+ (end_x - length / 2)   + "," + yy;
-				cstr +="A" + radius + "," + radius + " 0 0 1 "+ end_x   + "," + end_y;
+				var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
+				var cstr ="M" + left_x + "," + left_y;
+				cstr +="A" + radius + "," + radius + " 0 0 1 "+ (left_x + length / 2) + "," + yy;
+				cstr +="L"+ (right_x - length / 2)   + "," + yy;
+				cstr +="A" + radius + "," + radius + " 0 0 1 "+ right_x   + "," + right_y;
+				console.log(height,heigh_pts,left_y,yy)
 
 				if (!_YANDEX_STYLE_EN) { // original arc drawing style
 					//var x1x2=Math.abs(x1-x2)/2;
