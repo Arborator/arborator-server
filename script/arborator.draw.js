@@ -254,7 +254,7 @@ createConnection = function () {
 
 
 // 	  attris["dragdepline"], attris["deptext"],
-	return drawsvgDep(1,2,50,60,150,150,"", "",false,0); // arbitrary points
+	return drawsvgDep(0,0,0,0,0,0,"", "",false,0); // arbitrary points
 
 }
 
@@ -1330,7 +1330,7 @@ draw = function() {
 	currentsvg.words = makewords();
 	if (editable)
 	{
-		if(currentsvg.dragConnection) currentsvg.dragConnection = drawsvgDep(1,2,50,60,150,150,"", "",false,0).hide();
+		if(currentsvg.dragConnection) currentsvg.dragConnection = drawsvgDep(0,0,0,0,0,0,"", "",false,0).hide();
 		else currentsvg.dragConnection = createConnection().hide();
 		lastSelected=0;
 	}
