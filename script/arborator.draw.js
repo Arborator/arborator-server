@@ -921,7 +921,7 @@ moveGov = function (dir) {
 var _FONTSIZE            = 12;
 var _HEIGHT_SCALE_FACTOR = 1.5;
 var _ARC_HEIGHT_UNIT     = _FONTSIZE * _HEIGHT_SCALE_FACTOR;
-var _ANGLE                =  Math.PI/3;
+var _ANGLE                =  Math.PI / 3;
 var _YANDEX_STYLE_EN      = true;  // Yandex or Arborator style
 var _TOKEN_WIDTH_RESIZING = true; // auto adapt token width to associated label widths
 var _PAPER_HEIGHT_RESIZING = true; // auto adapt the height of the drawing space according to tree height
@@ -1016,7 +1016,7 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 // 		console.log("'''",c.getTotalLength());
     var rotation_in_rad;
     var rotation_in_deg;
-    var scaled_angle = Math.atan(Math.tan(_ANGLE) * _HEIGHT_SCALE_FACTOR * _FONTSIZE / 10);
+    var scaled_angle = Math.atan(Math.tan(_ANGLE) * _HEIGHT_SCALE_FACTOR * 1.6);
     if (_YANDEX_STYLE_EN) {
       if (govind == 0)  rotation_in_rad =   0;
       else if (x1 > x2) rotation_in_rad = - Math.PI / 2 + scaled_angle;
