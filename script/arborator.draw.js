@@ -997,7 +997,7 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 				cstr +="A" + radius + "," + radius + " 0 0 1 "+ (left_x + length / 2) + "," + yy;
 				cstr +="L"+ (right_x - length / 2)   + "," + yy;
 				cstr +="A" + radius + "," + radius + " 0 0 1 "+ right_x   + "," + right_y;
-				console.log(height,heigh_pts,left_y,yy)
+				//console.log(height,heigh_pts,left_y,yy)
 
 				if (!_YANDEX_STYLE_EN) { // original arc drawing style
 					//var x1x2=Math.abs(x1-x2)/2;
