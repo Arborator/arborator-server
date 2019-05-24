@@ -152,6 +152,8 @@ function Pnode(index,token)
 		// feature texts related to a token
 		var index = node.index;
     var width = -1; // length of the longest label
+    var asDependant = false;
+    var longestLabel;
 
     // as right-adjacent dependent of its governor
 		for (var gov_index in node.gov)
@@ -160,8 +162,11 @@ function Pnode(index,token)
       {
 				var label = node.gov[gov_index];
         //console.log(label) // debug
-        if (width < 0 || width < label.length * _FONTSIZE)
-				    width = label.length * _FONTSIZE;
+        if (longestLabel === undefined || longestLabel.length < label.length)
+        {
+				    longestLabel = label;
+            asDependant = true;
+        }
 			}
 		}
 
@@ -174,13 +179,36 @@ function Pnode(index,token)
         {
           var label = tokens[index - 1].gov[i];
           //console.log(label) // debug
-          if (width < 0 || width < label.length * _FONTSIZE)
-            width = label.length * _FONTSIZE;
+          if (longestLabel === undefined || longestLabel.length < label.length)
+          {
+            longestLabel = label;
+            asDependant = false;
+          }
         }
       }
     }
 
-    return width;
+    /*
+    for (var i in currentsvg.words){
+      t = currentsvg.words[index - 1][index][1];
+      for (var j in t.svgdep)
+      {
+        var pathObj =  t.svgdep[j][1];
+        if (min_y === undefined) min_y = pathObj.getBBox().y;
+    */
+
+
+    if (!(longestLabel === undefined))
+    {
+      console.log(label)
+      var svglabel = currentsvg.paper.text(0, 0, label);
+      // currentsvg.paper.text(a.x, a.y-funccurvedist-funcposi*10, func);
+      width = svglabel.getBBox().width * 1.14;
+      svglabel.remove();
+      delete svglabel;
+    }
+
+    return [asDependant,width];
 
 	} // end of tokenWidthDetection
 
@@ -1273,8 +1301,10 @@ makewordsxx = function()
 			{
 // 				console.log("iii",i, tokens[ks[i]]);
 			var node = new Pnode(i, tokens[i]);
-      var spacex = node.width+tab;
-			labelLength = detectLengthOfAdjRelationlabel(node);
+      var asDependant;
+			var tmp = detectLengthOfAdjRelationlabel(node);
+      asDependant=tmp[0];
+      labelLength=tmp[1];
 			words[i]=node;
 			currentx += spacex;
 			svgwi += pacex; // moved from inside Pnode to here
@@ -1288,49 +1318,61 @@ makewordsxx = function()
 
 makewords = function()
 	{
-
+    currentx = tab; // position at the left side of 'text' object
+    var prevx = 0;
 		var words = new Object();
-    var center = 0;
     var distance = 0;
     var labelLength = 0;
-    var spacex = 0;
-    var extra_width = 0
-		svgwi = 0;
-		currentx = tab; // position at the left side of 'text' object
+    svgwi = 0;
 
 		for (var i in tokens)
 		{
 				var node = new Pnode(i, tokens[i]);
-        spacex = node.width + tab;
-        extra_width = 0
-
-        labelLength = detectLengthOfAdjRelationlabel(node); // length of label with the previous label
-				words[i]   = node;
-
-        console.log(i,extra_width)
-        if (labelLength - tab - extra_width > 0 && i > 1) // need more space
+        var tmp = detectLengthOfAdjRelationlabel(node);
+        var asDependant = tmp[0];
+        var labelLength = tmp[1];
+        var ellipticalPartLenght = _ARC_HEIGHT_UNIT / (1 - Math.cos(_ANGLE)) * Math.sin(_ANGLE) / 2;
+        distance  = currentx - prevx - ellipticalPartLenght;
+        prevx = currentx;
+        if (asDependant)
         {
-            // rm current token
+          distance += node.tag_width / 2;
+          if (i - 1 in words) distance += - words[i-1].tag_width;
+        }
+        else
+        { // this token is used as a governor for the relation concerned (the one with longest label)
+          if (i - 1 in words) distance += - words[i-1].tag_width / 2
+        }
+
+        if (labelLength - distance > 0 && i > 1) // need more space
+        {
+            // clear current token
             for (var f in node.svgs)
             {
               node.svgs[f].remove();
               delete node.svgs[f]
             }
             delete node.svgs;
-            delete node;
 
             // add space
-            currentx += labelLength - tab - extra_width;
-            svgwi    += labelLength - tab - extra_width;
+            currentx += labelLength - distance;
+            svgwi    += labelLength - distance;
+            prevx     = currentx;
 
-            // redraw current token
-            words[i] = new Pnode(i, tokens[i]);
+            // redraw current token at new position
+            node = new Pnode(i, tokens[i]);
 
         }
-				currentx += spacex;
-				svgwi    += spacex;
+				currentx += node.width+tab;
+				svgwi    += node.width+tab;
+        words[i] = node;
+
 		};
+
+
+
 		// update paper width
+
 		currentsvg.setAttribute("width", svgwi + extraspace);
 
 		return words;
