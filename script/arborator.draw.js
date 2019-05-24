@@ -1056,7 +1056,11 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,heigh
 		var poi = currentsvg.paper.pointer(x2,y2,pois,rotation_in_deg).attr(attris["depline"]);
 // 		.data("xfunc",func);
 
-		a=c.getPointAtLength(c.getTotalLength()/2); // put text in the middle of arc
+    // handel this strange offset
+    if (x1 > x2)
+		  a=c.getPointAtLength(c.getTotalLength()/2-0.03); // put text in the middle of arc
+    else
+      a=c.getPointAtLength(c.getTotalLength()/2+0.03); // put text in the middle of arc
 		if (govind == 0) a=c.getPointAtLength(0); // Luigi : root style ajustement : put text on the top of a root
 		t = currentsvg.paper.text(a.x, a.y-funccurvedist-funcposi*10, func);
 		t.attr(attris["deptext"]);
