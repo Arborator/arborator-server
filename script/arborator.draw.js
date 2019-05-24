@@ -117,6 +117,7 @@ function Pnode(index,token)
 			t.attr("index",index);
 			var wi=t.getBBox().width;
 			t.width=wi;
+      if (i==0) this.tag_width = wi; // tag
 			t.index=index;
 
 			t.node.setAttribute("class",f);
@@ -145,43 +146,41 @@ function Pnode(index,token)
 	};
 
 	// add-on 1 by Luigi : adjust the current token width in fonction of the label width
-	tokenWidthDetection = function(node)
+	detectLengthOfAdjRelationlabel = function(node)
 	{
 		// node.width defines the common width of each of
 		// feature texts related to a token
 		var index = node.index;
-		var new_width = node.width;
-		for (var gov_index in node.gov) {
+    var width = -1; // length of the longest label
 
-			if (gov_index - index == 1) {
-				// as left-adjacent dependent of its governor, this token
-				// adapt its width in fonction of arc label width
+    // as right-adjacent dependent of its governor
+		for (var gov_index in node.gov)
+    {
+			if (index - gov_index == 1)
+      {
 				var label = node.gov[gov_index];
-				var min_width = label.length * _FONTSIZE * .75;
-				if (new_width < min_width) {
-					new_width = min_width;
-					needRespace = true;
-				}
-			}
-
-			if (index + 1 in tokens) {
-				for (var i in tokens[index + 1].gov) {
-					if (i == index) {
-						// as left-adjacent governor of one of its dependent, this token
-						// adapt its width in fonction of arc label width
-						var label = tokens[index + 1].gov[i];
-						var min_width = label.length * _FONTSIZE * .85;
-						// then adapt its width to the width of this label
-						if (new_width < min_width) {
-							new_width = min_width;
-							needRespace = true;
-						}
-						//console.log(label,tokens[index].t,tokens[index+1].t,this.width,min_width);
-					}
-				}
+        //console.log(label) // debug
+        if (width < 0 || width < label.length * _FONTSIZE)
+				    width = label.length * _FONTSIZE;
 			}
 		}
-		return new_width;
+
+    // as right-adjacent governor of one of its dependent
+    if (index - 1 in tokens)
+    {
+      for (var i in tokens[index - 1].gov)
+      {
+        if (i == index)
+        {
+          var label = tokens[index - 1].gov[i];
+          //console.log(label) // debug
+          if (width < 0 || width < label.length * _FONTSIZE)
+            width = label.length * _FONTSIZE;
+        }
+      }
+    }
+
+    return width;
 
 	} // end of tokenWidthDetection
 
@@ -1274,10 +1273,11 @@ makewordsxx = function()
 			{
 // 				console.log("iii",i, tokens[ks[i]]);
 			var node = new Pnode(i, tokens[i]);
-			if (_TOKEN_WIDTH_RESIZING) node.width = tokenWidthDetection(node);
+      var spacex = node.width+tab;
+			labelLength = detectLengthOfAdjRelationlabel(node);
 			words[i]=node;
-			currentx=currentx+node.width+tab;
-			svgwi=svgwi+node.width+tab; // moved from inside Pnode to here
+			currentx += spacex;
+			svgwi += pacex; // moved from inside Pnode to here
 			};
 			// adjust drawing paper width
 			currentsvg.setAttribute("width",svgwi+extraspace);
@@ -1288,20 +1288,50 @@ makewordsxx = function()
 
 makewords = function()
 	{
+
 		var words = new Object();
-		// gloabl variable assignment
-		svgwi=0;
-		currentx=tab;
+    var center = 0;
+    var distance = 0;
+    var labelLength = 0;
+    var spacex = 0;
+    var extra_width = 0
+		svgwi = 0;
+		currentx = tab; // position at the left side of 'text' object
+
 		for (var i in tokens)
 		{
 				var node = new Pnode(i, tokens[i]);
-				if (_TOKEN_WIDTH_RESIZING) node.width = tokenWidthDetection(node);
-				words[i]=node;
-				currentx=currentx+node.width+tab;
-				svgwi=svgwi+node.width+tab; // moved from inside Pnode to here
+        spacex = node.width + tab;
+        extra_width = 0
+
+        labelLength = detectLengthOfAdjRelationlabel(node); // length of label with the previous label
+				words[i]   = node;
+
+        console.log(i,extra_width)
+        if (labelLength - tab - extra_width > 0 && i > 1) // need more space
+        {
+            // rm current token
+            for (var f in node.svgs)
+            {
+              node.svgs[f].remove();
+              delete node.svgs[f]
+            }
+            delete node.svgs;
+            delete node;
+
+            // add space
+            currentx += labelLength - tab - extra_width;
+            svgwi    += labelLength - tab - extra_width;
+
+            // redraw current token
+            words[i] = new Pnode(i, tokens[i]);
+
+        }
+				currentx += spacex;
+				svgwi    += spacex;
 		};
-		// adjust drawing paper width
-		currentsvg.setAttribute("width",svgwi+extraspace);
+		// update paper width
+		currentsvg.setAttribute("width", svgwi + extraspace);
 
 		return words;
 	};
