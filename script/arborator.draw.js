@@ -200,7 +200,7 @@ function Pnode(index,token)
 
     if (!(longestLabel === undefined))
     {
-      console.log(label)
+      //console.log(label)
       var svglabel = currentsvg.paper.text(0, 0, label);
       // currentsvg.paper.text(a.x, a.y-funccurvedist-funcposi*10, func);
       width = svglabel.getBBox().width * 1.14;
