@@ -727,6 +727,12 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 			cstr +="L"+ (right_x - length / 2)   + "," + yy;
 			cstr +="A" + radius + "," + radius + " 0 0 1 "+ right_x   + "," + right_y;
 
+      if (gid == 0 && _YANDEX_STYLE_EN)
+      {
+        cstr ="M" + left_x + "," + y1;
+        cstr +="L"+ left_x + "," + y2;
+      }
+
 			if (!_YANDEX_STYLE_EN)
 			{ // original arc drawing style
 				yy        = Math.min(y1 - worddistancefactor*heigh_pts, y1 - depminh);
@@ -737,15 +743,7 @@ applyPath = function(x1,y1,x2,y2,lineattris) //
 		var path = cstr;
 
 		currentsvg.dragConnection[1].attr({path:path}).attr(lineattris);;// curve
-		currentsvg.dragConnection[2].translate(x2-isDrag.ox,y2-isDrag.oy).attr(lineattris);; // pointer
-
-// 		console.log(";;;",currentsvg.dragConnection[1],lineattris)
-
-// 		if (currentsvg.dragConnection[1].getAttribute('stroke-dasharray')==0) // firefox/raphael bug!
-// 		{
-// 			currentsvg.dragConnection[1].removeAttribute('stroke-dasharray')
-// 			currentsvg.dragConnection[2].removeAttribute('stroke-dasharray')
-// 		}
+    currentsvg.dragConnection[2].translate(x2-isDrag.ox,y2-isDrag.oy).attr(lineattris);; // pointer
 
 	}
 
@@ -1284,7 +1282,6 @@ makewords = function()
     currentx = tab; // position at the left side of 'text' object
 		var words = new Object();
     var distance = 0;
-    var labelLength = 0;
     var dictOfx = {};
     var widhtOfEllipticalPartOfYandexCurveAtTheFirstStage = _ARC_HEIGHT_UNIT / (1 - Math.cos(_ANGLE)) * Math.sin(_ANGLE) / 2;
     svgwi = 0;
@@ -1300,7 +1297,7 @@ makewords = function()
 
           // get length of label of relation with the target token
           var target_index = source_index - offset;
-          var labelLen = getLabelWidth(node, offset);
+          var labelWidth = getLabelWidth(node, offset);
 
           // estimate the effecitve horizontal distance between the current token
           // and the target token
@@ -1317,7 +1314,7 @@ makewords = function()
 
           // deplace the current token if more space is needed
           // with respect to the label length
-          if (labelLength > distance) // need more space
+          if (labelWidth > distance) // need more space
           {
               // clear all drawn feature lines
               // corresponding to the current / source token
@@ -1330,8 +1327,8 @@ makewords = function()
 
               // move x-position toward right in order to make
               // more space
-              currentx += labelLength - distance;
-              svgwi    += labelLength - distance;
+              currentx += labelWidth - distance;
+              svgwi    += labelWidth - distance;
               prevx     = currentx;
 
               // then we redraw the current token at adjusted x-position
