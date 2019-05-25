@@ -149,13 +149,12 @@ function Pnode(index,token)
   // get the label length of relation between
   // the current / source node with index 'source_index'
   // and the target node of index 'target_index' parametrized by 'offset'
-	getLabelLen = function(node, offset = 1)
+	getLabelWidth = function(node, offset = 1)
 	{
 		var source_index = node.index;
     var target_index = source_index - offset;
 
     var width = -1; // length of the longest label, -1 means 'no label found'
-    var asDependant = false; // output flag to signal if the source is a dependent in the underlying relation
     var longestLabel;
 
     // if the current node is a dependent in the underlying
@@ -168,7 +167,6 @@ function Pnode(index,token)
         if (longestLabel === undefined || longestLabel.length < label.length)
         {
 				  longestLabel = label;
-          asDependant = true;
         }
 			}
 		}
@@ -184,7 +182,6 @@ function Pnode(index,token)
           if (longestLabel === undefined || longestLabel.length < label.length)
           {
             longestLabel = label;
-            asDependant = false;
           }
         }
       }
@@ -201,7 +198,7 @@ function Pnode(index,token)
       delete svglabel;
     }
 
-    return [asDependant, width];
+    return width;
 
 	}
 
@@ -1299,14 +1296,11 @@ makewords = function()
 				var node = new Pnode(source_index, tokens[source_index]);
 
         for (var offset = 1; offset < Math.min(source_index,5); offset++)
-        // var offset = 1;
         {
 
           // get length of label of relation with the target token
           var target_index = source_index - offset;
-          var asDep_labelLen = getLabelLen(node, offset);
-          var asDependant    = asDep_labelLen[0];
-          var labelLength    = asDep_labelLen[1];
+          var labelLen = getLabelWidth(node, offset);
 
           // estimate the effecitve horizontal distance between the current token
           // and the target token
@@ -1319,16 +1313,7 @@ makewords = function()
           //       its upper bound which is very lose : height is
           //       proportional to 'offset'
           distance -= widhtOfEllipticalPartOfYandexCurveAtTheFirstStage * offset;
-          if (asDependant)
-          {
-            distance += node.tag_width / 2;
-            if (target_index in words) distance -= words[target_index].tag_width;
-          }
-          else
-          {
-            if (target_index in words)
-              distance -= words[target_index].tag_width / 2
-          }
+          distance += node.tag_width / 2 - words[target_index].tag_width / 2 - xoff;
 
           // deplace the current token if more space is needed
           // with respect to the label length
