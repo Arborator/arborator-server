@@ -145,40 +145,42 @@ function Pnode(index,token)
 
 	};
 
-	// add-on 1 by Luigi : adjust the current token width in fonction of the label width
-	detectLengthOfAdjRelationlabel = function(node)
+	// added by Luigi
+  // get the label length of relation between
+  // the current / source node with index 'source_index'
+  // and the target node of index 'target_index' parametrized by 'offset'
+	getLabelLen = function(node, offset = 1)
 	{
-		// node.width defines the common width of each of
-		// feature texts related to a token
-		var index = node.index;
-    var width = -1; // length of the longest label
-    var asDependant = false;
+		var source_index = node.index;
+    var target_index = source_index - offset;
+
+    var width = -1; // length of the longest label, -1 means 'no label found'
+    var asDependant = false; // output flag to signal if the source is a dependent in the underlying relation
     var longestLabel;
 
-    // as right-adjacent dependent of its governor
-		for (var gov_index in node.gov)
+    // if the current node is a dependent in the underlying
+    // relation
+		for (var govind in node.gov)
     {
-			if (index - gov_index == 1)
+			if (govind == target_index)
       {
-				var label = node.gov[gov_index];
-        //console.log(label) // debug
+				var label = node.gov[govind];
         if (longestLabel === undefined || longestLabel.length < label.length)
         {
-				    longestLabel = label;
-            asDependant = true;
+				  longestLabel = label;
+          asDependant = true;
         }
 			}
 		}
 
-    // as right-adjacent governor of one of its dependent
-    if (index - 1 in tokens)
+    // if the current node is a governor in the underlying relation
+    if (target_index in tokens)
     {
-      for (var i in tokens[index - 1].gov)
+      for (var id in tokens[target_index].gov)
       {
-        if (i == index)
+        if (id == source_index)
         {
-          var label = tokens[index - 1].gov[i];
-          //console.log(label) // debug
+          var label = tokens[target_index].gov[source_index];
           if (longestLabel === undefined || longestLabel.length < label.length)
           {
             longestLabel = label;
@@ -188,29 +190,20 @@ function Pnode(index,token)
       }
     }
 
-    /*
-    for (var i in currentsvg.words){
-      t = currentsvg.words[index - 1][index][1];
-      for (var j in t.svgdep)
-      {
-        var pathObj =  t.svgdep[j][1];
-        if (min_y === undefined) min_y = pathObj.getBBox().y;
-    */
-
-
+    // if the label in quesiotn is found
+    // we try to draw it in svg to get its effective graphical width
     if (!(longestLabel === undefined))
     {
-      //console.log(label)
       var svglabel = currentsvg.paper.text(0, 0, label);
-      // currentsvg.paper.text(a.x, a.y-funccurvedist-funcposi*10, func);
-      width = svglabel.getBBox().width * 1.14;
+      width = svglabel.getBBox().width * 1.14; // 1.14 is an empirical correction factor
+      // remove the drawn label for trail
       svglabel.remove();
       delete svglabel;
     }
 
-    return [asDependant,width];
+    return [asDependant, width];
 
-	} // end of tokenWidthDetection
+	}
 
 
 
@@ -521,7 +514,7 @@ function eraseRelation(depind,gi2f)
 			// sync tokens[ind]'s feature with  depn.gov[i]
 			if (depind in tokens)
 			 	if (i in tokens[depind].gov)
-				 	delete tokens[depind].gov[i]; // debug
+				 	delete tokens[depind].gov[i];
 			if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + " ―"+ depn.gov[i]+ "→ "+depn.features.t + " ";
 			else info=info+" link ―"+depn.gov[i]+ "→ "+depn.features.t;
 		}
@@ -1289,94 +1282,87 @@ function keys(obj)
 		return ks;
 	}
 
-
-makewordsxx = function()
-	{
-		var words = new Object();
-		svgwi=0;
-		currentx=tab;
-// 		console.log("ttt",tokens)
-// 		ks=keys(tokens);
-
-// 		ks.sort();
-// 		console.log("kkkk",ks)
-
-		for (var i in ks)
-			{
-// 				console.log("iii",i, tokens[ks[i]]);
-			var node = new Pnode(i, tokens[i]);
-      var asDependant;
-			var tmp = detectLengthOfAdjRelationlabel(node);
-      asDependant=tmp[0];
-      labelLength=tmp[1];
-			words[i]=node;
-			currentx += spacex;
-			svgwi += pacex; // moved from inside Pnode to here
-			};
-			// adjust drawing paper width
-			currentsvg.setAttribute("width",svgwi+extraspace);
-
-		return words;
-	};
-
-
 makewords = function()
 	{
     currentx = tab; // position at the left side of 'text' object
-    var prevx = 0;
 		var words = new Object();
     var distance = 0;
     var labelLength = 0;
+    var dictOfx = {};
+    var widhtOfEllipticalPartOfYandexCurveAtTheFirstStage = _ARC_HEIGHT_UNIT / (1 - Math.cos(_ANGLE)) * Math.sin(_ANGLE) / 2;
     svgwi = 0;
 
-		for (var i in tokens)
+    for (var source_index in tokens)
 		{
-				var node = new Pnode(i, tokens[i]);
-        var tmp = detectLengthOfAdjRelationlabel(node);
-        var asDependant = tmp[0];
-        var labelLength = tmp[1];
-        var ellipticalPartLenght = _ARC_HEIGHT_UNIT / (1 - Math.cos(_ANGLE)) * Math.sin(_ANGLE) / 2;
-        distance  = currentx - prevx - ellipticalPartLenght;
-        prevx = currentx;
-        if (asDependant)
+
+        dictOfx[source_index] = currentx;
+				var node = new Pnode(source_index, tokens[source_index]);
+
+        for (var offset = 1; offset < Math.min(source_index,5); offset++)
+        // var offset = 1;
         {
-          distance += node.tag_width / 2;
-          if (i - 1 in words) distance += - words[i-1].tag_width;
+
+          // get length of label of relation with the target token
+          var target_index = source_index - offset;
+          var asDep_labelLen = getLabelLen(node, offset);
+          var asDependant    = asDep_labelLen[0];
+          var labelLength    = asDep_labelLen[1];
+
+          // estimate the effecitve horizontal distance between the current token
+          // and the target token
+          distance  = dictOfx[source_index];
+          if (target_index in dictOfx) distance -= dictOfx[target_index];
+          // note: real width of elliptical part of Yandex Curve is a
+          //       funciton of the height of this Curve. When drawing
+          //       words, the height is not yet calculated (this is done)
+          //       in drawalldeps function. we decided to estimate it by
+          //       its upper bound which is very lose : height is
+          //       proportional to 'offset'
+          distance -= widhtOfEllipticalPartOfYandexCurveAtTheFirstStage * offset;
+          if (asDependant)
+          {
+            distance += node.tag_width / 2;
+            if (target_index in words) distance -= words[target_index].tag_width;
+          }
+          else
+          {
+            if (target_index in words)
+              distance -= words[target_index].tag_width / 2
+          }
+
+          // deplace the current token if more space is needed
+          // with respect to the label length
+          if (labelLength > distance) // need more space
+          {
+              // clear all drawn feature lines
+              // corresponding to the current / source token
+              for (var f in node.svgs)
+              {
+                node.svgs[f].remove();
+                delete node.svgs[f]
+              }
+              delete node.svgs;
+
+              // move x-position toward right in order to make
+              // more space
+              currentx += labelLength - distance;
+              svgwi    += labelLength - distance;
+              prevx     = currentx;
+
+              // then we redraw the current token at adjusted x-position
+              dictOfx[source_index] = currentx;
+              node = new Pnode(source_index, tokens[source_index]);
+          }
         }
-        else
-        { // this token is used as a governor for the relation concerned (the one with longest label)
-          if (i - 1 in words) distance += - words[i-1].tag_width / 2
-        }
 
-        if (labelLength - distance > 0 && i > 1) // need more space
-        {
-            // clear current token
-            for (var f in node.svgs)
-            {
-              node.svgs[f].remove();
-              delete node.svgs[f]
-            }
-            delete node.svgs;
-
-            // add space
-            currentx += labelLength - distance;
-            svgwi    += labelLength - distance;
-            prevx     = currentx;
-
-            // redraw current token at new position
-            node = new Pnode(i, tokens[i]);
-
-        }
-				currentx += node.width+tab;
-				svgwi    += node.width+tab;
-        words[i] = node;
+        // by-token updates
+				currentx += node.width + tab;
+				svgwi    += node.width + tab;
+        words[source_index] = node;
 
 		};
 
-
-
 		// update paper width
-
 		currentsvg.setAttribute("width", svgwi + extraspace);
 
 		return words;
@@ -1413,7 +1399,7 @@ start = function (holder, nr) {
 
 draw = function() {
 
-	// set svgwi
+  // set svgwi
 	currentsvg.words = makewords();
 	if (editable)
 	{
