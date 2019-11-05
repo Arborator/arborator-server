@@ -867,7 +867,9 @@ if __name__ == "__main__":
 	
 	
 	project,projectconfig,sql,thisfile,username,userid,adminLevel,form = start()
-	
+
+	project = project.replace("(","").replace(")","").replace("<","").replace(">","")  # May not contain <>() to avoid XSS attacks
+
 	printhtmlheader(project.encode("utf-8"))
 	query=printheadline(project.encode("utf-8"))
 	

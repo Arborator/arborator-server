@@ -74,6 +74,7 @@ if logint == "logout":
 
 
 project = form.getvalue("project",None)
+project = project.replace("(","").replace(")","").replace("<","").replace(">","")  # May not contain <>() to avoid XSS attacks
 
 #project="Rhapsodie"
 projectconfig=None
