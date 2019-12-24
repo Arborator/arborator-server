@@ -30,7 +30,7 @@ time.sleep(0.1) # Throttle requests
 project = form.getvalue("project",None).decode("utf-8")
 
 if project != "quickie":
-	
+
 
 	projectconfig=None
 	try:
@@ -44,7 +44,7 @@ if project != "quickie":
 		#print '<script type="text/javascript">window.location.href=".";</script>'
 		sys.exit("something's wrong")
 
-	
+
 #java = '/opt/jdk1.7.0/bin/java'
 java = "java"
 #batik = '/var/www/cgi-bin/arborator/batik-1.7/batik-rasterizer.jar'
@@ -55,12 +55,13 @@ svg2office = 'export/svg2office-1.2.2.jar'
 
 #cache='/var/www/html/cache/'
 cache= 'export/cache/'
+if not os.path.exists(cache): os.makedirs(cache)
 
 #cacheShow='http://localhost/cache/'
 #cacheShow= projectconfig["configuration"]["url"]+'export/cache/'
 
-#url = os.environ["QUERY_STRING"] 
-#parsed = urlparse.urlparse(url) 
+#url = os.environ["QUERY_STRING"]
+#parsed = urlparse.urlparse(url)
 
 cacheShow= 'export/cache/'
 
@@ -109,13 +110,13 @@ showname = cacheShow+md5hex+'.'+type
 
 def execute_cmd(cmd):
     #(child_stdin, child_stdout, child_stderr) = os.popen3(cmd)
-    
+
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
-    
+
 	#(child_stdin,bufsize=bufsize,
 	#child_stdout,
 	#child_stderr) = (p.stdin, p.stdout, p.stderr)
-    
+
     #print 1/0
     str_stdout = p.stdout.read() # Read until the process quits.
     str_stderr = p.stderr.read() # Read until the process quits.
@@ -123,17 +124,17 @@ def execute_cmd(cmd):
         print cmd+'\n'
         print 'stdout:'+str_stdout+'\n'
         print 'stderr:'+str_stderr+'\n'
-        
+
 #execute_cmd('chown jason users files/*.*')  # Redhat disables chown
-        
-# If the result doesn't already exist in cached form, create it True or 
+
+# If the result doesn't already exist in cached form, create it True or
 if not os.path.isfile(outname) or source!=open(svgname, 'r' ).read():
-	
+
     # work around for the bug in rsvg-convert (failure to render non default fonts if they are not mentioned in "font-family")!
     pattern=re.compile(r"font:([^;]* ([^;]*));",re.I+re.U)
     source=pattern.sub(ur"font:\1; font-family:\2;",source.decode("utf-8")).encode("utf-8")
-    
-    
+
+
     svgfile = open(svgname, 'w')
     svgfile.write(source)
     svgfile.close()
@@ -152,13 +153,13 @@ if not os.path.isfile(outname) or source!=open(svgname, 'r' ).read():
     else:
         cmd = java+' -jar ' + batik + ' -d '+cache+' -m '+mime+' '+svgname # -dpi <resolution>  -q <quality>
         if debug: print cmd
-        
+
         execute_cmd(cmd)
-        
+
         if type=='ps':
             inname = cache+md5hex+'.pdf'
             cmd = 'pdftops '+inname+' '+outname
-	    
+
             execute_cmd(cmd)
 #time.sleep(1)
 

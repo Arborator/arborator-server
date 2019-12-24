@@ -1,5 +1,5 @@
-/*!
- * arborator script for dependency drawing 
+.6/*!
+ * arborator script for dependency drawing
  * version 1.0
  * http://arborator.ilpga.fr/
  *
@@ -7,22 +7,38 @@
  *
  * This program is free software:
  * Licensed under version 3 of the GNU Affero General Public License (the "License");
- * you may not use this file except in compliance with the License. 
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at http://www.gnu.org/licenses/agpl-3.0.html
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and limitations under the License. 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
  *
  */
 
+getTreeStyleStatus = function ()
+{
+	if (_YANDEX_STYLE_EN)
+	{
+		return "Yandex Style";
+	}
+	else {
+		return "Arborator Style";
+	}
 
+}
+
+toggleTreeStyle = function (button)
+{
+	_YANDEX_STYLE_EN = !_YANDEX_STYLE_EN;
+	button.value = getTreeStyleStatus();
+}
 
 attrdirty = {"value":"save all modified trees",'disabled':false,"cursor":"pointer"};
 attrclean = {"value":"all trees are saved",'disabled':true,"cursor":"default"};
 
 noshowtokens = {'misc':{"SpaceAfter=No":"_"}}
 
-///////////////////////// node object and functions //////////////// 
+///////////////////////// node object and functions ////////////////
 ////////////////////////////////////////////////////////////////////
 
 
@@ -40,30 +56,30 @@ function Pnode(index,token)
 		index=parseInt(index,10);
 		this.index=index;
 		this.gov={};
-		if ("gov" in token) 
+		if ("gov" in token)
 		{
 			for (var i in token["gov"])
 			{
 				this.gov[parseInt(i,10)]=token["gov"][i]
 			}
-		}	
+		}
 		this.width=0;
 		this.features=new Object(); // contains for each shownfeature the corresponding text
 		this.svgs=new Object(); // contains for each shownfeature the corresponding svg object
 		var currenty=dependencyspace;
-		
+
 // 		console.log("________________________",index);
-		
-		
-		for (var i in shownfeatures) 
-			{	
+
+
+		for (var i in shownfeatures)
+			{
 			var f = shownfeatures[i]; // f= eg. "cat"
 			if (token[f]===undefined) {token[f] = "_";} // 😐
 			this.features[f]=token[f];
-			
+
 			if ( (token[f] instanceof Object) ) // mode compare!!!
-			{				
-				
+			{
+
 				var user0=token[f][0][1][0];
 				if (user0=="ok")
 				{
@@ -84,10 +100,10 @@ function Pnode(index,token)
 					var t = paper.text(currentx, currenty, c);
 					t.attr(defaultattris);
 					t.attr({fill: "red",title:ti});
-					
+
 				}
-			
-			
+
+
 			}
 			else // normal mode
 			{
@@ -96,90 +112,147 @@ function Pnode(index,token)
 				else 	{tokenf=token[f];}
 				var t = paper.text(currentx, currenty, tokenf);
 				t.attr(defaultattris);
-				if (f in token) t.attr(attris[f]);				
+				if (f in token) t.attr(attris[f]);
 			}
 			t.attr("index",index);
 			var wi=t.getBBox().width;
 			t.width=wi;
+      if (i==0) this.tag_width = wi; // tag
 			t.index=index;
-		
+
 			t.node.setAttribute("class",f);
 			if (f in colored && token[f] in catDic) t.attr(catDic[token[f]]);
 			this.svgs[f]=t;
 			if (wi>this.width) this.width=wi;
+
 			currenty=currenty+line;
-			
+
 			};
-			
-		
+
 		for (var a in token) // remaining features
 			{
 				v=token[a]
-				if (a in this.features || a=="gov") continue;				
+				if (a in this.features || a=="gov") continue;
 				this.features[a]=v;
 			}
-		
-			
+
 		if (editable) activate(this.svgs[shownfeatures[0]], this.svgs[shownfeatures[categoryindex]]);
 
-		svgwi=svgwi+this.width+tab;
+		//svgwi=svgwi+this.width+tab;
 		this.x=0;
 		this.y=0;
 		this.svgdep={};		// the svg dependency (the arrow and the function name): gives the svgobject for each govind
 
 	};
 
+	// added by Luigi
+  // get the label length of relation between
+  // the current / source node with index 'source_index'
+  // and the target node of index 'target_index' parametrized by 'offset'
+	getLabelWidth = function(node, offset = 1)
+	{
+		var source_index = node.index;
+    var target_index = source_index - offset;
+
+    var width = -1; // length of the longest label, -1 means 'no label found'
+    var longestLabel;
+
+    // if the current node is a dependent in the underlying
+    // relation
+		for (var govind in node.gov)
+    {
+			if (govind == target_index)
+      {
+				var label = node.gov[govind];
+        if (longestLabel === undefined || longestLabel.length < label.length)
+        {
+				  longestLabel = label;
+        }
+			}
+		}
+
+    // if the current node is a governor in the underlying relation
+    if (target_index in tokens)
+    {
+      for (var id in tokens[target_index].gov)
+      {
+        if (id == source_index)
+        {
+          var label = tokens[target_index].gov[source_index];
+          if (longestLabel === undefined || longestLabel.length < label.length)
+          {
+            longestLabel = label;
+          }
+        }
+      }
+    }
+
+    // if the label in quesiotn is found
+    // we try to draw it in svg to get its effective graphical width
+    if (!(longestLabel === undefined))
+    {
+      var svglabel = currentsvg.paper.text(0, 0, label);
+      width = svglabel.getBBox().width * 1.14; // 1.14 is an empirical correction factor
+      // remove the drawn label for trail
+      svglabel.remove();
+      delete svglabel;
+    }
+
+    return width;
+
+	}
+
 
 
 
 
 //////////////////////////// only used for editing:
-//////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////
 
 
 
 
 createConnection = function () {
-	
-	$(currentsvg).mousemove(function(e) 
+
+	$(currentsvg).mousemove(function(e)
 	{
 // 		console.log("ddd",currentsvg.id,$(currentsvg));
-		if (currentsvg!=this) 
+		if (currentsvg!=this)
 		{
 			reset()
 			$(".toggler").removeClass("currentsentence"); // remove it from all togglers
 			currentsvg=this;
 			currentsvgchanged();
-			$(".toggler:eq("+(parseInt(currentsvg.id.slice(3))-1)+")").addClass("currentsentence");			
+			$(".toggler:eq("+(parseInt(currentsvg.id.slice(3))-1)+")").addClass("currentsentence");
 		}
-		if ( isDrag && !keyediting ) 
-		{ 
-			
+		if ( isDrag && !keyediting )
+		{
+
 			moveConnection(e.pageX - $(document).scrollLeft() - $(currentsvg).offset().left +3, e.pageY - $(currentsvg).offset().top - 10);
-			
+
 			isDrag.ox=currentsvg.dragConnection[2].getPointAtLength(0).x;
 			isDrag.oy=currentsvg.dragConnection[2].getPointAtLength(0).y;
 		}
-	}).mouseup(function(e) 
+	}).mouseup(function(e)
 	{
 // 		console.log(e,"mouseup, isSelected:",isSelected , "yyyyyy",isDrag  ,isDrag.svg,"uuuuuuuuuuuuu",currentsvg ,isDrag.svg==currentsvg ,lastSelected)
 // 		if (isSelected) console.log(isSelected.index);
-		
+
 		emptyclick=true;
-		if (isSelected && isDrag && isSelected!=isDrag && isDrag.svg==currentsvg && isSelected.index!=lastSelected) 
+		if (isSelected && isDrag && isSelected!=isDrag && isDrag.svg==currentsvg && isSelected.index!=lastSelected)
 			{ changeDrag(isDrag.index,isSelected.index);emptyclick=false;};
-		if (isDrag && isDrag.rooting) 
+		if (isDrag && isDrag.rooting)
 			{ changeDrag(0,isDrag.index);emptyclick=false;}
 		setTimeout("isDrag = false;",500);
-		
+
 		for (var i in currentsvg.words) currentsvg.words[i].svgs[shownfeatures[0]].attr(attris[shownfeatures[0]]);
 
-		if (emptyclick) 
-			{ 
+		if (emptyclick)
+			{
 // 				console.log("emptyclick")
-				$('#funcform').hide(); $('#catform').hide(); $('#ex').hide(); $('#compbox').hide(); $('#checkbox').hide(); 
-// 				currentsvg.dragConnection.hide(); 
-				
+				$('#funcform').hide(); $('#catform').hide(); $('#ex').hide(); $('#compbox').hide(); $('#checkbox').hide();
+// 				currentsvg.dragConnection.hide();
+
 				if (isDrag)
 				{
 					lastSelected=isDrag.index;
@@ -188,37 +261,37 @@ createConnection = function () {
 
 					if (gov!=null) keyConnection(gov);
 				}
-				
+
 			}
 		else {$("#catchoice").focus();}
 		isDrag = false;
 		currentsvgchanged();
 // 		console.log(3)
 	});
-	
-	
+
+
 // 	  attris["dragdepline"], attris["deptext"],
-	return drawsvgDep(1,2,50,60,150,150,"", "",false,0); // arbitrary points
-	
+	return drawsvgDep(0,0,0,0,0,0,"", "",false,0); // arbitrary points
+
 }
-   
+
 
 activate = function (t,cat) /*makes word node t (t=token, cat=cat) interactive  */
 {
 	t.attr({cursor:"move"}).mousedown(dragger).mouseover(function () {
 // 		console.log("mouseover",t,isDrag,t==isDrag,keyediting,isSelected)
-		if (t==isDrag || keyediting) return;	
+		if (t==isDrag || keyediting) return;
 		isSelected=t;
-		
+
 // 		console.log("isSelected:",isSelected)
-		if (isDrag) 
+		if (isDrag)
 			{
-				for (var i in currentsvg.words) currentsvg.words[i].svgs[shownfeatures[0]].attr(attris[shownfeatures[0]]);	
+				for (var i in currentsvg.words) currentsvg.words[i].svgs[shownfeatures[0]].attr(attris[shownfeatures[0]]);
 				t.attr(attris["target"]);
 				isDrag.attr(attris["source"]);
 			}
 	}).mouseout(function () {
-		if (t==isDrag  || keyediting) return;		
+		if (t==isDrag  || keyediting) return;
 // 		console.log("mouseout",t,isDrag,t==isDrag,keyediting,isSelected)
 		isSelected=null;
 		for (var i in currentsvg.words) currentsvg.words[i].svgs[shownfeatures[0]].attr(attris[shownfeatures[0]]);
@@ -232,7 +305,7 @@ activate = function (t,cat) /*makes word node t (t=token, cat=cat) interactive  
 
 
 var dragger = function (e) {
-	
+
 // 	console.log("____",currentsvg);
 	if(e.ctrlKey) return true; // to allow dbl click if nothing else works. ugly hack!
 	reset();
@@ -263,7 +336,7 @@ changeDrag = function (gov, dep) /* reaction if good connection was created, gov
 	a=c.getPointAtLength(c.getTotalLength()/2);
 	svgpos=$(currentsvg).offset();
 	openFunctionMenu(dep,gov,func,  svgpos.left+a.x, svgpos.top+a.y-funccurvedist);
-	
+
 }
 
 clickOpenFunctionMenu = function(funcnode)  // funcnode=svg text node of the dependency link
@@ -272,17 +345,19 @@ clickOpenFunctionMenu = function(funcnode)  // funcnode=svg text node of the dep
 // 		svgpos=$(currentsvg).position();
 // 		console.log("jjjj",$(currentsvg),currentsvg.id);
 		svgpos=$(currentsvg).offset()
-		openFunctionMenu(funcnode.index, funcnode.govind, funcnode.attr("text"), svgpos.left+funcnode.attr("x")-20, svgpos.top+funcnode.attr("y")-7 );   // TODO: make the position of the function menu parametrizable	
+		openFunctionMenu(funcnode.index, funcnode.govind, funcnode.attr("text"), svgpos.left+funcnode.attr("x")-20, svgpos.top+funcnode.attr("y")-7 );   // TODO: make the position of the function menu parametrizable
 	}
-	
-	
+
+
 openFunctionMenu = function(ind,govind,func,x,y)  // called from clickOpenFunctionMenu and from changeDrag, changeFunc closes the menu
 	{
 // 		currentnr = $(currentsvg).parent().attr("nr");
 // 		console.log("kkkk",$(currentsvg),currentsvg.id);
 		var ff=$('#funcform');
 		var os=$("#funchoice")[0].options;
-		funcnum=functions.indexOf(func);
+		var functionsFromOptions = [];
+		for (var i in os) functionsFromOptions.push(os[i].value);
+		funcnum=functionsFromOptions.indexOf(func);
 		if (funcnum==null) funcnum=0;
 		if (funcnum in os) os[funcnum].selected = true;
 		ff.css({ top: y, left: x });
@@ -314,10 +389,10 @@ openCatMenu = function(catnode)  // funcnode=svg text node of the dependency lin
 
 
 function changeFunc(event){ // called by onclick on the func menu or return
-	
+
 	var addDep=event.shiftKey;
 	var ff=$('#funcform');
-	if (ff.is(":hidden")) return false;	
+	if (ff.is(":hidden")) return false;
 	var func=$("#funchoice")[0].options[$("#funchoice")[0].selectedIndex].value;
 	var id = ff.data("index");
 	var govid = ff.data("govind");
@@ -330,16 +405,54 @@ function changeFunc(event){ // called by onclick on the func menu or return
 	else establishRelations(id,gi2f );
 	ff.hide();
 	currentsvg.dragConnection.hide();
-	
-}	
 
 
+}
+
+function clearTreeAndTokens(nodes)
+{
+	for (var i in nodes)
+	{
+		 // rm tokens
+		 var t = nodes[i];
+		 for (var f in t.svgs) {
+				var txtObj = t.svgs[f];  // a paper.text object
+				txtObj.remove();
+				delete txtObj;
+			}
+			// rm arcs
+			for (var j in t.svgdep)
+			{
+				var pathObj = t.svgdep[j];
+				// text obj
+				pathObj[0].remove();
+				delete pathObj[0];
+				// curve / path
+				pathObj[1].remove();
+				delete pathObj[1];
+				// pointer
+				pathObj[2].remove();
+				delete pathObj[2];
+				pathObj.remove();
+				delete pathObj;
+			};
+			t.svgdep={};
+			delete t;
+			//console.log(t)
+	}
+
+
+
+
+}
 
 
 function establishRelations(depind,gi2f)
 {
 	var depn=currentsvg.words[depind];
 	for (i in depn.svgdep) { depn.svgdep[i].remove(); }
+	if (!(tokens[depind] === undefined))
+		for (i in tokens[depind].svgdep) { tokens[depind].svgdep[i].remove(); }
 	oldgi2f={};
 	info="removing"
 	for (var i in depn.gov)
@@ -348,22 +461,36 @@ function establishRelations(depind,gi2f)
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + " ―"+ depn.gov[i]+ "→ "+depn.features.t + " ";
 		else info=info+" link ―"+depn.gov[i]+ "→ "+depn.features.t;
 	}
-	
+
 	depn.gov={}
-	
+
 	info = info + " and replacing by"
-	
+
 	for (var i in gi2f)
 	{
 		depn.gov[i]=gi2f[i]
+		// Luiig : sync tokens[depind] with depn
+		if (!(tokens[depind] === undefined))
+			if (tokens[depind]["gov"] === undefined) {tokens[depind].gov = {};}
+
+		if (!(tokens[depind] === undefined))
+			tokens[depind].gov[i]=gi2f[i];
+
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + "―" + gi2f[i] + "→ "+depn.features.t + " ";//normal link
 		else info=info+" link ―" + gi2f[i] + "→ "+depn.features.t;//root link
-		
+
 	}
-	
-	drawalldeps();
+
+	if (_TOKEN_WIDTH_RESIZING){
+		// redrawing tokens before redraw relations
+		clearTreeAndTokens(currentsvg.words);
+		currentsvg.words = makewords();
+		//console.log(tokens[depind].gov);
+	}
+	drawalldeps3(); //
+
 	currentsvg.undo.undoable(info, establishRelations, [depind, oldgi2f]);
-	
+
 }
 
 
@@ -371,6 +498,8 @@ function eraseRelation(depind,gi2f)
 {
 	var depn=currentsvg.words[depind];
 	for (i in depn.svgdep) { depn.svgdep[i].remove(); }
+	if (!(tokens[depind] === undefined))
+		for (i in tokens[depind].svgdep) { tokens[depind].svgdep[i].remove(); }
 	info="removing"
 	oldgi2f={};
 	for (var i in depn.gov)
@@ -378,14 +507,27 @@ function eraseRelation(depind,gi2f)
 		oldgi2f[i]=depn.gov[i]
 		if (i in gi2f)
 		{
-			delete depn.gov[i];
+			if (i in depn.gov) delete depn.gov[i];
+			// sync tokens[ind]'s feature with  depn.gov[i]
+			if (depind in tokens)
+			 	if (i in tokens[depind].gov)
+				 	delete tokens[depind].gov[i];
 			if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + " ―"+ depn.gov[i]+ "→ "+depn.features.t + " ";
 			else info=info+" link ―"+depn.gov[i]+ "→ "+depn.features.t;
-		}			
+		}
 	}
-	drawalldeps();
-	currentsvg.undo.undoable(info, establishRelations, [depind,oldgi2f]);	
-	
+
+	if (_TOKEN_WIDTH_RESIZING){
+		// redrawing tokens before redraw relations
+		clearTreeAndTokens(currentsvg.words);
+		currentsvg.words = makewords();
+	}
+	drawalldeps3(); //
+
+	currentsvg.undo.undoable(info, establishRelations, [depind,oldgi2f]);
+
+
+
 }
 
 function addRelations(depind,gi2f)
@@ -393,25 +535,38 @@ function addRelations(depind,gi2f)
 	var depn=currentsvg.words[depind];
 
 	for (i in depn.svgdep) { depn.svgdep[i].remove(); }
-	
+	if (!(tokens[depind] === undefined))
+		for (i in tokens[depind].svgdep) { tokens[depind].svgdep[i].remove(); }
+
 	oldgi2f={};
-	
+
 	for (var i in depn.gov) oldgi2f[i]=depn.gov[i]
-	
+
 	info = "adding"
-	
+
 	for (var i in gi2f)
 	{
 		depn.gov[i]=gi2f[i]
-		
+		// Luiig : sync tokens[depind] with depn
+		if (!(tokens[depind] === undefined))
+		{
+			if (tokens[depind]["gov"] === undefined) tokens[depind]["gov"] = {};
+			tokens[depind]["gov"][i]=gi2f[i];
+		}
+
 		if (i in currentsvg.words) info=info+" link "+ currentsvg.words[i].features.t + "―" + gi2f[i] + "→ "+depn.features.t + " ";//normal link
 		else info=info+" link ―" + gi2f[i] + "→ "+depn.features.t;//root link
-		
+
 	}
-	
-	drawalldeps();
+
+	if (_TOKEN_WIDTH_RESIZING){
+		// redrawing tokens before redraw relations
+		clearTreeAndTokens(currentsvg.words);
+		currentsvg.words = makewords();
+	}
+	drawalldeps3();
 	currentsvg.undo.undoable(info, establishRelations, [depind, oldgi2f]);
-	
+
 }
 
 
@@ -424,7 +579,8 @@ function changeCat(){ // called by onclick on the menu or return
 	var id = cc.data("index");
 	establishCat(id,cat);
 	cc.hide();
-}	
+
+}
 
 function establishCat(ind,cat)
 {
@@ -432,20 +588,26 @@ function establishCat(ind,cat)
 	var oldcat=node.features[shownfeatures[categoryindex]];
 	var info="replacing the category "+oldcat+"of the node "+currentsvg.words[ind].features.t+" by "+cat
 	node.features[shownfeatures[categoryindex]]=cat;
+	tokens[ind][shownfeatures[categoryindex]] = cat // sync tokens[ind]'s feature with the new one
 	node.svgs[shownfeatures[categoryindex]].attr("text",cat);
+
+	// added by Luigi
+	if (_TOKEN_WIDTH_RESIZING){
+		clearTreeAndTokens(currentsvg.words);
+		currentsvg.words = makewords();
+		drawalldeps3(); //
+	}
 	currentsvg.undo.undoable(info, establishCat, [ind, oldcat]);
-	
+
+
 }
 
-
-
-
 moveConnection = function(x2,y2) // moves the connection so that it links the isDrag-element -------> to the x2,y2 position
-	{	
-		
+	{
+
 		if (!isDrag || !currentsvg) return;
 		var wi = isDrag.width/2;
-		var wix = Math.max(wi,rootTriggerSquare/2);	
+		var wix = Math.max(wi,rootTriggerSquare/2);
 		if (x2<=isDrag.attr("x")+wi) var x1=isDrag.attr("x")+wi-xoff; // 1st case: cursor to the right of the word
 		else var x1=isDrag.attr("x")+wi+xoff; // 2nd case: cursor to the left of the word
 
@@ -465,32 +627,129 @@ moveConnection = function(x2,y2) // moves the connection so that it links the is
 		var y1 = isDrag.attr("y")+pois-tokdepdist;
 		applyPath(x1,y1,x2,y2,lineattris);
 	}
-  
-applyPath = function(x1,y1,x2,y2,lineattris) // 
+
+applyPath = function(x1,y1,x2,y2,lineattris) //
 	{
 // 		console.log(x1,y1,x2,y2,lineattris);
-		var x1x2=Math.abs(x1-x2)/2;
-		var yy = Math.max(y1-x1x2-worddistancefactor*3,-tokdepdist);// 3 is adhoc: curve looks like link between tokens that are 3 words apart. original: worddistancefactor*Math.abs(ind-govind) TODO: think about this...
-		yy = Math.min(yy,y1-depminh);
 
-		var path="M"+x1+","+y1+"C"+x1+","+yy+" "+x2+","+yy+" "+x2+","+y2;
-	
-		currentsvg.dragConnection[1].attr({path:path}).attr(lineattris);;// curve        
-		currentsvg.dragConnection[2].translate(x2-isDrag.ox,y2-isDrag.oy).attr(lineattris);; // pointer
-		
-// 		console.log(";;;",currentsvg.dragConnection[1],lineattris)
-		
-// 		if (currentsvg.dragConnection[1].getAttribute('stroke-dasharray')==0) // firefox/raphael bug!
-// 		{
-// 			currentsvg.dragConnection[1].removeAttribute('stroke-dasharray')
-// 			currentsvg.dragConnection[2].removeAttribute('stroke-dasharray')
-// 		}
-		
+			var left_x=0,right_x=0,left_y=0,right_y=0;
+			if (x1 < x2) {
+				left_x = x1;
+				right_x = x2;
+				left_y = y1;
+				right_y = y2;
+			}
+			else { // x2 < x1
+				left_x = x2;
+				right_x   = x1;
+				left_y = y2;
+				right_y = y1;
+			}
+
+		// get intended tid, gid of the new arc
+		var words = currentsvg.words;
+		var tidnew,gidnew;
+		for (var i in words)
+		{
+			var word = words[i];
+			var svg = word.svgs[shownfeatures[0]];
+			var x = svg.getBBox().x;
+			var w = svg.getBBox().width;
+			if ((left_x <= x + w) && (right_x >= x))
+			{
+				var ii = parseInt(i,10);
+				if (tidnew===undefined) tidnew=ii;
+				else if ((tidnew < ii) == (x1 < x2)) tidnew = ii;
+				if (gidnew===undefined) gidnew=ii;
+				else if ((gidnew > ii) == (x1 < x2)) gidnew = ii;
+
+			}
+		}
+		if (gidnew == tidnew) gidnew = 0; // root
+
+		// get intended height for the new arc
+		var toknum = Object.keys(currentsvg.words).length; // number of tokens
+		var dict = {};
+		for (i in currentsvg.words) {
+			for (j in currentsvg.words[i].gov)
+			{
+				var d = Math.abs(i-j);
+				if (j == 0) d = toknum - 1; // root
+				dict[i + ' ' + j] = d;
+			}
+			if (i==tidnew){
+				var d = Math.abs(i-gidnew);
+				if (gidnew == 0) d = toknum - 1; // root
+				dict[i + ' ' + gidnew] = d + .5; // put this element later in the list
+			}
+		}
+		// sort the dictionary'keys by their associated values
+		var tokenid_govind = Object.keys(dict).sort(function(a,b){return dict[a]-dict[b]});
+
+		var arcnum = tokenid_govind.length;
+		var gov_cnt = {};
+		var heights = {};
+		for (var i = 0; i < arcnum; i++)
+		{
+			// unpack tokenid_govind to token id and governor id
+			tidgid = tokenid_govind[i].split(" ");
+			var tid = parseInt(tidgid[0],10);
+			var gid = parseInt(tidgid[1],10);
+			var n = currentsvg.words[tid];
+			if (!(tid in gov_cnt)) gov_cnt[tid] = 0;
+			var c = gov_cnt[tid];
+			gov_cnt[tid] += 1; // count num of governor
+			var height = 1;
+			var start = Math.min(tid, gid), end = Math.max(tid, gid);
+			if (gid == 0) {start = 0; end = toknum - 1;}
+
+			// get height for current arc
+			for (var j = start + 1; j < end; j++)
+			{
+				if (heights[j] ===undefined) heights[j]=1;
+				if (heights[j] > height) height = heights[j];
+			}
+			if (gid != 0) for (var j = start; j <= end; j++) {
+				heights[j] = height + 1;
+			}
+			if (tidnew == tid && gidnew == gid)
+				break;
+		};
+		var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
+		if (!_YANDEX_STYLE_EN) heigh_pts *= .6
+		var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
+		var length    = radius * Math.sin(_ANGLE) / 2;
+		var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
+
+			// arc of other relations
+			var cstr ="M" + left_x + "," + left_y;
+			cstr +="A" + radius + "," + radius + " 0 0 1 "+ (left_x + length / 2) + "," + yy;
+			cstr +="L"+ (right_x - length / 2)   + "," + yy;
+			cstr +="A" + radius + "," + radius + " 0 0 1 "+ right_x   + "," + right_y;
+
+      if (gid == 0 && _YANDEX_STYLE_EN)
+      {
+        cstr ="M" + left_x + "," + y1;
+        cstr +="L"+ left_x + "," + y2;
+      }
+
+			if (!_YANDEX_STYLE_EN)
+			{ // original arc drawing style
+				yy        = Math.min(y1 - worddistancefactor*heigh_pts, y1 - depminh);
+				cstr="M"+x1+","+y1+"C"+x1+","+yy+" "+x2+","+yy+" "+(x2+.01)+","+y2;
+
+			}
+
+		var path = cstr;
+
+		currentsvg.dragConnection[1].attr({path:path}).attr(lineattris);;// curve
+    currentsvg.dragConnection[2].translate(x2-isDrag.ox,y2-isDrag.oy).attr(lineattris);; // pointer
+
 	}
-	
-	
-	
-	
+
+
+
+
 
 //////////////////////////////////////// keystuff ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -501,7 +760,7 @@ onkey = function () {
 		if (nokeys) return true;
 		e.stopImmediatePropagation();
 		var code = (e.keyCode ? e.keyCode : e.which);
-		
+
 		switch(code)
 		{
 		case 8: // backspace
@@ -518,16 +777,16 @@ onkey = function () {
 				if (keyediting) nextword(1);
 			}
 			else if (currentsvg && $('#catform').is(":visible"))
-			{ 
+			{
 				changeCat();
 				if (keyediting) nextword(1);
 			}
 			else if (currentsvg && keyediting)
-			{ 
+			{
 				changeDrag(isDrag.index,lastSelected )
 			}
 			return false;
-		case 27: //esc 
+		case 27: //esc
 			reset();
 // 			$("#sentinfo").html("escaping");
 			return false;
@@ -555,22 +814,22 @@ onkey = function () {
 			break;
 		case 115: // "s"
 			if(e.ctrlKey && dirty!=[] && currentsvg.words) saveAllTrees();
-			return false; 
+			return false;
 		default:
 			return true;
 		}
-		
-	}); 
+
+	});
 
 }
 
 keyOpenMenu = function (cat) {
 // 	console.log("keyOpenMenu",cat);
-	
+
 // 	$("#sentinfo").html(" lastSelected "+" "+cat)
 
 	if (cat) openCatMenu(currentsvg.words[lastSelected].svgs["cat"]);
-	else 
+	else
 	{
 		i = (isDrag.index==lastSelected ? 0 : isDrag.index);
 		clickOpenFunctionMenu(currentsvg.words[lastSelected].svgdep[i][0]);
@@ -579,10 +838,10 @@ keyOpenMenu = function (cat) {
 
 
 nextword = function (forward) {
-	
+
 	if (!currentsvg) return;
 	$('#funcform').hide();
-	$('#catform').hide();	
+	$('#catform').hide();
 	if (forward) lastSelected++;
 	else  lastSelected--;
 	if (lastSelected > Object.keys(currentsvg.words).length) lastSelected=1;
@@ -595,7 +854,7 @@ nextword = function (forward) {
 
 
 keyConnection = function (gov) {
-	
+
 // 	var p = $(currentsvg).position();
 	for (var i in currentsvg.words) currentsvg.words[i].svgs[shownfeatures[0]].attr(attris[shownfeatures[0]]);
 	keyediting=true;
@@ -624,7 +883,7 @@ keyConnection = function (gov) {
 }
 
 reset = function () {
-	if (currentsvg) 
+	if (currentsvg)
 	{
 // 		currentsvg.dragConnection.hide();
 		for (var i in currentsvg.words) currentsvg.words[i].svgs[shownfeatures[0]].attr(attris[shownfeatures[0]]);
@@ -635,7 +894,7 @@ reset = function () {
 	$('#catform').hide();
 	$('#ex').hide();
 // 	lastSelected=0;
-	
+
 }
 
 
@@ -643,16 +902,16 @@ nextsentence = function () {
 
 	reset();
 	nr = parseInt(currentsvg.id.slice(3));
-	$(".toggler").removeClass("currentsentence");	
+	$(".toggler").removeClass("currentsentence");
 	if (nr >= numbersent) nr=0;
 	else if (nr<0) nr=numbersent	;
 	nexttog = $(".toggler:eq("+(nr)+")");
-	if ( nexttog.hasClass("expanded") ) 
+	if ( nexttog.hasClass("expanded") )
 	{
 		currentsvg=$("#svg"+(nr+1))[0];
 	}
 	else nexttog.click();
-	
+
 	$("html,body").animate({scrollTop: $(currentsvg).offset().top-[100]},500); // scroll to -100 speed .7 seconds
 
 	nexttog.addClass("currentsentence");
@@ -674,10 +933,15 @@ moveGov = function (dir) {
 ////////////////////////////////////////////////////////////////
 /////////////////////essential drawing stuff////////////////////
 ////////////////////////////////////////////////////////////////
+var _FONTSIZE            = 12;
+var _HEIGHT_SCALE_FACTOR = 1.5;
+var _ARC_HEIGHT_UNIT     = _FONTSIZE * _HEIGHT_SCALE_FACTOR;
+var _ANGLE                =  Math.PI / 3;
+var _YANDEX_STYLE_EN      = true;  // Yandex or Arborator style
+var _TOKEN_WIDTH_RESIZING = true; // auto adapt token width to associated label widths
+var _PAPER_HEIGHT_RESIZING = true; // auto adapt the height of the drawing space according to tree height
 
-
-
-drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi)
+drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi,height = 1)
 	{
 		// ind: word index
 // 		govind: index of governor
@@ -687,17 +951,105 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi)
 // 		tooltip, color, funcposi: only for compare mode
 // 		console.log("drawsvgDep",ind,govind,func);
 		var set=currentsvg.paper.set();
-		var x1x2=Math.abs(x1-x2)/2;
-		var yy = Math.max(y1-x1x2-worddistancefactor*Math.abs(ind-govind),-tokdepdist);
-		yy = Math.min(yy,y1-depminh);
 
-		var cstr="M"+x1+","+y1+"C"+x1+","+yy+" "+x2+","+yy+" "+(x2+.01)+","+y2; // 0.01: workaround for strange bug in the computation of getTotalLength!!!
+		// add-on 3 by Luigi
+		// Yandex-style tree layout
+		// code inspired from https://github.com/vieenrose/dep_tregex/blob/master/dep_tregex/tree_to_html.py
+
+			var left_x=0,right_x=0,left_y=0,right_y=0;
+			if (x1 < x2) {
+				left_x = x1;
+				right_x   = x2;
+				left_y = y1;
+				right_y = y2;
+			}
+			else { // x2 < x1
+				left_x = x2;
+				right_x   = x1;
+				left_y = y2;
+				right_y = y1;
+			}
+
+			var heigh_pts = _ARC_HEIGHT_UNIT * Math.abs(height); // height in pxl
+			if (!_YANDEX_STYLE_EN) heigh_pts *= .6
+			var radius    = heigh_pts / (1 - Math.cos(_ANGLE));
+			var length    = radius * Math.sin(_ANGLE) / 2;
+
+
+			if (govind == 0) {
+
+				// get the height of the highest curve
+				// baseline is the height of the first token
+				var min_y ;
+				// baseline = token level of height
+				for (var i in currentsvg.words) {
+						min_y = currentsvg.words[i].svgs[shownfeatures[0]].getBBox().y;
+						break;
+				}
+				// search for the height of the highest curve if there is
+				for (var i in currentsvg.words){
+					t = currentsvg.words[i];
+					for (var j in t.svgdep)
+					{
+						var pathObj =  t.svgdep[j][1];
+						if (min_y === undefined) min_y = pathObj.getBBox().y;
+						else if (min_y > pathObj.getBBox().y && j != 0) min_y = pathObj.getBBox().y;
+					}
+				}
+				// put root at one level giher than other arc (or than baseline if empty tree)
+				if (_YANDEX_STYLE_EN)
+                                       ytop = min_y - _ARC_HEIGHT_UNIT ;
+				else
+                                       ytop = min_y - _ARC_HEIGHT_UNIT * .6 ;
+
+				var cstr ="M" + left_x + "," + ytop ;
+				cstr +="L"+ right_x  + "," + y2;
+
+			}
+			else {
+				// arc of other relations
+				var yy        = Math.min(y1 - heigh_pts, y1 - depminh);
+				var cstr ="M" + left_x + "," + left_y;
+				cstr +="A" + radius + "," + radius + " 0 0 1 "+ (left_x + length / 2) + "," + yy;
+				cstr +="L"+ (right_x - length / 2)   + "," + yy;
+				cstr +="A" + radius + "," + radius + " 0 0 1 "+ right_x   + "," + right_y;
+				//console.log(height,heigh_pts,left_y,yy)
+
+				if (!_YANDEX_STYLE_EN) { // original arc drawing style
+					//var x1x2=Math.abs(x1-x2)/2;
+					//var yy = Math.max(y1-x1x2-worddistancefactor*Math.abs(ind-govind),-tokdepdist);
+					//yy = Math.min(yy,y1-depminh);
+					var yy        = Math.min(y1 - worddistancefactor*heigh_pts, y1 - depminh);
+					var cstr="M"+x1+","+y1+"C"+x1+","+yy+" "+x2+","+yy+" "+(x2+.01)+","+y2;
+
+				}
+			}
+
+
+
 		var c = currentsvg.paper.path(cstr).attr(attris["depline"]).attr({"x":x1,"y":y1,"smooth":true});
 // 		console.log("'''",c.getTotalLength());
-		var poi = currentsvg.paper.pointer(x2,y2,pois,0).attr(attris["depline"]);
+    var rotation_in_rad;
+    var rotation_in_deg;
+    var scaled_angle = Math.atan(Math.tan(_ANGLE) * _HEIGHT_SCALE_FACTOR * 1.6);
+    if (_YANDEX_STYLE_EN) {
+      if (govind == 0)  rotation_in_rad =   0;
+      else if (x1 > x2) rotation_in_rad = - Math.PI / 2 + scaled_angle;
+      else              rotation_in_rad =   Math.PI / 2 - scaled_angle;
+      rotation_in_deg = - rotation_in_rad * 180 / Math.PI;
+    }
+    else {
+      rotation_in_deg = 0;
+    }
+		var poi = currentsvg.paper.pointer(x2,y2,pois,rotation_in_deg).attr(attris["depline"]);
 // 		.data("xfunc",func);
 
-		a=c.getPointAtLength(c.getTotalLength()/2);
+    // handel this strange offset
+    if (x1 > x2)
+		  a=c.getPointAtLength(c.getTotalLength()/2-2.5); // put text in the middle of arc
+    else
+      a=c.getPointAtLength(c.getTotalLength()/2+2.5); // put text in the middle of arc
+		if (govind == 0) a=c.getPointAtLength(0); // Luigi : root style ajustement : put text on the top of a root
 		t = currentsvg.paper.text(a.x, a.y-funccurvedist-funcposi*10, func);
 		t.attr(attris["deptext"]);
 		t.index=ind;
@@ -706,15 +1058,17 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi)
 // 				console.log(e);
 				clickOpenFunctionMenu(this);
 			})
-		
-		if (govind==0) { // case: head of sentence (root): the function name needs special treetment
-			
+
+		/*
+		if (govind==0 && !_YANDEX_STYLE_EN) { // case: head of sentence (root): the function name needs special treetment
+
+				var newx=a.x+t.getBBox().width/2+funccurvedist/2;
+				if (newx+t.getBBox().width/2 > svgwi) newx=a.x-t.getBBox().width/2-funccurvedist/2;
+				if (newx-t.getBBox().width/2 < 0) newx=a.x;
 // 			console.log("--",c.getPointAtLength(100),c.getTotalLength(),t,a.y-funccurvedist-funcposi*10,a.y,funccurvedist,funcposi*10)
-			var newx=a.x+t.getBBox().width/2+funccurvedist/2;
-			if (newx+t.getBBox().width/2 > svgwi) newx=a.x-t.getBBox().width/2-funccurvedist/2;
-			if (newx-t.getBBox().width/2 < 0) newx=a.x;
-			t.attr("x",newx);
+				t.attr("x",newx);
 		}
+		*/
 // 		console.log(color,colored,functions)
 		if (color) // case compare: colors depend on users
 		{
@@ -725,7 +1079,7 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi)
 		else if ("dependency" in colored && func in funcDic) // normal graph: color depends on function
 		      {
 			var att = funcDic[func];
-			c.attr(att);			
+			c.attr(att);
 			poi.attr({"stroke": att["stroke"]});
 			t.attr({fill: att["stroke"]});
 		      };
@@ -733,17 +1087,16 @@ drawsvgDep = function(ind,govind,x1,y1,x2,y2,func,tooltip, color, funcposi)
 			c.node.removeAttribute('stroke-dasharray');
 		if (poi.node.getAttribute('stroke-dasharray')==0)
 			poi.node.removeAttribute('stroke-dasharray');
-		
+
 		set.push(t); // text
 		set.push(c); // curve
 		set.push(poi); // pointer
 		return set;
 	};
-	
 
-drawDep = function(ind,govind,func,c)	// draw dependency of type func from govind to ind (c is usually 0, only for multiple heads)
+
+drawDep = function(ind,govind,func,c, height)	// draw dependency of type func from govind to ind (c is usually 0, only for multiple heads)
 	{
-// 		console.log("drawDep",ind,govind,func);
 		if (govind==0 ) // head of sentence
 		{
 			node2=currentsvg.words[ind];
@@ -763,7 +1116,7 @@ drawDep = function(ind,govind,func,c)	// draw dependency of type func from govin
 			var y1=node1.svgs[shownfeatures[0]].attr("y")+pois-tokdepdist;
 			var y2=node2.svgs[shownfeatures[0]].attr("y")-tokdepdist-c*linedeps;
 		};
-		
+
 		if ( (func instanceof Object) ) // mode compare!!!
 		{
 // 			console.log("start",ind,govind,func);
@@ -772,7 +1125,7 @@ drawDep = function(ind,govind,func,c)	// draw dependency of type func from govin
 			if (user0=="ok")
 			{
 				func=func[0][0]
-				node2.svgdep[govind]=drawsvgDep(ind,govind,x1,y1,x2,y2,func, "All annotators agree.", "#"+compacolors[user0],0);
+				node2.svgdep[govind]=drawsvgDep(ind,govind,x1,y1,x2,y2,func, "All annotators agree.", "#"+compacolors[user0],0, height);
 // 				node2.deplineattris, node2.deptextattris,
 			}
 			else
@@ -781,103 +1134,133 @@ drawDep = function(ind,govind,func,c)	// draw dependency of type func from govin
 				for (i in func)
 				{
 					var funcusers=func[i];
-					i=parseInt(i,10);						
+					i=parseInt(i,10);
 					for (j in funcusers[1])
 					{
 						var u=funcusers[1][j];
 						j=parseInt(j,10);
 // 						console.log(node2.svgdep[govind]);
 // 						if (node2.svgdep[govind]) alert("yyy");  node2.deplineattris, node2.deptextattris,
-						var newset=drawsvgDep(ind,govind, x1+j*2,y1, parseInt(x2,10)+j*2, y2, funcusers[0], funcusers[0]+" ("+u+") ", "#"+compacolors[u], i+j);
+						var newset=drawsvgDep(ind,govind, x1+j*2,y1, parseInt(x2,10)+j*2, y2, funcusers[0], funcusers[0]+" ("+u+") ", "#"+compacolors[u], i+j, height);
 // 						if (node2.svgdep[govind]) alert(newset);
 						if (lastset) lastset.push(newset);
 						else lastset=newset;
 						node2.svgdep[govind]=lastset;
 // 						console.log(node2.svgdep[govind]);
-						
+
 					}
-					
+
 // 					nfunc = nfunc +funcusers[0]+ " ";
 // 					txt = txt+
 				}
 // 				func=nfunc
-				
+
 			}
 // 			console.log(user0,func)  node2.deplineattris, node2.deptextattris,
-			
-		
+
+
 		}
 		// normal dependency:
-		else node2.svgdep[govind]=drawsvgDep(ind,govind,x1,y1,x2,y2,func, "click to change", false, 0);
+		else node2.svgdep[govind]=drawsvgDep(ind,govind,x1,y1,x2,y2,func, "click to change", false, 0, height);
 // 		console.log(":::",ind,govind,node2,node2.svgdep[govind])
-// 		
+//
 	};
 
+drawalldeps = function()
+{
 
-drawalldeps = function() 
-	{
-		
-	for (var i in currentsvg.words)
+	// add-on 2 by Luigi : allocation of arc height
+	// code inspired from https://github.com/vieenrose/dep_tregex/blob/master/dep_tregex/tree_to_html.py
+
+	// get a list of token id and governor id pair sorted by distance
+	// because shorter arc will occupy lower level of height
+	var toknum = Object.keys(currentsvg.words).length; // number of tokens
+	var dict = {};
+	for (i in currentsvg.words)
+		for (j in currentsvg.words[i].gov)
 		{
-			var n = currentsvg.words[i];
-			for (var i in n.svgdep) 
-				{
-				n.svgdep[i].remove();
-				delete n.svgdep[i];
-				}
-			n.svgdep={};
-			var c=0;
-			for (var i in n.gov) 
-			{
-				drawDep(n.index,i,n.gov[i],c);
-				c+=1;
-			};
+			var d = Math.abs(i-j);
+			if (j == 0) d = toknum; // root
+			dict[i + ' ' + j] = d;
+		}
+	// sort the dictionary'keys by their associated values
+	var tokenid_govind = Object.keys(dict).sort(function(a,b){return dict[a]-dict[b]});
+
+	// clear
+	for (var i in currentsvg.words)
+	{
+		var n = currentsvg.words[i];
+		for (var j in n.svgdep)
+		{
+			n.svgdep[j].remove();
+			delete n.svgdep[j];
 		};
-	
-	};
+	}
+	n.svgdep={};
 
-	
-drawalldeps2 = function() 
+	var arcnum = tokenid_govind.length;
+	var gov_cnt = {};
+	var heights = {};
+	for (var i = 0; i < arcnum; i++)
 	{
-	
+		// unpack tokenid_govind to token id and governor id
+		tidgid = tokenid_govind[i].split(" ");
+		var tid = parseInt(tidgid[0],10);
+		var gid = parseInt(tidgid[1],10);
+		var n = currentsvg.words[tid];
+		if (!(tid in gov_cnt)) gov_cnt[tid] = 0;
+		var c = gov_cnt[tid];
+		gov_cnt[tid] += 1; // count num of governor
+		var height = 1;
+		var start = Math.min(tid, gid), end = Math.max(tid, gid);
+		if (gid == 0) {start = 0; end = toknum - 1;}
+
+		// get height for current arc
+		for (var j = start + 1; j < end; j++)
+		{
+			if (heights[j] === undefined) heights[j] = 1;
+			if (heights[j] > height) height = heights[j];
+		}
+
+		// draw this arc
+		drawDep(tid,gid,n.gov[gid],c,height);
+
+		// update heights
+		if (gid != 0) for (var j = start; j <= end; j++) heights[j] = height + 1;
+	};
+	// get full height
+	var tree_height = 1;
+	for (var j = 0; j < toknum; j++) if(heights[j] > tree_height) tree_height = heights[j] ;
+	return tree_height;
+};
+
+
+drawalldeps2 = function()
+	{
+
 	var distdic = new Object();
-	
+
 	for (var i in currentsvg.words)
 		{
 			var n = currentsvg.words[i];
-			for (var i in n.gov) 
+			for (var i in n.gov)
 				{
 					i=parseInt(i,10)
-					if (i != 0) 
+					if (i != 0)
 					{
 						dis=Math.abs(n.index-i)
-						
+
 						if (dis in distdic) distdic[dis].push([n.index,i])//
 						else distdic[dis]=[ [n.index,i] ]
 // 						console.log(n.index,i,dis,distdic,distdic[dis],n.gov)
 					}
-				};	
-			
+				};
+
 		};
-	
-	for (var i in currentsvg.words)
-		{
-			var n = currentsvg.words[i];
-			for (var i in n.svgdep) 
-				{
-				n.svgdep[i].remove();
-				delete n.svgdep[i];
-				}
-			n.svgdep={};
-			var c=0;
-			for (var i in n.gov) 
-			{
-				drawDep(n.index,i,n.gov[i],c);
-				c+=1;
-			};
-		};
+
+  drawalldeps3();
 	};
-	
+
 ////////////////////////// initialisation ///////////////////////////
 /////////////////////////////////////////////////////////////////////
 
@@ -894,44 +1277,80 @@ function keys(obj)
 		return ks;
 	}
 
-
-makewordsxx = function() 
+makewords = function()
 	{
+    currentx = tab; // position at the left side of 'text' object
 		var words = new Object();
-		svgwi=0;
-		currentx=tab;
-// 		console.log("ttt",tokens)
-// 		ks=keys(tokens);
-		
-// 		ks.sort();
-// 		console.log("kkkk",ks)
+    var distance = 0;
+    var dictOfx = {};
+    var widhtOfEllipticalPartOfYandexCurveAtTheFirstStage = _ARC_HEIGHT_UNIT / (1 - Math.cos(_ANGLE)) * Math.sin(_ANGLE) / 2;
+    svgwi = 0;
 
-		for (var i in ks) 
-			{
-// 				console.log("iii",i, tokens[ks[i]]);
-			var node = new Pnode( i, tokens[i]);
-			words[i]=node;
-			currentx=currentx+node.width+tab;
-			};
-		
+    for (var source_index in tokens)
+		{
+
+        dictOfx[source_index] = currentx;
+				var node = new Pnode(source_index, tokens[source_index]);
+
+        for (var offset = 1; offset < Math.min(source_index,5); offset++)
+        {
+
+          // get length of label of relation with the target token
+          var target_index = source_index - offset;
+          var labelWidth = getLabelWidth(node, offset);
+
+          // estimate the effecitve horizontal distance between the current token
+          // and the target token
+          distance  = dictOfx[source_index];
+          if (target_index in dictOfx) distance -= dictOfx[target_index];
+          // note: real width of elliptical part of Yandex Curve is a
+          //       funciton of the height of this Curve. When drawing
+          //       words, the height is not yet calculated (this is done)
+          //       in drawalldeps function. we decided to estimate it by
+          //       its upper bound which is very lose : height is
+          //       proportional to 'offset'
+          distance -= widhtOfEllipticalPartOfYandexCurveAtTheFirstStage * offset;
+          distance += node.tag_width / 2 - words[target_index].tag_width / 2 - xoff;
+
+          // deplace the current token if more space is needed
+          // with respect to the label length
+          if (labelWidth > distance) // need more space
+          {
+              // clear all drawn feature lines
+              // corresponding to the current / source token
+              for (var f in node.svgs)
+              {
+                node.svgs[f].remove();
+                delete node.svgs[f]
+              }
+              delete node.svgs;
+
+              // move x-position toward right in order to make
+              // more space
+              currentx += labelWidth - distance;
+              svgwi    += labelWidth - distance;
+              prevx     = currentx;
+
+              // then we redraw the current token at adjusted x-position
+              dictOfx[source_index] = currentx;
+              node = new Pnode(source_index, tokens[source_index]);
+          }
+        }
+
+        // by-token updates
+				currentx += node.width + tab;
+				svgwi    += node.width + tab;
+        words[source_index] = node;
+
+		};
+
+		// update paper width
+		currentsvg.setAttribute("width", svgwi + extraspace);
+
 		return words;
 	};
 
 
-makewords = function() 
-	{
-		var words = new Object();
-		svgwi=0;
-		currentx=tab;
-		for (var i in tokens) 
-			{
-			var node = new Pnode( i, tokens[i]);
-			words[i]=node;
-			currentx=currentx+node.width+tab;
-			};
-		
-		return words;
-	};
 
 
 
@@ -942,47 +1361,86 @@ start = function (holder, nr) {
 	currentsvg=paper.canvas;
 	currentsvg.paper=paper;
 	currentsvg.id="svg"+nr;
-	
+
 	draw();
-	
+
 // 	$("html,body").animate({scrollTop: $(currentsvg).offset().top-[100]},500);
 	$(".toggler").removeClass("currentsentence");
 	$(".toggler:eq("+(nr-1)+")").addClass("currentsentence");
 	$("#export"+nr).css({ visibility: 'visible' });
-	currentsvg.undo = new UndoManager({ 
+	currentsvg.undo = new UndoManager({
 				undoChange: function() { dirt(); },
 				redoChange: function() { dirt(); }
-					})  
-	
-	
-	
+					})
+
+
+
 
 };
 
 
 draw = function() {
-	
+
+  // set svgwi
 	currentsvg.words = makewords();
-	if (editable) 
+	if (editable)
 	{
-		if(currentsvg.dragConnection) currentsvg.dragConnection = drawsvgDep(1,2,50,60,150,150,"", "",false,0).hide();
+		if(currentsvg.dragConnection) currentsvg.dragConnection = drawsvgDep(0,0,0,0,0,0,"", "",false,0).hide();
 		else currentsvg.dragConnection = createConnection().hide();
 		lastSelected=0;
 	}
 	currentsvg.setAttribute("width",svgwi+extraspace);
 	currentsvg.setAttribute("height",dependencyspace+shownfeatures.length*line);
-	
-// 	TODO:work on the difference between drawalldeps and drawalldeps2
-	drawalldeps();	
-	
-	
-	
+
+	// set dependencyspace
+	drawalldeps3();
+
+
+	// 	TODO:work on the difference between drawalldeps and drawalldeps2
+}
+
+// this drawin funciton autoresize paper height according to
+// tree height if _PAPER_HEIGHT_RESIZING is true
+drawalldeps3 = function () {
+
+	if (_PAPER_HEIGHT_RESIZING) {
+
+		// detect dependencyspace
+		drawalldeps();
+		var tree_height_pts = 0;
+		for (var i in currentsvg.words){
+			t = currentsvg.words[i];
+			for (var j in t.svgdep)
+			{
+				var txtObj =  t.svgdep[j][0];
+				var real_y_of_dep_label = txtObj.getBBox().y; // top of arc label
+				var real_y_of_token = t.svgs[shownfeatures[0]].getBBox().y; // bottom of the bottom of the first feature line of token
+				//console.log(real_y_of_dep_label,real_y_of_token,shownfeatures[0]);
+				var d = real_y_of_token - real_y_of_dep_label + t.svgs[shownfeatures[0]].getBBox().height;
+				if (tree_height_pts < d) tree_height_pts = d;
+			}
+		}
+
+		// paper should be drawable when there is an almost empty tree
+		// we leave at least 3 token widths / lines
+		if (tree_height_pts < t.svgs[shownfeatures[0]].getBBox().height * 3)
+			tree_height_pts = t.svgs[shownfeatures[0]].getBBox().height * 3;
+		dependencyspace = tree_height_pts;
+
+		// redrawing
+		clearTreeAndTokens(currentsvg.words);
+		currentsvg.setAttribute("height",dependencyspace+shownfeatures.length*line);
+		currentsvg.words = makewords();
+	}
+
+	// draw relations
+	drawalldeps();
 }
 
 
 currentsvgchanged = function () { } // to be overridden in q.js
 
-	
+
 // 	console.log(attris[shownfeatures[categoryindex]]);
 // 	console.log(shownfeatures[categoryindex]);
 
@@ -996,6 +1454,3 @@ Raphael.fn.pointer = function (x,y, size, angle) {
 	arrowPath.rotate(angle);
 	return arrowPath;
 }
-
-
-
